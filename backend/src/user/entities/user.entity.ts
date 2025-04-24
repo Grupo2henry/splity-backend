@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Expense } from 'src/entities/expense.entity';
 import { ExpenseSplit } from 'src/entities/expense.split.entity';
 import { Group } from 'src/entities/group.entity';
@@ -12,7 +13,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
-@Entity({ name: 'USERS' })
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;

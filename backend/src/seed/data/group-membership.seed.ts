@@ -1,0 +1,62 @@
+/* eslint-disable prettier/prettier */
+// src/seed/data/group-memberships.seed.ts
+
+import { usersSeed } from './users.seed';
+import { groupsSeed } from './groups.seed';
+
+export const groupMembershipsSeed = [
+  {
+    user: usersSeed[0], // Gonzalo
+    group: groupsSeed[0], // Viaje a Bariloche
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[1], // Nico
+    group: groupsSeed[0], // Viaje a Bariloche
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[2], // Laura
+    group: groupsSeed[0], // Viaje a Bariloche
+    joined_at: new Date(),
+    status: 'pending',
+  },
+  {
+    user: usersSeed[1], // Nico
+    group: groupsSeed[1], // Cuentas del Departamento
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[0], // Gonzalo
+    group: groupsSeed[1], // Cuentas del Departamento
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[2], // Laura
+    group: groupsSeed[2], // Proyecto de la Facu
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[3], // Martín
+    group: groupsSeed[2], // Proyecto de la Facu
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[3], // Martín
+    group: groupsSeed[3], // Salida de Fin de Semana
+    joined_at: new Date(),
+    status: 'active',
+  },
+  {
+    user: usersSeed[0], // Gonzalo
+    group: groupsSeed[3], // Salida de Fin de Semana
+    joined_at: new Date(),
+    status: 'pending',
+  },
+];

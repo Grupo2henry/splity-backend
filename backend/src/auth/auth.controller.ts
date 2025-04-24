@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create.user.dto';
 import { UserResponseDto } from '../user/dto/response.user.dto';
