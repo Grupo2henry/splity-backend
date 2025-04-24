@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,6 +11,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AccesTokenGuard } from './auth/guards/acces-token.guards.ts/acces-token.guards.ts.guard';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
+import { SeedModule } from './seed/seed.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,6 +28,7 @@ import { AuthenticationGuard } from './auth/guards/authentication/authentication
     AppService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     AccesTokenGuard,
+    SeedModule,
   ],
   controllers: [AppController],
 })
