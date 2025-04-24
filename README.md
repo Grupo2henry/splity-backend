@@ -29,6 +29,10 @@
 ## Project setup
 
 ```bash
+$ cd backend
+```
+
+```bash
 $ npm install
 ```
 
