@@ -18,4 +18,9 @@ export class AuthController {
     const { email, password } = loginUserDto;
     return this.authService.signUser(email, password);
   }
+  @Post('logout')
+  logout() {
+    // No hace nada en el servidor. //falta implementación
+    return { message: 'Logged out successfully' };
+  }
 }
