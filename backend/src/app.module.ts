@@ -5,10 +5,11 @@ import { dbConfig } from './config/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-// import jwtConfig from './config/jwt.config';
-// import { JwtModule } from '@nestjs/jwt';
-// import { APP_GUARD } from '@nestjs/core';
-// import { AccesTokenGuardsTsGuard } from './modules/auth/guards/acces-token.guards.ts/acces-token.guards.ts.guard';
+import jwtConfig from './config/jwt.config';
+import { JwtModule } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { AccesTokenGuard } from './auth/guards/acces-token.guards.ts/acces-token.guards.ts.guard';
+import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,11 +18,14 @@ import { AppController } from './app.controller';
     }),
     TypeOrmModule.forRoot(dbConfig),
     AuthModule,
-    // ConfigModule.forFeature(jwtConfig),
-    // JwtModule.registerAsync(jwtConfig.asProvider()),
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
   ],
-  providers: [AppService],
-  // providers: [{ provide: APP_GUARD, useClass: AccesTokenGuardsTsGuard }],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: AuthenticationGuard },
+    AccesTokenGuard,
+  ],
   controllers: [AppController],
 })
 export class AppModule {}
