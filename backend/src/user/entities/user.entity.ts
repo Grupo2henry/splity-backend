@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Expense } from 'src/entities/expense.entity';
-import { ExpenseSplit } from 'src/entities/expense.split.entity';
+import { ExpenseSplit } from 'src/entities/expense-split.entity';
 import { Group } from 'src/group/entities/group.entity';
 import { GroupMembership } from 'src/group/entities/group-membership.entity';
 import { Payment } from 'src/entities/payments.entity';
@@ -47,7 +47,7 @@ export class User {
   @OneToMany(() => GroupMembership, (gm) => gm.user)
   memberships: GroupMembership[];
 
-  @OneToMany(() => Expense, (expense) => expense.pagado_por)
+  @OneToMany(() => Expense, (expense) => expense.paid_by)
   expensesPaid: Expense[];
 
   @OneToMany(() => ExpenseSplit, (split) => split.user)

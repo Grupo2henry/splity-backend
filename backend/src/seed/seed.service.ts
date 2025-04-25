@@ -1,9 +1,17 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable prettier/prettier */
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { User } from '../user/entities/user.entity';
+import { Group } from '../group/entities/group.entity';
+import { GroupMembership } from '../group/entities/group-membership.entity'; // Importa desde la ubicación correcta
+import { Expense } from '../entities/expense.entity';
+import { ExpenseSplit } from '../entities/expense-split.entity';
+import { Payment } from '../entities/payments.entity';
+import { Subscription } from '../entities/subscription.entity';
+
+// Importa los seeds de datos
 import { usersSeed } from './data/users.seed';
 import { groupsSeed } from './data/groups.seed';
 import { groupMembershipsSeed } from './data/group-membership.seed';
@@ -11,14 +19,6 @@ import { expensesSeed } from './data/expenses.seed';
 import { expenseSplitsSeed } from './data/expense-splits.seed';
 import { paymentsSeed } from './data/payments.seed';
 import { subscriptionsSeed } from './data/subscription.seed';
-
-import { User } from '../user/entities/user.entity';
-import { Group } from '../group/entities/group.entity';
-import { GroupMembership } from '../group/entities/group-membership.entity';
-import { Expense } from '../entities/expense.entity';
-import { ExpenseSplit } from '../entities/expense.split.entity';
-import { Payment } from '../entities/payments.entity';
-import { Subscription } from '../entities/subscription.entity';
 
 @Injectable()
 export class SeedService implements OnApplicationBootstrap {
@@ -43,81 +43,112 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 1. Usuarios
     const users = await this.userRepo.save(usersSeed);
+    console.log('[SeedService] Usuarios cargados.');
 
     // 2. Grupos
-    for (const group of groupsSeed) {
-      const createdByUser = users.find(u => u.email === group.created_by.email);
+    const savedGroups: Group[] = []; // Array para guardar los grupos creados
+    for (const groupSeed of groupsSeed) {
+      const createdByUser = users.find(u => u.email === groupSeed.created_by.email);
       if (!createdByUser) {
-        throw new Error(`Usuario no encontrado para el grupo: ${group.name}`);
+        throw new Error(`Usuario no encontrado para el grupo: ${groupSeed.name}`);
       }
-      group.created_by = createdByUser;
+      const newGroup = this.groupRepo.create({
+        ...groupSeed,
+        created_by: createdByUser,
+      });
+      const savedGroup = await this.groupRepo.save(newGroup); // Guardar y obtener el grupo guardado
+      savedGroups.push(savedGroup); // Agregar al array
     }
-    const groups = await this.groupRepo.save(groupsSeed);
+    console.log('[SeedService] Grupos cargados.');
 
     // 3. Membresías
-    for (const membership of groupMembershipsSeed) {
-      const user = users.find(u => u.email === membership.user.email);
-      const group = groups.find(g => g.name === membership.group.name);
+    const savedMemberships: GroupMembership[] = [];
+    for (const membershipSeed of groupMembershipsSeed) {
+      const user = users.find(u => u.email === membershipSeed.user.email);
+      const group = savedGroups.find(g => g.name === membershipSeed.group.name); // Buscar en los grupos guardados
       if (!user) {
         throw new Error(`Usuario no encontrado para la membresía`);
       }
       if (!group) {
         throw new Error(`Grupo no encontrado para la membresía`);
       }
-      membership.user = user;
-      membership.group = group;
+      const newMembership = this.membershipRepo.create({
+        ...membershipSeed,
+        user: user,
+        group: group,
+      });
+      const savedMembership = await this.membershipRepo.save(newMembership);
+      savedMemberships.push(savedMembership);
     }
-    await this.membershipRepo.save(groupMembershipsSeed);
+    console.log('[SeedService] Membresías cargadas.');
 
     // 4. Gastos
-    for (const expense of expensesSeed) {
-      const group = groups.find(g => g.name === expense.group.name);
-      const pagadoPor = users.find(u => u.email === expense.paid_by.email);
-      if (!group) {
-        throw new Error(`Grupo no encontrado para el gasto: ${expense.description}`);
+      const savedExpenses: Expense[] = [];
+      for (const expenseSeed of expensesSeed) {
+        const group = savedGroups.find(g => g.name === expenseSeed.group.name);
+        const paidBy = users.find(u => u.email === expenseSeed.paid_by.email);
+        if (!group) {
+          throw new Error(`Grupo no encontrado para el gasto: ${expenseSeed.description}`);
+        }
+        if (!paidBy) {
+          throw new Error(`Usuario pagador no encontrado para el gasto: ${expenseSeed.description}`);
+        }
+        const newExpense = this.expenseRepo.create({
+          ...expenseSeed,
+          group: group,
+          paid_by: paidBy,
+        });
+        const savedExpense = await this.expenseRepo.save(newExpense);
+        savedExpenses.push(savedExpense);
       }
-      if (!pagadoPor) {
-        throw new Error(`Usuario pagador no encontrado para el gasto: ${expense.description}`);
-      }
-      expense.group = group;
-      expense.paid_by = pagadoPor;
-    }
-    const expenses = await this.expenseRepo.save(expensesSeed);
+      console.log('[SeedService] Gastos cargados.');
 
     // 5. Divisiones
-    for (const split of expenseSplitsSeed) {
-      const expense = expenses.find(e => e.description === split.expense.description);
-      const user = users.find(u => u.email === split.user.email);
+    for (const splitSeed of expenseSplitsSeed) {
+      const expense = savedExpenses.find(e => e.description === splitSeed.expense.description);
+      const user = users.find(u => u.email === splitSeed.user.email);
       if (!expense) {
         throw new Error(`Gasto no encontrado para la división`);
       }
       if (!user) {
         throw new Error(`Usuario no encontrado para la división`);
       }
-      split.expense = expense;
-      split.user = user;
+      const newSplit = this.splitRepo.create({
+        ...splitSeed,
+        expense: expense,
+        user: user,
+      });
+      await this.splitRepo.save(newSplit);
     }
-    await this.splitRepo.save(expenseSplitsSeed);
+    console.log('[SeedService] Divisiones cargadas.');
 
     // 6. Pagos
-    for (const payment of paymentsSeed) {
-      const user = users.find(u => u.email === payment.user.email);
+    for (const paymentSeed of paymentsSeed) {
+      const user = users.find(u => u.email === paymentSeed.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para el pago`);
       }
-      payment.user = user;
+      const newPayment = this.paymentRepo.create({
+        ...paymentSeed,
+        user: user,
+      });
+      await this.paymentRepo.save(newPayment);
     }
-    await this.paymentRepo.save(paymentsSeed);
+    console.log('[SeedService] Pagos cargados.');
 
     // 7. Subscripciones
-    for (const sub of subscriptionsSeed) {
-      const user = users.find(u => u.email === sub.user.email);
+    for (const subscriptionSeed of subscriptionsSeed) {
+      const user = users.find(u => u.email === subscriptionSeed.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para la subscripción`);
       }
-      sub.user = user;
+      const newSubscription = this.subscriptionRepo.create({
+        ...subscriptionSeed,
+        user: user,
+      });
+      await this.subscriptionRepo.save(newSubscription);
     }
-    await this.subscriptionRepo.save(subscriptionsSeed);
+    console.log('[SeedService] Subscripciones cargadas.');
 
     console.log('[SeedService] Datos precargados correctamente.');
   }

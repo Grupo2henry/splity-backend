@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Auth } from '../auth/decorators/auth.decorator';

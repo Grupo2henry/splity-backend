@@ -33,6 +33,7 @@ import {
   
     @Get()
     async findAll() {
+      console.log('Estoy en group.controller')
       return this.groupService.findAll();
     }
   

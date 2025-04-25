@@ -1,23 +1,38 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { Group } from '../../group/entities/group.entity';
+import { User } from '../../user/entities/user.entity';
+import { ExpenseSplit } from './expense-split.entity';
 
 @Entity()
 export class Expense {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  group_id: number;
+  @ManyToOne(() => Group, (group) => group.expenses)
+  group: Group;
 
   @Column()
   description: string;
 
-  @Column('decimal')
+  @Column({ default: true })
+  active: boolean;
+
+  @Column('float')
   amount: number;
 
-  @Column()
-  paid_by: number;
+  @ManyToOne(() => User, (user) => user.expensesPaid)
+  paid_by: User;
 
-  @CreateDateColumn()
+  @Column()
   created_at: Date;
+
+  @OneToMany(() => ExpenseSplit, (split) => split.expense)
+  splits: ExpenseSplit[];
 }

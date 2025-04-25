@@ -10,7 +10,7 @@ import { User } from '../../user/entities/user.entity';
 import { GroupMembership } from './group-membership.entity';
 import { Expense } from '../../entities/expense.entity';
 
-@Entity()
+@Entity('group')
 export class Group {
   @PrimaryGeneratedColumn()
   id: number;

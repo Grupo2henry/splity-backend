@@ -13,6 +13,7 @@ export class GroupService {
   }
 
   async findAll() {
+    console.log('Estoy en group.service')
     return this.groupRepository.findAll();
   }
 

@@ -7,8 +7,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Group } from '../group/entities/group.entity';
-import { User } from 'src/user/entities/user.entity';
-import { ExpenseSplit } from './expense.split.entity';
+import { User } from '../user/entities/user.entity';
+import { ExpenseSplit } from './expense-split.entity';
 
 @Entity()
 export class Expense {
@@ -19,16 +19,16 @@ export class Expense {
   group: Group;
 
   @Column()
-  descripcion: string;
+  description: string;
 
   @Column({ default: true })
   active: boolean;
 
   @Column('float')
-  monto: number;
+  amount: number;
 
   @ManyToOne(() => User, (user) => user.expensesPaid)
-  pagado_por: User;
+  paid_by: User;
 
   @Column()
   created_at: Date;

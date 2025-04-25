@@ -17,13 +17,14 @@ export class GroupRepository {
   async findOne(id: number): Promise<Group | null | undefined> {
     return this.groupRepository.findOne({
       where: { id },
-      relations: ['created_by', 'memberships', 'expenses', 'memberships.user', 'expenses.pagado_por', 'expenses.splits', 'expenses.splits.user'],
+      relations: ['created_by', 'memberships', 'expenses', 'memberships.user', 'expenses.paid_by', 'expenses.splits', 'expenses.splits.user'],
     });
   }
 
   async findAll(): Promise<Group[]> {
+    console.log('Estoy en group.repository')
     return this.groupRepository.find({
-      relations: ['created_by', 'memberships', 'expenses', 'memberships.user', 'expenses.pagado_por', 'expenses.splits', 'expenses.splits.user'],
+      relations: ['created_by', 'memberships', 'expenses', 'memberships.user', 'expenses.paid_by', 'expenses.splits', 'expenses.splits.user'],
     });
   }
 
