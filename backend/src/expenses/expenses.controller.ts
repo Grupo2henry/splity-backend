@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Put, Delete, Param } from '@nestjs/common';
 
 @Controller()
