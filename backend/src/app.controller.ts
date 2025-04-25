@@ -9,6 +9,7 @@ export class AppController {
   @Get()
   getHello(): string {
     console.log("Esta es la rama gonzalo-prueba");
+    console.log("Nuevo log para dev-prueba")
     return this.appService.getHello();
 
   }
