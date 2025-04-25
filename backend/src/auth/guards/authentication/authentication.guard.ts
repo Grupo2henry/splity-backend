@@ -2,6 +2,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { Reflector } from '@nestjs/core';
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
+    @Inject(AccesTokenGuard) //s
     private readonly accessTokenGuard: AccesTokenGuard,
   ) {}
 
@@ -39,6 +41,7 @@ export class AuthenticationGuard implements CanActivate {
     ) ?? [AuthenticationGuard.defaultAuthType]; // asigna el default sino encuentra, public
     // Show what are authTypes
     // console.log(authTypes);
+    console.log('AuthTypes detected:', authTypes);
 
     const guards = authTypes.map((type) => this.authTypeGuardMap[type]).flat();
     //flat genera un unico array

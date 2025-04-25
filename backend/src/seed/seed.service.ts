@@ -1,5 +1,4 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,7 +10,7 @@ import { expensesSeed } from './data/expenses.seed';
 import { expenseSplitsSeed } from './data/expense-splits.seed';
 import { paymentsSeed } from './data/payments.seed';
 import { subscriptionsSeed } from './data/subscription.seed';
-
+import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { Group } from '../entities/group.entity';
 import { GroupMembership } from '../entities/group.membership.entity';
@@ -25,14 +24,17 @@ export class SeedService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Group) private groupRepo: Repository<Group>,
-    @InjectRepository(GroupMembership) private membershipRepo: Repository<GroupMembership>,
+    @InjectRepository(GroupMembership)
+    private membershipRepo: Repository<GroupMembership>,
     @InjectRepository(Expense) private expenseRepo: Repository<Expense>,
     @InjectRepository(ExpenseSplit) private splitRepo: Repository<ExpenseSplit>,
     @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
-    @InjectRepository(Subscription) private subscriptionRepo: Repository<Subscription>,
+    @InjectRepository(Subscription)
+    private subscriptionRepo: Repository<Subscription>,
   ) {}
 
   async onApplicationBootstrap() {
+    console.log('[SeedService] Ejecutando onModuleInit...');
     const userCount = await this.userRepo.count();
     if (userCount > 0) {
       console.log('[SeedService] Datos ya cargados. Ignorando precarga.');
@@ -42,11 +44,14 @@ export class SeedService implements OnApplicationBootstrap {
     console.log('[SeedService] Precargando base de datos...');
 
     // 1. Usuarios
-    const users = await this.userRepo.save(usersSeed);
-
+    // 1. Usuarios (con contraseñas hasheadas)
+    const hashedUsers = await this.hashUserPasswords(usersSeed);
+    const users = await this.userRepo.save(hashedUsers);
     // 2. Grupos
     for (const group of groupsSeed) {
-      const createdByUser = users.find(u => u.email === group.created_by.email);
+      const createdByUser = users.find(
+        (u) => u.email === group.created_by.email,
+      );
       if (!createdByUser) {
         throw new Error(`Usuario no encontrado para el grupo: ${group.nombre}`);
       }
@@ -56,8 +61,8 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 3. Membresías
     for (const membership of groupMembershipsSeed) {
-      const user = users.find(u => u.email === membership.user.email);
-      const group = groups.find(g => g.nombre === membership.group.nombre);
+      const user = users.find((u) => u.email === membership.user.email);
+      const group = groups.find((g) => g.nombre === membership.group.nombre);
       if (!user) {
         throw new Error(`Usuario no encontrado para la membresía`);
       }
@@ -71,13 +76,17 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 4. Gastos
     for (const expense of expensesSeed) {
-      const group = groups.find(g => g.nombre === expense.group.nombre);
-      const pagadoPor = users.find(u => u.email === expense.pagado_por.email);
+      const group = groups.find((g) => g.nombre === expense.group.nombre);
+      const pagadoPor = users.find((u) => u.email === expense.pagado_por.email);
       if (!group) {
-        throw new Error(`Grupo no encontrado para el gasto: ${expense.descripcion}`);
+        throw new Error(
+          `Grupo no encontrado para el gasto: ${expense.descripcion}`,
+        );
       }
       if (!pagadoPor) {
-        throw new Error(`Usuario pagador no encontrado para el gasto: ${expense.descripcion}`);
+        throw new Error(
+          `Usuario pagador no encontrado para el gasto: ${expense.descripcion}`,
+        );
       }
       expense.group = group;
       expense.pagado_por = pagadoPor;
@@ -86,8 +95,10 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 5. Divisiones
     for (const split of expenseSplitsSeed) {
-      const expense = expenses.find(e => e.descripcion === split.expense.descripcion);
-      const user = users.find(u => u.email === split.user.email);
+      const expense = expenses.find(
+        (e) => e.descripcion === split.expense.descripcion,
+      );
+      const user = users.find((u) => u.email === split.user.email);
       if (!expense) {
         throw new Error(`Gasto no encontrado para la división`);
       }
@@ -101,7 +112,7 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 6. Pagos
     for (const payment of paymentsSeed) {
-      const user = users.find(u => u.email === payment.user.email);
+      const user = users.find((u) => u.email === payment.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para el pago`);
       }
@@ -111,7 +122,7 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 7. Subscripciones
     for (const sub of subscriptionsSeed) {
-      const user = users.find(u => u.email === sub.user.email);
+      const user = users.find((u) => u.email === sub.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para la subscripción`);
       }
@@ -120,5 +131,17 @@ export class SeedService implements OnApplicationBootstrap {
     await this.subscriptionRepo.save(subscriptionsSeed);
 
     console.log('[SeedService] Datos precargados correctamente.');
+  }
+  private async hashUserPasswords(usersSeed: any[]): Promise<User[]> {
+    return Promise.all(
+      usersSeed.map(async (user) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        return {
+          ...user,
+          password: hashedPassword,
+        };
+      }),
+    );
   }
 }

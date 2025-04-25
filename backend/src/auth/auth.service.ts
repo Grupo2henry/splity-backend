@@ -27,8 +27,6 @@ export class AuthService {
   ) {}
   async signUpUser(credentials: CreateUserDto) {
     if (credentials.password !== credentials.confirm_password) {
-      console.log(credentials.password);
-      console.log(credentials.confirm_password);
       throw new BadRequestException('Las contraseñas no coinciden');
     }
     const thereIsUser = await this.usersRepository.findOne({
@@ -54,6 +52,7 @@ export class AuthService {
     if (!user) {
       throw new HttpException('No matches found', 404);
     }
+    console.log(password, user.password);
     const isPasswordMatching = await bcrypt.compare(password, user.password);
     if (!isPasswordMatching) {
       throw new HttpException(

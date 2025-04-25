@@ -1,16 +1,22 @@
-/* eslint-disable prettier/prettier */
-// eslint-disable-next-line prettier/prettier
-// src/seed/data/users.seed.ts
-
 export const usersSeed = [
+  /*dto
+{
+  "name": "Gonzalo",
+  "email": "gonzalo@example.com",
+  "username": "gonzalo123",
+  "password": "123456",
+  "confirm_password": "123456"
+}
+*/
   {
     name: 'Gonzalo',
     email: 'gonzalo@example.com',
     username: 'gonzalo123',
-    password: '123456', // idealmente hasheado si vas a usar auth real
+    password: '123456',
     is_premium: false,
     active: true,
     created_at: new Date(),
+    rol: 'admin',
   },
   {
     name: 'Nico',
@@ -20,6 +26,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
+    rol: 'user',
   },
   {
     name: 'Laura',
@@ -29,6 +36,7 @@ export const usersSeed = [
     is_premium: true,
     active: true,
     created_at: new Date(),
+    rol: 'user',
   },
   {
     name: 'Martín',
@@ -38,6 +46,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
+    rol: 'user',
   },
   {
     name: 'Sofía',
@@ -47,6 +56,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
+    rol: 'user',
   },
   {
     name: 'Javier',
@@ -56,5 +66,6 @@ export const usersSeed = [
     is_premium: true,
     active: true,
     created_at: new Date(),
+    rol: 'user',
   },
 ];

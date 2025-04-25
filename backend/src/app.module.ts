@@ -23,12 +23,12 @@ import { SeedModule } from './seed/seed.module';
     AuthModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    SeedModule,
   ],
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     AccesTokenGuard,
-    SeedModule,
   ],
   controllers: [AppController],
 })
