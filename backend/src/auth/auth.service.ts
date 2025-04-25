@@ -27,8 +27,6 @@ export class AuthService {
   ) {}
   async signUpUser(credentials: CreateUserDto) {
     if (credentials.password !== credentials.confirm_password) {
-      console.log(credentials.password);
-      console.log(credentials.confirm_password);
       throw new BadRequestException('Las contraseñas no coinciden');
     }
     const thereIsUser = await this.usersRepository.findOne({
@@ -75,6 +73,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         is_premium: user.is_premium,
+        rol: user.rol,
       },
       {
         //secrets
@@ -84,6 +83,14 @@ export class AuthService {
         expiresIn: this.jwtConfiguration.accesTokenTtl,
       },
     );
+    console.log('retornado en auth service:', {
+      //payload
+      sub: user.id,
+      id: user.id,
+      email: user.email,
+      is_premium: user.is_premium,
+      rol: user.rol,
+    });
     return { token };
   }
 }

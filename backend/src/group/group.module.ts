@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+<<<<<<< HEAD
 import { Module} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GroupController } from './controllers/group.controller';
@@ -35,5 +36,18 @@ import { UserModule } from 'src/user/user.module';
     GroupRepository,
     GroupMembershipRepository
   ]
+=======
+import { Module } from '@nestjs/common';
+// import { GroupController } from './group.controller';
+import { GroupService } from './group.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Group } from './entities/group.entity';
+import { GroupRepository } from './group.repository';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Group])], // <--- Group es tu entidad
+  providers: [GroupService, GroupRepository],
+  exports: [GroupService],
+>>>>>>> develop
 })
 export class GroupModule {}

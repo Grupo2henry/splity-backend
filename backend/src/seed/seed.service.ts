@@ -25,14 +25,17 @@ export class SeedService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Group) private groupRepo: Repository<Group>,
-    @InjectRepository(GroupMembership) private membershipRepo: Repository<GroupMembership>,
+    @InjectRepository(GroupMembership)
+    private membershipRepo: Repository<GroupMembership>,
     @InjectRepository(Expense) private expenseRepo: Repository<Expense>,
     @InjectRepository(ExpenseSplit) private splitRepo: Repository<ExpenseSplit>,
     @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
-    @InjectRepository(Subscription) private subscriptionRepo: Repository<Subscription>,
+    @InjectRepository(Subscription)
+    private subscriptionRepo: Repository<Subscription>,
   ) {}
 
   async onApplicationBootstrap() {
+    console.log('[SeedService] Ejecutando onModuleInit...');
     const userCount = await this.userRepo.count();
     if (userCount > 0) {
       console.log('[SeedService] Datos ya cargados. Ignorando precarga.');

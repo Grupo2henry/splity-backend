@@ -17,7 +17,7 @@ import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../../constants/auth.constants';
 
 @Injectable()
-export class AccesTokenGuardsTsGuard implements CanActivate {
+export class AccesTokenGuard implements CanActivate {
   constructor(
     //injecto servicio
     private readonly jwtService: JwtService,
@@ -36,7 +36,7 @@ export class AccesTokenGuardsTsGuard implements CanActivate {
         token,
         this.jwtConfiguration,
       );
-      //el payload va a estar en la variable [REQUEST_USER_KEY]
+      //inyecta payload del token va a estar en la variable [REQUEST_USER_KEY]
       request[REQUEST_USER_KEY] = payload;
       console.log(payload);
     } catch (error) {

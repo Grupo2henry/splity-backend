@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+import { Rol } from 'src/auth/enums/role.enum';
 import { Expense } from 'src/entities/expense.entity';
 import { ExpenseSplit } from 'src/entities/expense-split.entity';
 import { Group } from 'src/group/entities/group.entity';
@@ -35,6 +35,9 @@ export class User {
 
   @Column({ default: false })
   is_premium: boolean;
+
+  @Column({ default: Rol.User })
+  rol: string;
 
   @Column({ default: true })
   active: boolean;
