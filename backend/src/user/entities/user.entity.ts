@@ -1,8 +1,8 @@
 import { Rol } from 'src/auth/enums/role.enum';
 import { Expense } from 'src/entities/expense.entity';
 import { ExpenseSplit } from 'src/entities/expense.split.entity';
-import { Group } from 'src/entities/group.entity';
-import { GroupMembership } from 'src/entities/group.membership.entity';
+import { Group } from 'src/group/entities/group.entity';
+import { GroupMembership } from 'src/group-membership/entities/group-membership.entity';
 import { Payment } from 'src/entities/payments.entity';
 import { Subscription } from 'src/entities/subscription.entity';
 import {
