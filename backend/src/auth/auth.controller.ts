@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create.user.dto';

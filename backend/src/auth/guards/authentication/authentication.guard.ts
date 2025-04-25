@@ -1,4 +1,6 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/*
 import {
   CanActivate,
   ExecutionContext,
@@ -19,7 +21,7 @@ export class AuthenticationGuard implements CanActivate {
     private readonly reflector: Reflector,
     @Inject(AccesTokenGuard) //s
     private readonly accessTokenGuard: AccesTokenGuard,
-    @InjectCache() // 👈 Inyectar Redis
+    ///@InjectCache() // 👈 Inyectar Redis
     private cacheManager: Cache,
   ) {}
 
@@ -76,3 +78,4 @@ export class AuthenticationGuard implements CanActivate {
     throw error;
   }
 }
+*/
