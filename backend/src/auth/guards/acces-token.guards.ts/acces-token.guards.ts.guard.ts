@@ -15,7 +15,8 @@ import { Observable } from 'rxjs';
 import jwtConfig from 'src/config/jwt.config';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../../constants/auth.constants';
-
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 @Injectable()
 export class AccesTokenGuard implements CanActivate {
   constructor(
@@ -24,12 +25,18 @@ export class AccesTokenGuard implements CanActivate {
     //configuraciones
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractRequestFromHeader(request);
     if (!token) {
-      throw UnauthorizedException;
+      throw new UnauthorizedException('Token no proporcionado');
+    }
+    const isRevoked = await this.cacheManager.get(`blacklist:${token}`);
+    if (isRevoked === 'revoked') {
+      throw new UnauthorizedException('Token revocado');
     }
     try {
       const payload = await this.jwtService.verifyAsync(

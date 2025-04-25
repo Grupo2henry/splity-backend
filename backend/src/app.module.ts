@@ -16,7 +16,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
 import { GroupMembershipModule } from './group-membership/group-membership.module';
-
+import { RedisModule } from './config/redis.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +24,7 @@ import { GroupMembershipModule } from './group-membership/group-membership.modul
       envFilePath: '.env.development',
     }),
     TypeOrmModule.forRoot(dbConfig),
+    RedisModule,
     AuthModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),

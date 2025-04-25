@@ -6,21 +6,16 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-
 import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants';
 import { AccesTokenGuard } from '../acces-token.guards.ts/acces-token.guards.ts.guard';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
-
 import { Reflector } from '@nestjs/core';
-
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject(AccesTokenGuard) //s
     private readonly accessTokenGuard: AccesTokenGuard,
-    @InjectCache() // 👈 Inyectar Redis
-    private cacheManager: Cache,
   ) {}
 
   // Set the default Auth Type
