@@ -6,7 +6,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { Group } from './group.entity';
+import { Group } from '../group/entities/group.entity';
 import { User } from 'src/user/entities/user.entity';
 import { ExpenseSplit } from './expense.split.entity';
 

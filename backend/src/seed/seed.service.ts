@@ -13,8 +13,8 @@ import { paymentsSeed } from './data/payments.seed';
 import { subscriptionsSeed } from './data/subscription.seed';
 
 import { User } from '../user/entities/user.entity';
-import { Group } from '../entities/group.entity';
-import { GroupMembership } from '../entities/group.membership.entity';
+import { Group } from '../group/entities/group.entity';
+import { GroupMembership } from '../group-membership/entities/group-membership.entity';
 import { Expense } from '../entities/expense.entity';
 import { ExpenseSplit } from '../entities/expense.split.entity';
 import { Payment } from '../entities/payments.entity';

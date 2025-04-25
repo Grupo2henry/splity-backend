@@ -11,6 +11,8 @@ import { SeedModule } from './seed/seed.module';
 // import { JwtModule } from '@nestjs/jwt';
 // import { APP_GUARD } from '@nestjs/core';
 // import { AccesTokenGuardsTsGuard } from './modules/auth/guards/acces-token.guards.ts/acces-token.guards.ts.guard';
+import { GroupModule } from './group/group.module';
+import { GroupMembershipModule } from './group-membership/group-membership.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +22,8 @@ import { SeedModule } from './seed/seed.module';
     TypeOrmModule.forRoot(dbConfig),
     AuthModule,
     SeedModule,
+    GroupModule,
+    GroupMembershipModule,
     // ConfigModule.forFeature(jwtConfig),
     // JwtModule.registerAsync(jwtConfig.asProvider()),
   ],

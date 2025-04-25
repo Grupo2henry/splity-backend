@@ -6,9 +6,9 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
-import { GroupMembership } from './group.membership.entity';
-import { Expense } from './expense.entity';
+import { User } from '../../user/entities/user.entity';
+import { GroupMembership } from '../../group-membership/entities/group-membership.entity';
+import { Expense } from '../../entities/expense.entity';
 
 @Entity()
 export class Group {

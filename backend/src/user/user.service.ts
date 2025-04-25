@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -10,5 +11,8 @@ export class UserService {
   ) {}
   findAll(): Promise<User[]> {
     return this.userRepository.find();
+  }
+  async findOne(id: string): Promise<User | null | undefined> {
+    return this.userRepository.findOne({ where: { id } });
   }
 }
