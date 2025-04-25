@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
-import { Group } from '../../group/entities/group.entity';
+import { Group } from './group.entity';
 
 @Entity()
 export class GroupMembership {

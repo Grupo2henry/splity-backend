@@ -13,11 +13,11 @@ import {
     UseGuards,
     Request,
   } from '@nestjs/common';
-  import { GroupService } from './group.service';
-  import { CreateGroupDto } from './dto/create-group.dto';
-  import { UpdateGroupDto } from './dto/update-group.dto';
+  import { GroupService } from '../services/group.service';
+  import { CreateGroupDto } from '../dto/create-group.dto';
+  import { UpdateGroupDto } from '../dto/update-group.dto';
   //import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-  import { User } from '../user/entities/user.entity'; //Asegúrate de que la ruta sea correcta
+  import { User } from '../../user/entities/user.entity'; //Asegúrate de que la ruta sea correcta
   
   @Controller('groups')
   export class GroupController {

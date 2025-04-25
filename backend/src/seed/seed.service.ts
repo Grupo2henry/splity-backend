@@ -14,7 +14,7 @@ import { subscriptionsSeed } from './data/subscription.seed';
 
 import { User } from '../user/entities/user.entity';
 import { Group } from '../group/entities/group.entity';
-import { GroupMembership } from '../group-membership/entities/group-membership.entity';
+import { GroupMembership } from '../group/entities/group-membership.entity';
 import { Expense } from '../entities/expense.entity';
 import { ExpenseSplit } from '../entities/expense.split.entity';
 import { Payment } from '../entities/payments.entity';
@@ -48,7 +48,7 @@ export class SeedService implements OnApplicationBootstrap {
     for (const group of groupsSeed) {
       const createdByUser = users.find(u => u.email === group.created_by.email);
       if (!createdByUser) {
-        throw new Error(`Usuario no encontrado para el grupo: ${group.nombre}`);
+        throw new Error(`Usuario no encontrado para el grupo: ${group.name}`);
       }
       group.created_by = createdByUser;
     }
@@ -57,7 +57,7 @@ export class SeedService implements OnApplicationBootstrap {
     // 3. Membresías
     for (const membership of groupMembershipsSeed) {
       const user = users.find(u => u.email === membership.user.email);
-      const group = groups.find(g => g.nombre === membership.group.nombre);
+      const group = groups.find(g => g.name === membership.group.name);
       if (!user) {
         throw new Error(`Usuario no encontrado para la membresía`);
       }
@@ -71,22 +71,22 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 4. Gastos
     for (const expense of expensesSeed) {
-      const group = groups.find(g => g.nombre === expense.group.nombre);
-      const pagadoPor = users.find(u => u.email === expense.pagado_por.email);
+      const group = groups.find(g => g.name === expense.group.name);
+      const pagadoPor = users.find(u => u.email === expense.paid_by.email);
       if (!group) {
-        throw new Error(`Grupo no encontrado para el gasto: ${expense.descripcion}`);
+        throw new Error(`Grupo no encontrado para el gasto: ${expense.description}`);
       }
       if (!pagadoPor) {
-        throw new Error(`Usuario pagador no encontrado para el gasto: ${expense.descripcion}`);
+        throw new Error(`Usuario pagador no encontrado para el gasto: ${expense.description}`);
       }
       expense.group = group;
-      expense.pagado_por = pagadoPor;
+      expense.paid_by = pagadoPor;
     }
     const expenses = await this.expenseRepo.save(expensesSeed);
 
     // 5. Divisiones
     for (const split of expenseSplitsSeed) {
-      const expense = expenses.find(e => e.descripcion === split.expense.descripcion);
+      const expense = expenses.find(e => e.description === split.expense.description);
       const user = users.find(u => u.email === split.user.email);
       if (!expense) {
         throw new Error(`Gasto no encontrado para la división`);

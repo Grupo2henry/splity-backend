@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
-import { GroupMembership } from '../../group-membership/entities/group-membership.entity';
+import { GroupMembership } from './group-membership.entity';
 import { Expense } from '../../entities/expense.entity';
 
 @Entity()
@@ -16,7 +16,7 @@ export class Group {
   id: number;
 
   @Column()
-  nombre: string;
+  name: string;
 
   @Column({ default: true })
   active: boolean;

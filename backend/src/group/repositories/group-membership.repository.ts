@@ -2,11 +2,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GroupMembership } from './entities/group-membership.entity';
-import { CreateGroupMembershipDto } from './dto/create-group-membership.dto';
-import { UpdateGroupMembershipDto } from './dto/update-group-membership.dto';
-import { User } from '../user/entities/user.entity';
-import { Group } from '../group/entities/group.entity';
+import { GroupMembership } from '../entities/group-membership.entity';
+import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
+import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+import { User } from '../../user/entities/user.entity';
+import { Group } from '../entities/group.entity';
 
 @Injectable()
 export class GroupMembershipRepository {

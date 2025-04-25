@@ -11,13 +11,13 @@ import {
     HttpStatus,
     HttpCode,
   } from '@nestjs/common';
-  import { GroupMembershipService } from './group-membership.service';
-  import { CreateGroupMembershipDto } from './dto/create-group-membership.dto';
-  import { UpdateGroupMembershipDto } from './dto/update-group-membership.dto';
-  import { UserService } from '../user/user.service';
-  import { GroupService } from '../group/group.service';
+  import { GroupMembershipService } from '../services/group-membership.service';
+  import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
+  import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+  import { UserService } from '../../user/user.service';
+  import { GroupService } from '../services/group.service';
   
-  @Controller('group-membership')
+  @Controller('group/membership')
   export class GroupMembershipController {
     constructor(
         private readonly groupMembershipService: GroupMembershipService,

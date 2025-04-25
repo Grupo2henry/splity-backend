@@ -8,7 +8,7 @@ export class CreateGroupMembershipDto {
 
   @IsNotEmpty()
   @IsNumber()
-  userId: number; // Ajusta a string si los IDs de usuario son UUIDs
+  userId: string; // Ajusta a string si los IDs de usuario son UUIDs
 
   @IsNotEmpty()
   @IsNumber()
