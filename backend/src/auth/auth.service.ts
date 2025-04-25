@@ -52,7 +52,6 @@ export class AuthService {
     if (!user) {
       throw new HttpException('No matches found', 404);
     }
-    console.log(password, user.password);
     const isPasswordMatching = await bcrypt.compare(password, user.password);
     if (!isPasswordMatching) {
       throw new HttpException(
@@ -84,6 +83,14 @@ export class AuthService {
         expiresIn: this.jwtConfiguration.accesTokenTtl,
       },
     );
+    console.log('retornado en auth service:', {
+      //payload
+      sub: user.id,
+      id: user.id,
+      email: user.email,
+      is_premium: user.is_premium,
+      rol: user.rol,
+    });
     return { token };
   }
 }

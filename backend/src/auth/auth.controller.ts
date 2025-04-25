@@ -2,13 +2,14 @@
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create.user.dto';
 import { UserResponseDto } from '../user/dto/response.user.dto';
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { LoginUserDto } from '../user/dto/login.user.dto';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
 import { UserService } from 'src/user/user.service';
+import { AccesTokenGuard } from './guards/acces-token.guards.ts/acces-token.guards.ts.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -35,18 +36,8 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
   @Get('me')
+  @UseGuards(AccesTokenGuard) // esto después de que se implemente global se borra
   async getMe(@Req() request: Request) {
-    /*{
-      sub: '83062135-c40c-4c65-9890-79ff64bc9ae2',
-      id: '83062135-c40c-4c65-9890-79ff64bc9ae2',
-      email: 'gonzalo@example.com',
-      is_premium: false,
-      rol: 'user',
-      iat: 1745587147,
-      exp: 1745590747,
-      aud: 'localhost:3000',
-      iss: 'localhost:3000'
-    }*/
     try {
       const userPayload = request[REQUEST_USER_KEY];
       if (!userPayload) {
