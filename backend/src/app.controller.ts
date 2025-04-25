@@ -10,6 +10,7 @@ export class AppController {
   getHello(): string {
     console.log("Esta es la rama gonzalo-prueba");
     console.log("Otra prueba de gonzalo")
+    console.log("Nuevo log para dev-prueba")
     return this.appService.getHello();
 
   }
