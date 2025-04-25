@@ -19,6 +19,8 @@ export class AuthenticationGuard implements CanActivate {
     private readonly reflector: Reflector,
     @Inject(AccesTokenGuard) //s
     private readonly accessTokenGuard: AccesTokenGuard,
+    @InjectCache() // 👈 Inyectar Redis
+    private cacheManager: Cache,
   ) {}
 
   // Set the default Auth Type
