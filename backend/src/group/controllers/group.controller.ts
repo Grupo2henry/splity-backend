@@ -19,7 +19,7 @@ import {
   //import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   import { User } from '../../user/entities/user.entity'; //Asegúrate de que la ruta sea correcta
   
-  @Controller('groups')
+  @Controller('group')
   export class GroupController {
     constructor(private readonly groupService: GroupService) {}
   

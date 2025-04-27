@@ -7,7 +7,7 @@ export class CreateGroupMembershipDto {
   status: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   userId: string; // Ajusta a string si los IDs de usuario son UUIDs
 
   @IsNotEmpty()

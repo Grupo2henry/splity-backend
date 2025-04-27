@@ -9,16 +9,16 @@ export class GroupService {
   constructor(private readonly groupRepository: GroupRepository) {}
 
   async findOne(id: number) {
-    return this.groupRepository.findOne(id);
+    return await this.groupRepository.findOne(id);
   }
 
   async findAll() {
     console.log('Estoy en group.service')
-    return this.groupRepository.findAll();
+    return await this.groupRepository.findAll();
   }
 
   async create(createGroupDto: CreateGroupDto, createdBy: any) {
-    return this.groupRepository.create(createGroupDto, createdBy);
+    return await this.groupRepository.create(createGroupDto, createdBy);
   }
 
   async update(id: number, updateGroupDto: UpdateGroupDto) {

@@ -4,12 +4,13 @@ import {
     Get,
     Post,
     Body,
-    Patch,
+    Put,
     Param,
     Delete,
     ParseIntPipe,
     HttpStatus,
     HttpCode,
+    NotFoundException
   } from '@nestjs/common';
   import { GroupMembershipService } from '../services/group-membership.service';
   import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
@@ -17,7 +18,7 @@ import {
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
   
-  @Controller('group/membership')
+  @Controller('group-membership')
   export class GroupMembershipController {
     constructor(
         private readonly groupMembershipService: GroupMembershipService,
@@ -26,25 +27,48 @@ import {
     ) {}
   
     @Post()
-async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
-  const user = await this.userService.findOne(createGroupMembershipDto.userId);
-  if (!user) {
-    // Manejar el error si el usuario no existe
-    // Puedes lanzar una excepción HttpNotFoundException
-    throw new Error('Usuario no encontrado'); // Ejemplo simple
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
+    const user = await this.userService.findOne(createGroupMembershipDto.userId);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    const group = await this.groupService.findOne(createGroupMembershipDto.groupId);
+    if (!group) {
+      throw new NotFoundException('Grupo no encontrado');
+    }
+
+    const existingMembership = await this.groupMembershipService.findByUserAndGroup(
+      createGroupMembershipDto.userId,
+      createGroupMembershipDto.groupId,
+    );
+
+    if (existingMembership) {
+      throw new Error('El usuario ya es miembro del grupo.');
+    }
+
+    const membership = await this.groupMembershipService.create(createGroupMembershipDto, user, group);
+
+    return {
+      message: 'Membresía creada exitosamente',
+      membership,
+    };
   }
-  }
+
   @Get()
   async findAll() {
+    console.log("Estoy en group/membership")
     return this.groupMembershipService.findAll();
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
+    console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
