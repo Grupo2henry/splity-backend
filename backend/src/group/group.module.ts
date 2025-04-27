@@ -9,7 +9,7 @@ import { GroupMembershipService } from './services/group-membership.service';
 import { GroupMembershipRepository } from './repositories/group-membership.repository';
 import { Group } from './entities/group.entity';
 import { GroupMembership } from './entities/group-membership.entity';
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
