@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
-import { Group } from '../../group/entities/group.entity';
+import { Group } from './group.entity';
 
-@Entity()
+@Entity('group_membership')
 export class GroupMembership {
   @PrimaryGeneratedColumn()
   id: number;

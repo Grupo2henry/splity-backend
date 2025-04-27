@@ -1,17 +1,22 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Expense } from './expense.entity';
+import { User } from '../../user/entities/user.entity';
 
-@Entity()
+@Entity('expense_split')
 export class ExpenseSplit {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  expense_id: number;
+  @ManyToOne(() => Expense, (expense) => expense.splits)
+  expense: Expense;
 
-  @Column()
-  user_id: number;
+  @ManyToOne(() => User, (user) => user.splits)
+  user: User;
 
-  @Column('decimal')
+  @Column({ default: true })
+  active: boolean;
+
+  @Column('float')
   amount_owed: number;
 }

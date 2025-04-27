@@ -8,14 +8,13 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
+//import { APP_GUARD } from '@nestjs/core';
 import { AccesTokenGuard } from './auth/guards/acces-token.guards.ts/acces-token.guards.ts.guard';
-import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
+//import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { SeedModule } from './seed/seed.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
-import { GroupMembershipModule } from './group-membership/group-membership.module';
 
 @Module({
   imports: [
@@ -29,13 +28,12 @@ import { GroupMembershipModule } from './group-membership/group-membership.modul
     JwtModule.registerAsync(jwtConfig.asProvider()),
     SeedModule,
     GroupModule,
-    GroupMembershipModule,
     SubscriptionModule,
     ExpensesModule,
   ],
   providers: [
     AppService,
-    { provide: APP_GUARD, useClass: AuthenticationGuard },
+    //{ provide: APP_GUARD, useClass: AuthenticationGuard },
     AccesTokenGuard,
   ],
   controllers: [AppController],
