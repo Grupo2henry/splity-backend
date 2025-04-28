@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Request, Response, NextFunction } from 'express';
 
 export function loggerGlobal(req: Request, res: Response, next: NextFunction) {

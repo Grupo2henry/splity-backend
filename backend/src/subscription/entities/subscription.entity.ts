@@ -1,23 +1,27 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Subscription {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  user_id: number;
+  @ManyToOne(() => User, (user) => user.subscriptions)
+  user: User;
 
   @Column()
-  status: 'active' | 'cancelled';
+  status: string;
+
+  @Column({ default: true })
+  active: boolean;
 
   @Column()
-  tier: 'free' | 'premium';
+  tier: string;
 
-  @CreateDateColumn()
+  @Column()
   started_at: Date;
 
-  @Column({ nullable: true })
+  @Column()
   ends_at: Date;
 }

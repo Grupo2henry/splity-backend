@@ -20,8 +20,8 @@ import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
-import { UserService } from 'src/user/user.service';
-import { AccesTokenGuard } from './guards/acces-token.guards.ts/acces-token.guards.ts.guard';
+import { UserService } from '../user/user.service';
+import { AccesTokenGuard } from './guards/acces-token.guard/acces-tokene.guard';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
@@ -67,15 +67,15 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(AccesTokenGuard)
-  async logout(@Req() request: Request) {
-    const token = this.extractTokenFromHeader(request);
+  logout(/*@Req() request: Request*/) {
+    // const token = this.extractTokenFromHeader(request);
 
-    if (!token) {
-      throw new UnauthorizedException('Token no encontrado');
-    }
+    // if (!token) {
+    //   throw new UnauthorizedException('Token no encontrado');
+    // }
 
-    // Guarda el token en caché (en memoria)
-    await this.cacheManager.set(`blacklist:${token}`, 'revoked');
+    // // Guarda el token en caché (en memoria)
+    // await this.cacheManager.set(`blacklist:${token}`, 'revoked');
 
     return { message: 'Logged out successfully' };
   }

@@ -1,10 +1,11 @@
-import { Rol } from 'src/auth/enums/role.enum';
-import { Expense } from 'src/entities/expense.entity';
-import { ExpenseSplit } from 'src/entities/expense.split.entity';
-import { Group } from 'src/group/entities/group.entity';
-import { GroupMembership } from 'src/group-membership/entities/group-membership.entity';
-import { Payment } from 'src/entities/payments.entity';
-import { Subscription } from 'src/entities/subscription.entity';
+/* eslint-disable prettier/prettier */
+import { Rol } from '../../auth/enums/role.enum';
+import { Expense } from '../../entities/expense.entity';
+import { ExpenseSplit } from '../../entities/expense-split.entity';
+import { Group } from '../../group/entities/group.entity';
+import { GroupMembership } from '../../group/entities/group-membership.entity';
+import { Payment } from '../../entities/payments.entity';
+import { Subscription } from '../../entities/subscription.entity';
 import {
   Column,
   Entity,
@@ -50,7 +51,7 @@ export class User {
   @OneToMany(() => GroupMembership, (gm) => gm.user)
   memberships: GroupMembership[];
 
-  @OneToMany(() => Expense, (expense) => expense.pagado_por)
+  @OneToMany(() => Expense, (expense) => expense.paid_by)
   expensesPaid: Expense[];
 
   @OneToMany(() => ExpenseSplit, (split) => split.user)

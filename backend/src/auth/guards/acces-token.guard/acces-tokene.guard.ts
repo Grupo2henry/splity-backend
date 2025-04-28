@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -12,7 +13,7 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
-import jwtConfig from 'src/config/jwt.config';
+import jwtConfig from '../../../config/jwt.config';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../../constants/auth.constants';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';

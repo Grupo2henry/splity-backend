@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
-import { GroupMembershipRepository } from './group-membership.repository';
-import { CreateGroupMembershipDto } from './dto/create-group-membership.dto';
-import { UpdateGroupMembershipDto } from './dto/update-group-membership.dto';
-import { User } from '../user/entities/user.entity';
-import { Group } from '../group/entities/group.entity';
+import { GroupMembershipRepository } from '../repositories/group-membership.repository';
+import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
+import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+import { User } from '../../user/entities/user.entity';
+import { Group } from '../entities/group.entity';
 
 @Injectable()
 export class GroupMembershipService {
