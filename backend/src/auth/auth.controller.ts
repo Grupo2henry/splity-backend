@@ -9,7 +9,7 @@ import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { AccesTokenGuard } from './guards/acces-token.guards.ts/acces-token.guards.ts.guard';
 
 @Controller('auth')

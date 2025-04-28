@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { SetMetadata } from '@nestjs/common';
 import { Rol } from '../enums/role.enum';
 import { REQUIRED_ROLES_KEY } from '../constants/auth.constants';

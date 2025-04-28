@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-// src/seed/data/subscriptions.seed.ts
+// ../seed/data/subscriptions.seed.ts
 
 import { usersSeed } from './users.seed';
 

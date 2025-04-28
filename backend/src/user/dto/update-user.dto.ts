@@ -3,7 +3,7 @@
 // import { CreateUsuarioDto } from './create-usuario.dto';
 
 // export class UpdateUsuarioDto extends PartialType(CreateUsuarioDto) {}
-// src/user/dto/update-user.dto.ts
+// ../../user/dto/update-user.dto.ts
 
 import {
   IsEmail,
@@ -13,7 +13,7 @@ import {
   IsUrl,
   MinLength,
 } from 'class-validator';
-import { Rol } from 'src/auth/enums/role.enum';
+import { Rol } from '../../auth/enums/role.enum';
 
 export class UpdateUserDto {
   @IsOptional()

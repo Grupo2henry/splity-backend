@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 // import { SharedModule } from '../shared.module.jwt/jwt.service';
 import { UserModule } from '../user/user.module';
-import jwtConfig from 'src/config/jwt.config'; // trae las configuraciones de esta carpeta
+import jwtConfig from '../config/jwt.config'; // trae las configuraciones de esta carpeta
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 @Module({

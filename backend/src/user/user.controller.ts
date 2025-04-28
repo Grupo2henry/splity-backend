@@ -8,12 +8,12 @@ import {
   Put,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-// import { Roles } from 'src/auth/decorators/rol.decorator';
-// import { Rol } from 'src/auth/enums/role.enum';
-// import { RolesGuard } from 'src/auth/guards/rol.guard';
-import { UUIDValidationPipe } from 'src/pipes/uuid.validation';
+// import { Roles } from '../auth/decorators/rol.decorator';
+// import { Rol } from '../auth/enums/role.enum';
+// import { RolesGuard } from '../auth/guards/rol.guard';
+import { UUIDValidationPipe } from '../pipes/uuid.validation';
 import { UpdateUserDto } from './dto/update-user.dto';
-// import { RolesGuard } from 'src/auth/guards/rol.guard';
+// import { RolesGuard } from '../auth/guards/rol.guard';
 
 @Controller('user')
 export class UsuariosController {
