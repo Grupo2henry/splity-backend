@@ -2,7 +2,7 @@
 // src/group/controllers/group-membership.controller.spec.ts
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { GroupMembershipController } from './group-membership.controller';
+import { GroupMembershipController } from '../controllers/group-membership.controller';
 import { GroupMembershipService } from '../services/group-membership.service';
 import { UserService } from '../../user/user.service';
 import { GroupService } from '../services/group.service';
