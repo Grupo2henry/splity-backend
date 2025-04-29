@@ -18,10 +18,16 @@ import { Role } from '../auth/enums/role.enum';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { UUIDValidationPipe } from '../pipes/uuid.validation';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response.user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 @Controller('users')
+@ApiBearerAuth()
 @ApiTags('Users')
 export class UsuariosController {
   constructor(private readonly userService: UserService) {}

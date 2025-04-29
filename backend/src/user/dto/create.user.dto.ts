@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
@@ -15,6 +14,7 @@ export class CreateUserDto {
    * El nombre del usuario.
    * @example "Juan Pérez"
    */
+  @ApiProperty({ example: 'Juan Pérez' })
   @MinLength(3)
   @MaxLength(80)
   @IsNotEmpty()
@@ -25,16 +25,16 @@ export class CreateUserDto {
    * El correo electrónico del usuario.
    * @example "juan.perez@email.com"
    */
+  @ApiProperty({ example: 'juan.perez@email.com' })
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
   /**
    * La contraseña del usuario.
-   * Debe tener entre 8 y 15 caracteres, al menos una letra mayúscula,
-   * una letra minúscula, un número y un carácter especial (!@#$%^&*).
    * @example "Password1@"
    */
+  @ApiProperty({ example: 'Password1@' })
   @IsNotEmpty()
   @IsString()
   @Length(8, 15, {
@@ -44,24 +44,22 @@ export class CreateUserDto {
     message:
       'La contraseña debe incluir al menos una letra minúscula, una letra mayúscula, un número y un carácter especial (!@#$%^&*).',
   })
-  @ApiProperty({
-    example: 'Password1@',
-    description: 'Contraseña del usuario',
-  })
   password: string;
 
   /**
-   * La confirmación de la contraseña del usuario.
-   * @example "mySecretPassword123!"
+   * La confirmación de la contraseña.
+   * @example "Password1@"
    */
+  @ApiProperty({ example: 'Password1@' })
   @IsNotEmpty()
   @IsString()
   confirm_password: string;
 
   /**
-   * El nombre de usuario del usuario.
+   * El nombre de usuario.
    * @example "juanperez123"
    */
+  @ApiProperty({ example: 'juanperez123' })
   @IsNotEmpty()
   @IsString()
   username: string;

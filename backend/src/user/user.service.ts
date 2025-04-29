@@ -20,6 +20,7 @@ export class UserService {
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }
+
   async findOne(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
@@ -27,12 +28,14 @@ export class UserService {
     }
     return user;
   }
+
   async desactivateUser(id: string) {
     const user = await this.findOne(id);
     user.active = false;
     await this.userRepository.save(user);
     return new UserResponseDto(user);
   }
+
   async modifiedUser(
     id: string,
     user: UpdateUserDto,

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
@@ -66,6 +67,9 @@ export class AuthService {
     // is_premium: user.is_premium,
     // };
     // console.log('payload', userPayload);
+    if (!user.active) {
+      throw new UnauthorizedException('User is not active');
+    }
     const token = await this.jwtService.signAsync(
       {
         //payload
@@ -80,17 +84,18 @@ export class AuthService {
         audience: this.jwtConfiguration.audience,
         secret: this.jwtConfiguration.secret,
         issuer: this.jwtConfiguration.issuer,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expiresIn: this.jwtConfiguration.accessTokenTtl,
       },
     );
-    console.log('retornado en auth service:', {
-      //payload
-      sub: user.id,
-      id: user.id,
-      email: user.email,
-      is_premium: user.is_premium,
-      rol: user.rol,
-    });
+    // console.log('retornado en auth service:', {
+    //   //payload
+    //   sub: user.id,
+    //   id: user.id,
+    //   email: user.email,
+    //   is_premium: user.is_premium,
+    //   rol: user.rol,
+    // });
     return { token };
   }
 }
