@@ -18,7 +18,7 @@ async function bootstrap() {
     );
 
     app.enableCors({
-      origin: [client, 'http://localhost:5173'], // Reemplaza con la URL del cliente
+      origin: [client, 'http://localhost:5173', 'http://localhost:3000/'], // Reemplaza con la URL del cliente
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true, // Si necesitas enviar cookies o encabezados de autenticación
@@ -31,8 +31,8 @@ async function bootstrap() {
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
-    await app.listen(3000);
-    console.log(` Servidor corriendo en http://localhost:3000`);
+    await app.listen(4000);
+    console.log(` Servidor corriendo en http://localhost:4000`);
   } catch (error) {
     console.error(' Error al iniciar el servidor:', error);
   }
