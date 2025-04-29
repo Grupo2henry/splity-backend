@@ -27,6 +27,7 @@ async function bootstrap() {
     const config = new DocumentBuilder()
       .setTitle('Splity')
       .setVersion('1.0')
+      .addBearerAuth() // Add Bearer Auth for Swagger
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);

@@ -21,7 +21,9 @@ import {
   import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
 import { RequestWithUser } from 'src/auth/types/request-with-user';
-  
+import { ApiBearerAuth } from '@nestjs/swagger';
+
+@ApiBearerAuth()
   @Controller()
   export class GroupController {
     constructor(private readonly groupService: GroupService) {}
@@ -63,4 +65,3 @@ import { RequestWithUser } from 'src/auth/types/request-with-user';
       await this.groupService.remove(id);
     }
   }
-  
