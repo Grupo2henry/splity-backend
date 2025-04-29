@@ -12,7 +12,7 @@ export const dbConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   url: process.env.DATABASE_PUBLIC_URL,
   autoLoadEntities: true,
-  dropSchema: true,
+  dropSchema: false, //Poner en true llegado el caso
   synchronize: true,
   logging: false,
   ssl: false, // ponelo en true para prod con SSL

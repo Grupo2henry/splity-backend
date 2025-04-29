@@ -36,6 +36,10 @@ export class SeedService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
+    if (process.env.ENABLE_SEED !== 'true') {
+      console.log('[SeedService] Precarga deshabilitada por configuración.');
+      return;
+    }
     console.log('[SeedService] Ejecutando onModuleInit...');
     const userCount = await this.userRepo.count();
     if (userCount > 0) {
