@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -13,7 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [AuthService],
   controllers: [AuthController],
   imports: [
-    // SharedModule,
     UserModule,
     TypeOrmModule.forFeature([User]),
     ConfigModule.forFeature(jwtConfig),

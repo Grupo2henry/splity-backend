@@ -31,7 +31,7 @@ export class RolesGuard implements CanActivate {
     }
     // 2. Obtener usuario de la request (inyectado por AuthGuard)
     const request = context.switchToHttp().getRequest();
-    console.log(request[REQUEST_USER_KEY]);
+    // console.log(request[REQUEST_USER_KEY]);
     const user = request[REQUEST_USER_KEY];
     if (!user) {
       throw new ForbiddenException('User not authenticated');

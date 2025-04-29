@@ -7,6 +7,7 @@ import {
   MinLength,
   IsUUID,
   IsDate,
+  IsBoolean,
 } from 'class-validator';
 
 export class UserResponseDto {
@@ -27,11 +28,15 @@ export class UserResponseDto {
   @IsDate()
   created_at: Date;
 
+  @IsBoolean()
+  active: boolean;
+
   constructor(partial: Partial<UserResponseDto>) {
     this.id = partial.id ?? 'N/A';
     this.name = partial.name ?? 'Desconocido';
     this.email = partial.email ?? 'sin-email@example.com';
     this.created_at = partial.created_at ?? new Date();
+    this.active = partial.active ?? true;
   }
 }
 

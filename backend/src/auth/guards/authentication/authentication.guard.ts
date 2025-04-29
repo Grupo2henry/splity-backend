@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   CanActivate,
   ExecutionContext,
@@ -6,19 +7,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants';
-import { AccesTokenGuard } from '../acces-token.guards.ts/acces-token.guards.ts.guard';
+import { AccesTokenGuard } from '../acces-token.guard/acces-token.guard';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { Reflector } from '@nestjs/core';
-import { Cache } from 'cache-manager'; // Faltaba importar Cache
-
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject(AccesTokenGuard) // Corregido: paréntesis de cierre
     private readonly accessTokenGuard: AccesTokenGuard,
-    @Inject('CACHE_MANAGER') // Corregido: debe ser un string o token de inyección
-    private cacheManager: Cache,
   ) {}
 
   // Set the default Auth Type (comentario corregido)
@@ -54,7 +51,7 @@ export class AuthenticationGuard implements CanActivate {
 
     for (const instance of guards) {
       // print each instance (comentario corregido)
-      console.log(instance);
+      // console.log(instance);
       // Decalre a new constant (comentario corregido)
       const canActivate = await Promise.resolve(
         // Here the AccessToken Guard Will be fired and check if user has permissions to access
@@ -66,7 +63,7 @@ export class AuthenticationGuard implements CanActivate {
       });
 
       // Display Can Activate (comentario corregido)
-      console.log(canActivate);
+      // console.log(canActivate);
       if (canActivate) {
         return true;
       }

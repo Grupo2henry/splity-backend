@@ -13,7 +13,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../user/dto/create.user.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginUserDto } from '../user/dto/login.user.dto';
+import { LoginUserDto } from '../user/dto/signin.user.dto';
 import jwtConfig from '../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 

@@ -9,11 +9,9 @@ import {
   IsEmail,
   IsOptional,
   IsString,
-  IsBoolean,
   IsUrl,
   MinLength,
 } from 'class-validator';
-import { Rol } from '../../auth/enums/role.enum';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -36,16 +34,4 @@ export class UpdateUserDto {
   @IsOptional()
   @IsUrl({}, { message: 'La URL de la imagen de perfil no es válida' })
   profile_picture_url?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  is_premium?: boolean;
-
-  @IsOptional()
-  @IsString()
-  rol?: Rol;
-
-  @IsOptional()
-  @IsBoolean()
-  active?: boolean;
 }

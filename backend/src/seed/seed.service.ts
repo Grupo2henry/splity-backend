@@ -1,11 +1,11 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
+import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { Group } from '../group/entities/group.entity';
-import { GroupMembership } from '../group/entities/group-membership.entity'; // Importa desde la ubicación correcta
+import { GroupMembership } from '../group/entities/group-membership.entity';
 import { Expense } from '../entities/expense.entity';
 import { ExpenseSplit } from '../entities/expense-split.entity';
 import { Payment } from '../entities/payments.entity';
@@ -45,15 +45,26 @@ export class SeedService implements OnApplicationBootstrap {
     console.log('[SeedService] Precargando base de datos...');
 
     // 1. Usuarios
-    const users = await this.userRepo.save(usersSeed);
-    console.log('[SeedService] Usuarios cargados.');
+    const usersWithHashedPasswords = await Promise.all(
+      usersSeed.map(async (user) => ({
+        ...user,
+        password: await this.hashPassword(user.password),
+      })),
+    );
+
+    const users = await this.userRepo.save(usersWithHashedPasswords);
+    console.log('[SeedService] Usuarios cargados con contraseñas hasheadas.');
 
     // 2. Grupos
     const savedGroups: Group[] = []; // Array para guardar los grupos creados
     for (const groupSeed of groupsSeed) {
-      const createdByUser = users.find(u => u.email === groupSeed.created_by.email);
+      const createdByUser = users.find(
+        (u) => u.email === groupSeed.created_by.email,
+      );
       if (!createdByUser) {
-        throw new Error(`Usuario no encontrado para el grupo: ${groupSeed.name}`);
+        throw new Error(
+          `Usuario no encontrado para el grupo: ${groupSeed.name}`,
+        );
       }
       const newGroup = this.groupRepo.create({
         ...groupSeed,
@@ -67,8 +78,10 @@ export class SeedService implements OnApplicationBootstrap {
     // 3. Membresías
     const savedMemberships: GroupMembership[] = [];
     for (const membershipSeed of groupMembershipsSeed) {
-      const user = users.find(u => u.email === membershipSeed.user.email);
-      const group = savedGroups.find(g => g.name === membershipSeed.group.name); // Buscar en los grupos guardados
+      const user = users.find((u) => u.email === membershipSeed.user.email);
+      const group = savedGroups.find(
+        (g) => g.name === membershipSeed.group.name,
+      ); // Buscar en los grupos guardados
       if (!user) {
         throw new Error(`Usuario no encontrado para la membresía`);
       }
@@ -86,30 +99,36 @@ export class SeedService implements OnApplicationBootstrap {
     console.log('[SeedService] Membresías cargadas.');
 
     // 4. Gastos
-      const savedExpenses: Expense[] = [];
-      for (const expenseSeed of expensesSeed) {
-        const group = savedGroups.find(g => g.name === expenseSeed.group.name);
-        const paidBy = users.find(u => u.email === expenseSeed.paid_by.email);
-        if (!group) {
-          throw new Error(`Grupo no encontrado para el gasto: ${expenseSeed.description}`);
-        }
-        if (!paidBy) {
-          throw new Error(`Usuario pagador no encontrado para el gasto: ${expenseSeed.description}`);
-        }
-        const newExpense = this.expenseRepo.create({
-          ...expenseSeed,
-          group: group,
-          paid_by: paidBy,
-        });
-        const savedExpense = await this.expenseRepo.save(newExpense);
-        savedExpenses.push(savedExpense);
+    const savedExpenses: Expense[] = [];
+    for (const expenseSeed of expensesSeed) {
+      const group = savedGroups.find((g) => g.name === expenseSeed.group.name);
+      const paidBy = users.find((u) => u.email === expenseSeed.paid_by.email);
+      if (!group) {
+        throw new Error(
+          `Grupo no encontrado para el gasto: ${expenseSeed.description}`,
+        );
       }
-      console.log('[SeedService] Gastos cargados.');
+      if (!paidBy) {
+        throw new Error(
+          `Usuario pagador no encontrado para el gasto: ${expenseSeed.description}`,
+        );
+      }
+      const newExpense = this.expenseRepo.create({
+        ...expenseSeed,
+        group: group,
+        paid_by: paidBy,
+      });
+      const savedExpense = await this.expenseRepo.save(newExpense);
+      savedExpenses.push(savedExpense);
+    }
+    console.log('[SeedService] Gastos cargados.');
 
     // 5. Divisiones
     for (const splitSeed of expenseSplitsSeed) {
-      const expense = savedExpenses.find(e => e.description === splitSeed.expense.description);
-      const user = users.find(u => u.email === splitSeed.user.email);
+      const expense = savedExpenses.find(
+        (e) => e.description === splitSeed.expense.description,
+      );
+      const user = users.find((u) => u.email === splitSeed.user.email);
       if (!expense) {
         throw new Error(`Gasto no encontrado para la división`);
       }
@@ -127,7 +146,7 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 6. Pagos
     for (const paymentSeed of paymentsSeed) {
-      const user = users.find(u => u.email === paymentSeed.user.email);
+      const user = users.find((u) => u.email === paymentSeed.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para el pago`);
       }
@@ -141,7 +160,7 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 7. Subscripciones
     for (const subscriptionSeed of subscriptionsSeed) {
-      const user = users.find(u => u.email === subscriptionSeed.user.email);
+      const user = users.find((u) => u.email === subscriptionSeed.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para la subscripción`);
       }
@@ -154,5 +173,9 @@ export class SeedService implements OnApplicationBootstrap {
     console.log('[SeedService] Subscripciones cargadas.');
 
     console.log('[SeedService] Datos precargados correctamente.');
+  }
+  private async hashPassword(password: string): Promise<string> {
+    const saltRounds = 10;
+    return await bcrypt.hash(password, saltRounds);
   }
 }

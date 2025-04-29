@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prettier/prettier */
 import {
   ConflictException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -10,26 +10,34 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './dto/response.user.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
-  findAll(): Promise<User[]> {
+  async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }
-  async findOne(id: string): Promise<User | null | undefined> {
-    return this.userRepository.findOne({ where: { id } });
+  async findOne(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
+  }
+  async desactivateUser(id: string) {
+    const user = await this.findOne(id);
+    user.active = false;
+    await this.userRepository.save(user);
+    return new UserResponseDto(user);
   }
   async modifiedUser(
     id: string,
     user: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    const userToModify = await this.userRepository.findOne({ where: { id } });
-    if (!userToModify) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-    }
+    const userToModify = await this.findOne(id);
     Object.assign(userToModify, user);
     try {
       const modifiedUser = await this.userRepository.save(userToModify);

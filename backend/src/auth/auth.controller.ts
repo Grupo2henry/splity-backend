@@ -15,26 +15,32 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { LoginUserDto } from '../user/dto/login.user.dto';
+import { LoginUserDto } from '../user/dto/signin.user.dto';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
 import { UserService } from '../user/user.service';
-import { AccesTokenGuard } from './guards/acces-token.guard/acces-tokene.guard';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { AccesTokenGuard } from './guards/acces-token.guard/acces-token.guard';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache,
   ) {}
   @Auth(AuthType.None)
   @Post('signup')
+  @ApiOperation({ summary: 'Registra usuarios en la app' })
+  @ApiCreatedResponse({
+    description: 'Usuario creado exitosamente',
+    type: UserResponseDto,
+  })
   // @UseInterceptors(DateAdderInterceptor)
   async postUsers(@Body() user: CreateUserDto) {
     const newUser = await this.authService.signUpUser(user);
@@ -42,12 +48,26 @@ export class AuthController {
   }
   @Auth(AuthType.None)
   @Post('signin')
+  @ApiOperation({ summary: 'Inicia sesión de usuarios en la app' })
+  @ApiCreatedResponse({
+    description: 'Token creado exitosamente',
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      },
+    },
+  })
   async signIn(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     return this.authService.signUser(email, password);
   }
   @Get('me')
+  @ApiOperation({ summary: 'Obtiene a usuario actual' })
   @UseGuards(AccesTokenGuard) // esto después de que se implemente global se borra
+  @ApiOkResponse({
+    description: 'Usuario actual',
+    type: UserResponseDto,
+  })
   async getMe(@Req() request: Request) {
     try {
       const userPayload = request[REQUEST_USER_KEY];
@@ -66,21 +86,21 @@ export class AuthController {
   }
 
   @Post('logout')
+  @ApiOperation({ summary: 'Deslogea usuario' })
+  @ApiCreatedResponse({
+    description: 'Deslogeado de usuario',
+    schema: {
+      example: {
+        message: 'Logged out successfully',
+      },
+    },
+  })
   @UseGuards(AccesTokenGuard)
-  logout(/*@Req() request: Request*/) {
-    // const token = this.extractTokenFromHeader(request);
-
-    // if (!token) {
-    //   throw new UnauthorizedException('Token no encontrado');
-    // }
-
-    // // Guarda el token en caché (en memoria)
-    // await this.cacheManager.set(`blacklist:${token}`, 'revoked');
-
+  logout(@Req() request: Request) {
     return { message: 'Logged out successfully' };
   }
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [_, token] = request.headers.authorization?.split(' ') ?? [];
-    return token;
-  }
+  // private extractTokenFromHeader(request: Request): string | undefined {
+  //   const [_, token] = request.headers.authorization?.split(' ') ?? [];
+  //   return token;
+  // }
 }
