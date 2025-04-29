@@ -24,11 +24,13 @@ import { REQUEST_USER_KEY } from './constants/auth.constants';
 import { UserService } from '../user/user.service';
 import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
   constructor(

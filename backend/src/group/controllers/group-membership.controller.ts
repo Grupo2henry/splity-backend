@@ -22,7 +22,9 @@ import {
 import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { RequestWithUser } from '../../auth/types/request-with-user';
-  
+import { ApiBearerAuth } from '@nestjs/swagger';
+
+@ApiBearerAuth()
   @Controller()
   export class GroupMembershipController {
     constructor(
