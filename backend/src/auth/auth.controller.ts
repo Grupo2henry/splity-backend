@@ -56,14 +56,15 @@ export class AuthController {
     description: 'Token creado exitosamente',
     schema: {
       example: {
-        Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
       },
     },
   })
 
   async signIn(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
-    return this.authService.signUser(email, password);
+    const { token } = await this.authService.signUser(email, password);
+    return { access_token: token };
   }
 
   @Get('me')
