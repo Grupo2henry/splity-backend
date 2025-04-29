@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   CanActivate,
@@ -6,16 +7,16 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants';
-import { AccesTokenGuard } from '../acces-token.guard/acces-token.guard';
-import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { AUTH_TYPE_KEY } from '../../../auth/constants/auth.constants';
+import { AccessTokenGuard } from '../access-token.guard/access-token.guard';
+import { AuthType } from '../../../auth/enums/auth-type.enum';
 import { Reflector } from '@nestjs/core';
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    @Inject(AccesTokenGuard) // Corregido: paréntesis de cierre
-    private readonly accessTokenGuard: AccesTokenGuard,
+    @Inject(AccessTokenGuard) // Corregido: paréntesis de cierre
+    private readonly accessTokenGuard: AccessTokenGuard,
   ) {}
 
   // Set the default Auth Type (comentario corregido)

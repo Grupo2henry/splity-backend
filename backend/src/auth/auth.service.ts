@@ -80,7 +80,7 @@ export class AuthService {
         audience: this.jwtConfiguration.audience,
         secret: this.jwtConfiguration.secret,
         issuer: this.jwtConfiguration.issuer,
-        expiresIn: this.jwtConfiguration.accesTokenTtl,
+        expiresIn: this.jwtConfiguration.accessTokenTtl,
       },
     );
     console.log('retornado en auth service:', {

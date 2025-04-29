@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -15,7 +16,7 @@ import jwtConfig from '../../../config/jwt.config';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../../constants/auth.constants';
 @Injectable()
-export class AccesTokenGuard implements CanActivate {
+export class AccessTokenGuard implements CanActivate {
   constructor(
     //injecto servicio
     private readonly jwtService: JwtService,
@@ -23,6 +24,7 @@ export class AccesTokenGuard implements CanActivate {
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
   ) {}
+  
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractRequestFromHeader(request);

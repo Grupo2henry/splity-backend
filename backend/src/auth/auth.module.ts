@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -8,6 +9,7 @@ import { UserModule } from '../user/user.module';
 import jwtConfig from '../config/jwt.config'; // trae las configuraciones de esta carpeta
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+
 @Module({
   providers: [AuthService],
   controllers: [AuthController],
@@ -17,6 +19,9 @@ import { JwtModule } from '@nestjs/jwt';
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
   ],
-  exports: [AuthService],
+  exports: [
+    AuthService, 
+    JwtModule
+  ],
 })
 export class AuthModule {}
