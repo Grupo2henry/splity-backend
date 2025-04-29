@@ -16,13 +16,12 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
 // import { GroupMembershipModule } from './group-membership/group-membership.module';
-// import { RedisModule } from './config/redis.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env.development',
-    }), 
+    }),
     TypeOrmModule.forRoot(dbConfig),
     AuthModule,
     ConfigModule.forFeature(jwtConfig),
@@ -32,7 +31,7 @@ import { GroupModule } from './group/group.module';
     SubscriptionModule,
     ExpensesModule,
   ],
-  providers: [ 
+  providers: [
     AppService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     AccessTokenGuard,
