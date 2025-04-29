@@ -22,7 +22,7 @@ import { GroupModule } from './group/group.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env.development',
-    }),
+    }), 
     TypeOrmModule.forRoot(dbConfig),
     AuthModule,
     ConfigModule.forFeature(jwtConfig),
@@ -32,7 +32,7 @@ import { GroupModule } from './group/group.module';
     SubscriptionModule,
     ExpensesModule,
   ],
-  providers: [
+  providers: [ 
     AppService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     AccessTokenGuard,
