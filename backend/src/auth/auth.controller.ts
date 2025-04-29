@@ -35,7 +35,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
   @Auth(AuthType.None)
-  @Post('signup')
+  @Post('register')
   @ApiOperation({ summary: 'Registra usuarios en la app' })
   @ApiCreatedResponse({
     description: 'Usuario creado exitosamente',
@@ -47,13 +47,13 @@ export class AuthController {
     return new UserResponseDto(newUser);
   }
   @Auth(AuthType.None)
-  @Post('signin')
+  @Post('login')
   @ApiOperation({ summary: 'Inicia sesión de usuarios en la app' })
   @ApiCreatedResponse({
     description: 'Token creado exitosamente',
     schema: {
       example: {
-        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
       },
     },
   })
