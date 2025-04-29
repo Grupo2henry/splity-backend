@@ -33,7 +33,7 @@ export class CreateUserDto {
    * La contraseña del usuario.
    * Debe tener entre 8 y 15 caracteres, al menos una letra mayúscula,
    * una letra minúscula, un número y un carácter especial (!@#$%^&*).
-   * @example "mySecretPassword123!"
+   * @example "Password1@"
    */
   @IsNotEmpty()
   @IsString()
@@ -45,7 +45,7 @@ export class CreateUserDto {
       'La contraseña debe incluir al menos una letra minúscula, una letra mayúscula, un número y un carácter especial (!@#$%^&*).',
   })
   @ApiProperty({
-    example: 'mySecretPassword123!',
+    example: 'Password1@',
     description: 'Contraseña del usuario',
   })
   password: string;
