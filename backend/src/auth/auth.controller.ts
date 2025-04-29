@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -21,7 +22,7 @@ import { AuthType } from './enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
 import { UserService } from '../user/user.service';
-import { AccesTokenGuard } from './guards/acces-token.guard/acces-token.guard';
+import { AccesTokenGuard } from './guards/access-token.guard/access-token.guard';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -34,6 +35,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
   ) {}
+  
   @Auth(AuthType.None)
   @Post('register')
   @ApiOperation({ summary: 'Registra usuarios en la app' })
@@ -46,6 +48,7 @@ export class AuthController {
     const newUser = await this.authService.signUpUser(user);
     return new UserResponseDto(newUser);
   }
+
   @Auth(AuthType.None)
   @Post('login')
   @ApiOperation({ summary: 'Inicia sesión de usuarios en la app' })
@@ -57,10 +60,12 @@ export class AuthController {
       },
     },
   })
+
   async signIn(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     return this.authService.signUser(email, password);
   }
+
   @Get('me')
   @ApiOperation({ summary: 'Obtiene a usuario actual' })
   @UseGuards(AccesTokenGuard) // esto después de que se implemente global se borra

@@ -10,13 +10,18 @@ import {
     ParseIntPipe,
     HttpStatus,
     HttpCode,
-    NotFoundException
+    NotFoundException,
+    UseGuards,
+    Req
   } from '@nestjs/common';
   import { GroupMembershipService } from '../services/group-membership.service';
   import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
+import { AccesTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
+import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
+import { RequestWithUser } from 'src/auth/types/request-with-user';
   
   @Controller('group-membership')
   export class GroupMembershipController {
@@ -82,9 +87,17 @@ import {
     await this.groupMembershipService.remove(id);
   }
 
-  @Get('user/:userId')
-  async findGroupsByUser(@Param('userId') userId: string) {
-    return this.groupMembershipService.findGroupsByUser(userId);
+  
+  @Get('user/')
+  @UseGuards(AccesTokenGuard)
+  
+  async findGroupsByUser(@Req() request: RequestWithUser) {
+    
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
+    }
+    return this.groupMembershipService.findGroupsByUser(user.id);
   }
 
   @Get('group/:groupId/members')

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +9,7 @@ import { AppController } from './app.controller';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
-import { AccesTokenGuard } from './auth/guards/acces-token.guard/acces-token.guard';
+import { AccesTokenGuard } from './auth/guards/access-token.guard/access-token.guard';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { SeedModule } from './seed/seed.module';
 import { SubscriptionModule } from './subscription/subscription.module';

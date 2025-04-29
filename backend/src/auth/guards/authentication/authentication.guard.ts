@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   CanActivate,
@@ -7,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants';
-import { AccesTokenGuard } from '../acces-token.guard/acces-token.guard';
+import { AccesTokenGuard } from '../access-token.guard/access-token.guard';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { Reflector } from '@nestjs/core';
 @Injectable()

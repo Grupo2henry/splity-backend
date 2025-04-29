@@ -41,6 +41,9 @@ import {
     async findOne(@Param('id', ParseIntPipe) id: number) {
       return this.groupService.findOne(id);
     }
+
+    @Get('group/user')
+    
   
     @Patch(':id')
     async update(
