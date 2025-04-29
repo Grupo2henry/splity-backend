@@ -22,7 +22,7 @@ import { AuthType } from './enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
 import { UserService } from '../user/user.service';
-import { AccesTokenGuard } from './guards/access-token.guard/access-token.guard';
+import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -35,7 +35,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
   ) {}
-  
+
   @Auth(AuthType.None)
   @Post('register')
   @ApiOperation({ summary: 'Registra usuarios en la app' })
@@ -68,7 +68,7 @@ export class AuthController {
 
   @Get('me')
   @ApiOperation({ summary: 'Obtiene a usuario actual' })
-  @UseGuards(AccesTokenGuard) // esto después de que se implemente global se borra
+  @UseGuards(AccessTokenGuard) // esto después de que se implemente global se borra
   @ApiOkResponse({
     description: 'Usuario actual',
     type: UserResponseDto,
@@ -100,7 +100,7 @@ export class AuthController {
       },
     },
   })
-  @UseGuards(AccesTokenGuard)
+  @UseGuards(AccessTokenGuard)
   logout(@Req() request: Request) {
     return { message: 'Logged out successfully' };
   }

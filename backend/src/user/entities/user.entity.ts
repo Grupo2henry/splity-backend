@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Rol } from '../../auth/enums/role.enum';
+import { Role } from '../../auth/enums/role.enum';
 import { Expense } from '../../entities/expense.entity';
 import { ExpenseSplit } from '../../entities/expense-split.entity';
 import { Group } from '../../group/entities/group.entity';
@@ -37,7 +37,7 @@ export class User {
   @Column({ default: false })
   is_premium: boolean;
 
-  @Column({ default: Rol.User })
+  @Column({ default: Role.User })
   rol: string;
 
   @Column({ default: true })

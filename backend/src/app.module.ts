@@ -9,7 +9,7 @@ import { AppController } from './app.controller';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
-import { AccesTokenGuard } from './auth/guards/access-token.guard/access-token.guard';
+import { AccessTokenGuard } from './auth/guards/access-token.guard/access-token.guard';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { SeedModule } from './seed/seed.module';
 import { SubscriptionModule } from './subscription/subscription.module';
@@ -35,7 +35,7 @@ import { GroupModule } from './group/group.module';
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
-    AccesTokenGuard,
+    AccessTokenGuard,
   ],
   controllers: [AppController],
 })

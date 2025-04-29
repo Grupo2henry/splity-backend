@@ -16,7 +16,7 @@ import jwtConfig from '../../../config/jwt.config';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../../constants/auth.constants';
 @Injectable()
-export class AccesTokenGuard implements CanActivate {
+export class AccessTokenGuard implements CanActivate {
   constructor(
     //injecto servicio
     private readonly jwtService: JwtService,

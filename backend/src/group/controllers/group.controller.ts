@@ -11,41 +11,45 @@ import {
     HttpStatus,
     HttpCode,
     UseGuards,
-    Request,
+    Req,
   } from '@nestjs/common';
   import { GroupService } from '../services/group.service';
   import { CreateGroupDto } from '../dto/create-group.dto';
   import { UpdateGroupDto } from '../dto/update-group.dto';
   //import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   import { User } from '../../user/entities/user.entity'; //Asegúrate de que la ruta sea correcta
+  import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
+import { RequestWithUser } from 'src/auth/types/request-with-user';
   
-  @Controller('group')
+  @Controller()
   export class GroupController {
     constructor(private readonly groupService: GroupService) {}
   
     //@UseGuards(JwtAuthGuard) // Protege la ruta para que solo usuarios autenticados puedan crear grupos
-    @Post()
-    async create(@Body() createGroupDto: CreateGroupDto, @Request() req: any) {
+    @UseGuards(AccessTokenGuard)
+    @Post('groups')
+    async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser) {
       // El guard JwtAuthGuard añade el usuario autenticado al objeto Request.
-      const user: User = req.user;
+      const user = request[REQUEST_USER_KEY];
+          if (!user) {
+            throw new Error('User not found in request.');
+          }
       return this.groupService.create(createGroupDto, user);
     }
   
-    @Get()
+    @Get('groups')
     async findAll() {
       console.log('Estoy en group.controller')
       return this.groupService.findAll();
     }
   
-    @Get(':id')
+    @Get('groups/:id')
     async findOne(@Param('id', ParseIntPipe) id: number) {
       return this.groupService.findOne(id);
-    }
-
-    @Get('group/user')
-    
+    }    
   
-    @Patch(':id')
+    @Patch('groups/:id')
     async update(
       @Param('id', ParseIntPipe) id: number,
       @Body() updateGroupDto: UpdateGroupDto,
@@ -53,7 +57,7 @@ import {
       return this.groupService.update(id, updateGroupDto);
     }
   
-    @Delete(':id')
+    @Delete('groups/:id')
     @HttpCode(HttpStatus.NO_CONTENT) // Establece el código de estado para una eliminación exitosa sin contenido
     async remove(@Param('id', ParseIntPipe) id: number) {
       await this.groupService.remove(id);

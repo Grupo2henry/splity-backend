@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -12,14 +13,14 @@ import {
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
-import { Roles } from '../auth/decorators/rol.decorator';
-import { Rol } from '../auth/enums/role.enum';
-import { RolesGuard } from '../auth/guards/rol.guard';
+import { Roles } from '../auth/decorators/role.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { RolesGuard } from '../auth/guards/role.guard';
 import { UUIDValidationPipe } from '../pipes/uuid.validation';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response.user.dto';
-import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
+import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 @Controller('users')
 @ApiTags('Users')
 export class UsuariosController {
@@ -27,7 +28,7 @@ export class UsuariosController {
 
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
-  @Roles(Rol.Admin) // inyecta rol a la metadata
+  @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get()
   @ApiOperation({
@@ -71,7 +72,7 @@ export class UsuariosController {
       return { message: 'Error interno del servidor' };
     }
   }
-  @Roles(Rol.Admin) // inyecta rol a la metadata
+  @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('admin/:id')
   @ApiOperation({

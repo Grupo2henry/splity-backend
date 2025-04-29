@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Request } from 'express';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import { REQUEST_USER_KEY } from '../constants/auth.constants';
 
 export interface RequestWithUser extends Request {

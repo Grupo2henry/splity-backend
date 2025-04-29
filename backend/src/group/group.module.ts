@@ -10,6 +10,10 @@ import { GroupMembershipRepository } from './repositories/group-membership.repos
 import { Group } from './entities/group.entity';
 import { GroupMembership } from './entities/group-membership.entity';
 import { UserModule } from '../user/user.module';
+import { AuthModule } from '../auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import jwtConfig from 'src/config/jwt.config';
 
 @Module({
   imports: [
@@ -17,7 +21,10 @@ import { UserModule } from '../user/user.module';
       Group,
       GroupMembership
     ]),
-  UserModule
+  UserModule,
+  AuthModule,
+  JwtModule,
+  ConfigModule.forFeature(jwtConfig)
   ],
   controllers: [
     GroupController,

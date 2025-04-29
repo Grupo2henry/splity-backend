@@ -19,11 +19,11 @@ import {
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
-import { AccesTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
-import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
-import { RequestWithUser } from 'src/auth/types/request-with-user';
+import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
+import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
+import { RequestWithUser } from '../../auth/types/request-with-user';
   
-  @Controller('group-membership')
+  @Controller()
   export class GroupMembershipController {
     constructor(
         private readonly groupMembershipService: GroupMembershipService,
@@ -31,7 +31,7 @@ import { RequestWithUser } from 'src/auth/types/request-with-user';
         private readonly groupService: GroupService,
     ) {}
   
-    @Post()
+    @Post('memberships')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
     const user = await this.userService.findOne(createGroupMembershipDto.userId);
@@ -61,19 +61,19 @@ import { RequestWithUser } from 'src/auth/types/request-with-user';
     };
   }
 
-  @Get()
+  @Get('memberships')
   async findAll() {
     console.log("Estoy en group/membership")
     return this.groupMembershipService.findAll();
   }
 
-  @Get(':id')
+  @Get('memberships/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
 
-  @Put(':id')
+  @Put('memberships/:id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
@@ -81,18 +81,18 @@ import { RequestWithUser } from 'src/auth/types/request-with-user';
     return this.groupMembershipService.update(id, updateGroupMembershipDto);
   }
 
-  @Delete(':id')
+  @Delete('memberships/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupMembershipService.remove(id);
   }
 
   
-  @Get('user/')
-  @UseGuards(AccesTokenGuard)
+  @Get('users/groups')
+  @UseGuards(AccessTokenGuard)
   
   async findGroupsByUser(@Req() request: RequestWithUser) {
-    
+    console.log("Estoy en membership, pase el Guard.")
     const user = request[REQUEST_USER_KEY];
     if (!user) {
       throw new Error('User not found in request.');
@@ -100,12 +100,12 @@ import { RequestWithUser } from 'src/auth/types/request-with-user';
     return this.groupMembershipService.findGroupsByUser(user.id);
   }
 
-  @Get('group/:groupId/members')
+  @Get('groups/:groupId/members')
   async findMembersByGroup(@Param('groupId', ParseIntPipe) groupId: number) {
     return this.groupMembershipService.findMembersByGroup(groupId);
   }
 
-  @Get('user/:userId/group/:groupId')
+  @Get('groups/:groupId/members/:userId')
   async findByUserAndGroup(
     @Param('userId') userId: string,
     @Param('groupId', ParseIntPipe) groupId: number,

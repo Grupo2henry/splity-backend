@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { Rol } from '../enums/role.enum';
+import { Role } from '../enums/role.enum';
 import {
   REQUEST_USER_KEY,
   REQUIRED_ROLES_KEY,
@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<Rol[]>(
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(
       REQUIRED_ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
@@ -38,11 +38,11 @@ export class RolesGuard implements CanActivate {
     }
 
     const hasRequiredRole = requiredRoles.some((role) =>
-      user?.rol?.includes(role),
+      user?.role?.includes(role),
     );
     if (!hasRequiredRole) {
       throw new ForbiddenException(
-        `Required roles: ${requiredRoles.join(', ')}. Your roles: ${request[REQUEST_USER_KEY].rol}`,
+        `Required roles: ${requiredRoles.join(', ')}. Your roles: ${request[REQUEST_USER_KEY].role}`,
       );
     }
     return true;
