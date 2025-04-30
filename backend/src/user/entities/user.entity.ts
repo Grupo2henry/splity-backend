@@ -28,8 +28,11 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true, type: 'varchar', length: 96 })
+  password?: string;
+
+  @Column({ nullable: true, type: 'varchar' })
+  googleId?: string;
 
   @Column({ nullable: true })
   profile_picture_url: string;
