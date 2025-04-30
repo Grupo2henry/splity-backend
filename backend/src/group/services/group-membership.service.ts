@@ -5,6 +5,7 @@ import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
 import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
 import { User } from '../../user/entities/user.entity';
 import { Group } from '../entities/group.entity';
+import { GroupRole } from '../enums/group-role.enum';
 
 @Injectable()
 export class GroupMembershipService {
@@ -21,6 +22,16 @@ export class GroupMembershipService {
   }
 
   async create(createGroupMembershipDto: CreateGroupMembershipDto, user: User, group: Group) {
+    if (createGroupMembershipDto.role === GroupRole.ADMIN) {
+      const existingAdmin = await this.groupMembershipRepository.findByGroupAndRole(
+        group.id,
+        GroupRole.ADMIN,
+      );
+  
+      if (existingAdmin) {
+        throw new Error('El grupo ya tiene un administrador');
+      }
+    }
     return this.groupMembershipRepository.create(createGroupMembershipDto, user, group);
   }
 

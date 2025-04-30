@@ -7,6 +7,7 @@ import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
 import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
 import { User } from '../../user/entities/user.entity';
 import { Group } from '../entities/group.entity';
+import { GroupRole } from '../enums/group-role.enum';
 
 @Injectable()
 export class GroupMembershipRepository {
@@ -72,6 +73,15 @@ export class GroupMembershipRepository {
     return this.groupMembershipRepository.find({
       where: { user: { id: userId } },
       relations: ['group'],
+    });
+  }
+  
+  async findByGroupAndRole(groupId: number, role: GroupRole) {
+    return this.groupMembershipRepository.findOne({
+      where: {
+        group: { id: groupId },
+        role: role,
+      },
     });
   }
 }

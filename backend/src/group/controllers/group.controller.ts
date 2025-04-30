@@ -12,6 +12,7 @@ import {
   Param,
   Patch,
   Delete,
+  Req
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,13 +25,13 @@ import { GroupMembershipService } from '../services/group-membership.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
 import { UserService } from 'src/user/user.service';
+import { Group } from '../entities/group.entity';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
-import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
-import { GroupMembership } from '../entities/group-membership.entity';
-import { GroupRole } from '../enums/group-role.enum';
+import { RequestWithUser } from 'src/auth/types/request-with-user';
+import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 
 @ApiBearerAuth()
-@Controller()
+@Controller('groups')
 @ApiTags('Groups')
 export class GroupController {
   constructor(
@@ -40,7 +41,7 @@ export class GroupController {
   ) {}
 
   @UseGuards(AccessTokenGuard)
-  @Post('groups')
+  @Post()
   @ApiOperation({
       summary: 'Crea un grupo/evento nuevo con un listado de participantes',
     })
@@ -58,62 +59,27 @@ export class GroupController {
         },
       },
     })
-  async create(@Body() createGroupDto: CreateGroupDto) {
-    const creator = await this.userService.findOne(createGroupDto.creatorId);
-    if (!creator) {
-      throw new Error('Creador no encontrado');
+    async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
+       console.log("Estoy en membership, pase el Guard.")
+          const user = request[REQUEST_USER_KEY];
+          if (!user) {
+            throw new Error('User not found in request.');
+          }
+      console.log("datos del usuario logueado creando el grupo: ", user)
+      return await this.groupService.createGroupWithParticipants(createGroupDto);
     }
 
-    const group = await this.groupService.create(
-      { name: createGroupDto.name } as any,
-      creator,
-    );
-
-    const memberships: GroupMembership[] = [];
-
-  for (const userId of createGroupDto.participants) {
-    const user = await this.userService.findOne(userId);
-      if (!user) continue;
-
-    const dto: CreateGroupMembershipDto = {
-      status: 'active',
-      userId: user.id,
-      groupId: group.id,
-      role: GroupRole.GUEST, // predeterminado
-    };
-
-    const membership = await this.groupMembershipService.create(dto, user, group);
-   memberships.push(membership);
-  }
-
-    // Agregar creador como ADMIN del grupo
-    const creatorMembershipDto: CreateGroupMembershipDto = {
-      status: 'active',
-      userId: creator.id,
-      groupId: group.id,
-      role: GroupRole.ADMIN,
-    };
-
-    const adminMembership = await this.groupMembershipService.create(
-      creatorMembershipDto,
-      creator,
-      group,
-    );
-
-    memberships.push(adminMembership);
-  }
-
-  @Get('groups')
+  @Get()
   async findAll() {
     return this.groupService.findAll();
   }
 
-  @Get('groups/:id')
+  @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.groupService.findOne(id);
   }
 
-  @Patch('groups/:id')
+  @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupDto: UpdateGroupDto,
@@ -121,7 +87,7 @@ export class GroupController {
     return this.groupService.update(id, updateGroupDto);
   }
 
-  @Delete('groups/:id')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupService.remove(id);
