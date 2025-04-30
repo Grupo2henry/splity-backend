@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { GroupRole } from '../enums/group-role.enum';
 
 export class CreateGroupMembershipDto {
   @IsNotEmpty()
@@ -13,4 +14,10 @@ export class CreateGroupMembershipDto {
   @IsNotEmpty()
   @IsNumber()
   groupId: number;
+
+  @IsOptional()
+  @IsEnum(GroupRole, {
+    message: `El rol debe ser uno de: ${Object.values(GroupRole).join(', ')}`,
+  })
+  role?: GroupRole; // Opcional: si no se envía, se tomará el valor por defecto en la entidad
 }

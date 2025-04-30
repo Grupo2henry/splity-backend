@@ -27,6 +27,7 @@ import { UserService } from 'src/user/user.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
 import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
 import { GroupMembership } from '../entities/group-membership.entity';
+import { GroupRole } from '../enums/group-role.enum';
 
 @ApiBearerAuth()
 @Controller()
@@ -70,25 +71,36 @@ export class GroupController {
 
     const memberships: GroupMembership[] = [];
 
-    for (const userId of createGroupDto.participants) {
-      const user = await this.userService.findOne(userId);
+  for (const userId of createGroupDto.participants) {
+    const user = await this.userService.findOne(userId);
       if (!user) continue;
 
-      const dto: CreateGroupMembershipDto = {
-        status: 'active',
-        userId: user.id,
-        groupId: group.id,
-      };
-
-      const membership = await this.groupMembershipService.create(dto, user, group);
-      memberships.push(membership);
-    }
-
-    return {
-      message: 'Grupo creado con éxito',
-      group,
-      participants: memberships,
+    const dto: CreateGroupMembershipDto = {
+      status: 'active',
+      userId: user.id,
+      groupId: group.id,
+      role: GroupRole.GUEST, // predeterminado
     };
+
+    const membership = await this.groupMembershipService.create(dto, user, group);
+   memberships.push(membership);
+  }
+
+    // Agregar creador como ADMIN del grupo
+    const creatorMembershipDto: CreateGroupMembershipDto = {
+      status: 'active',
+      userId: creator.id,
+      groupId: group.id,
+      role: GroupRole.ADMIN,
+    };
+
+    const adminMembership = await this.groupMembershipService.create(
+      creatorMembershipDto,
+      creator,
+      group,
+    );
+
+    memberships.push(adminMembership);
   }
 
   @Get('groups')
