@@ -38,7 +38,7 @@ export class User {
   is_premium: boolean;
 
   @Column({ default: Role.User })
-  rol: string;
+  role: string;
 
   @Column({ default: true })
   active: boolean;

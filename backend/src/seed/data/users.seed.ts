@@ -8,7 +8,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    rol: 'admin',
+    role: 'admin',
   },
   {
     name: 'Nico',
@@ -18,7 +18,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    rol: 'user',
+    role: 'user',
   },
   {
     name: 'Laura',
@@ -28,7 +28,7 @@ export const usersSeed = [
     is_premium: true,
     active: true,
     created_at: new Date(),
-    rol: 'user',
+    role: 'user',
   },
   {
     name: 'Martín',
@@ -38,7 +38,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    rol: 'user',
+    role: 'user',
   },
   {
     name: 'Sofía',
@@ -48,7 +48,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    rol: 'user',
+    role: 'user',
   },
   {
     name: 'Javier',
@@ -58,6 +58,6 @@ export const usersSeed = [
     is_premium: true,
     active: true,
     created_at: new Date(),
-    rol: 'user',
+    role: 'user',
   },
 ];

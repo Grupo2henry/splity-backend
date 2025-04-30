@@ -77,7 +77,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         is_premium: user.is_premium,
-        rol: user.rol,
+        role: user.role,
       },
       {
         //secrets
