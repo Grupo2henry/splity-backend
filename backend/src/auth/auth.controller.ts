@@ -62,7 +62,6 @@ export class AuthController {
       },
     },
   })
-
   async signIn(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     const { token } = await this.authService.signUser(email, password);
@@ -82,11 +81,11 @@ export class AuthController {
       if (!userPayload) {
         return { message: 'Usuario no autenticado' };
       }
-      const user = await this.userService.findOne(userPayload.id);
+      const user = await this.userService.findUserGroups(userPayload.id);
       if (!user) {
         return { message: 'Usuario no encontrado' };
       }
-      return new UserResponseDto(user);
+      return user;
     } catch (error) {
       console.error('Error obteniendo el usuario:', error);
       return { message: 'Error interno del servidor' };

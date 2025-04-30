@@ -29,6 +29,17 @@ export class UserService {
     return user;
   }
 
+  async findUserGroupss(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['memberships'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
+  }
+
   async desactivateUser(id: string) {
     const user = await this.findOne(id);
     user.active = false;

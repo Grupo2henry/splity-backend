@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { Group } from '../entities/group.entity';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
-import { User } from '../../user/entities/user.entity';
 
 @Injectable()
 export class GroupRepository {
@@ -17,27 +16,47 @@ export class GroupRepository {
   async findOne(id: number): Promise<Group | null | undefined> {
     return this.groupRepository.findOne({
       where: { id },
-      relations: ['created_by', 'memberships', 'expenses', 'memberships.user', 'expenses.paid_by', 'expenses.splits', 'expenses.splits.user'],
+      relations: [
+        'created_by',
+        'memberships',
+        'expenses',
+        'memberships.user',
+        'expenses.paid_by',
+        'expenses.splits',
+        'expenses.splits.user',
+      ],
     });
   }
 
   async findAll(): Promise<Group[]> {
-    console.log('Estoy en group.repository')
+    console.log('Estoy en group.repository');
     return this.groupRepository.find({
-      relations: ['created_by', 'memberships', 'expenses', 'memberships.user', 'expenses.paid_by', 'expenses.splits', 'expenses.splits.user'],
+      relations: [
+        'created_by',
+        'memberships',
+        'expenses',
+        'memberships.user',
+        'expenses.paid_by',
+        'expenses.splits',
+        'expenses.splits.user',
+      ],
     });
   }
 
-  async create(createGroupDto: CreateGroupDto, createdBy: User): Promise<Group> {
+  async create(createGroupDto: CreateGroupDto, createdBy): Promise<Group> {
     const newGroup = this.groupRepository.create({
       ...createGroupDto,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       created_by: createdBy,
       created_at: new Date(),
     });
     return this.groupRepository.save(newGroup);
   }
 
-  async update(id: number, updateGroupDto: UpdateGroupDto): Promise<Group | null | undefined> {
+  async update(
+    id: number,
+    updateGroupDto: UpdateGroupDto,
+  ): Promise<Group | null | undefined> {
     await this.groupRepository.update(id, updateGroupDto);
     return this.findOne(id);
   }
