@@ -13,18 +13,24 @@ import {
   Patch,
   Delete,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags
+  } from '@nestjs/swagger';
 import { GroupService } from '../services/group.service';
 import { GroupMembershipService } from '../services/group-membership.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
 import { UserService } from 'src/user/user.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
 import { GroupMembership } from '../entities/group-membership.entity';
 
 @ApiBearerAuth()
 @Controller()
+@ApiTags('Groups')
 export class GroupController {
   constructor(
     private readonly groupService: GroupService,
@@ -34,6 +40,23 @@ export class GroupController {
 
   @UseGuards(AccessTokenGuard)
   @Post('groups')
+  @ApiOperation({
+      summary: 'Crea un grupo/evento nuevo con un listado de participantes',
+    })
+    @ApiOkResponse({
+      description: 'Grupo creado nuevamente',
+      schema: {
+        example: {
+          creatorId: "d8a7382c-bb90-4e83-8882-c7486c9b279d",
+          name: "Nuevo Grupo de Amigos",
+          participants: [
+            "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
+            "14e8bb7f-a2c1-4f03-b244-635f970547ce",
+            "40586790-bca4-4e0b-b88b-2f104594337c"
+          ]
+        },
+      },
+    })
   async create(@Body() createGroupDto: CreateGroupDto) {
     const creator = await this.userService.findOne(createGroupDto.creatorId);
     if (!creator) {

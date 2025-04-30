@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Post, Body } from '@nestjs/common';
 import { GoogleTokenDto } from './providers/dtos/google-authentication.dto';
 import { GoogleAuthenticationService } from './providers/google-authentication.service';

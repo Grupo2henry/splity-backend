@@ -27,6 +27,8 @@ import {
 } from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response.user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
+
 @Controller('users')
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -35,8 +37,8 @@ export class UsuariosController {
 
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
+  //@Roles(Role.Admin)  inyecta rol a la metadata
+  @UseGuards(AccessTokenGuard) // comprueba el rol requerido
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los usuario, solo lo puede hacer el administrador',
