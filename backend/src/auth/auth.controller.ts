@@ -85,7 +85,7 @@ export class AuthController {
       if (!user) {
         return { message: 'Usuario no encontrado' };
       }
-      return user;
+      return { user };
     } catch (error) {
       console.error('Error obteniendo el usuario:', error);
       return { message: 'Error interno del servidor' };
