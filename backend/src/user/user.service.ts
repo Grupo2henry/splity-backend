@@ -29,6 +29,18 @@ export class UserService {
     return user;
   }
 
+  async findUserGroups(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['groupsCreated', 'memberships', 'memberships.group'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
   async desactivateUser(id: string) {
     const user = await this.findOne(id);
     user.active = false;
