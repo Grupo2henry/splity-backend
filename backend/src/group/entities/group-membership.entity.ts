@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Group } from './group.entity';
+import { GroupRole } from '../enums/group-role.enum';
 
 @Entity('group_membership')
 export class GroupMembership {
@@ -22,4 +23,11 @@ export class GroupMembership {
 
   @Column()
   status: string;
+
+  @Column({
+    type: 'enum',
+    enum: GroupRole,
+    default: GroupRole.MEMBER,
+  })
+  role: GroupRole;
 }

@@ -25,7 +25,7 @@ import { RequestWithUser } from '../../auth/types/request-with-user';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth()
-  @Controller()
+  @Controller('memberships')
   export class GroupMembershipController {
     constructor(
         private readonly groupMembershipService: GroupMembershipService,
@@ -33,7 +33,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
         private readonly groupService: GroupService,
     ) {}
   
-    @Post('memberships')
+    @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
     const user = await this.userService.findOne(createGroupMembershipDto.userId);
@@ -63,19 +63,19 @@ import { ApiBearerAuth } from '@nestjs/swagger';
     };
   }
 
-  @Get('memberships')
+  @Get()
   async findAll() {
     console.log("Estoy en group/membership")
     return this.groupMembershipService.findAll();
   }
 
-  @Get('memberships/:id')
+  @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
 
-  @Put('memberships/:id')
+  @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
@@ -83,7 +83,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
     return this.groupMembershipService.update(id, updateGroupMembershipDto);
   }
 
-  @Delete('memberships/:id')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupMembershipService.remove(id);
@@ -92,7 +92,6 @@ import { ApiBearerAuth } from '@nestjs/swagger';
   
   @Get('users/groups')
   @UseGuards(AccessTokenGuard)
-  
   async findGroupsByUser(@Req() request: RequestWithUser) {
     console.log("Estoy en membership, pase el Guard.")
     const user = request[REQUEST_USER_KEY];

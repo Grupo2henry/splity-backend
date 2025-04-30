@@ -8,14 +8,11 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
-import { AccessTokenGuard } from './auth/guards/access-token.guard/access-token.guard';
-import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { SeedModule } from './seed/seed.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
-// import { GroupMembershipModule } from './group-membership/group-membership.module';
+import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -23,18 +20,18 @@ import { GroupModule } from './group/group.module';
       envFilePath: '.env.development',
     }),
     TypeOrmModule.forRoot(dbConfig),
-    AuthModule,
+    AuthModule, // <--- Asegúrate de que AuthModule esté aquí primero
+    UserModule, // Si lo volviste a agregar, déjalo después de AuthModule
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     SeedModule,
     GroupModule,
     SubscriptionModule,
     ExpensesModule,
+    SeedModule
   ],
   providers: [
     AppService,
-    { provide: APP_GUARD, useClass: AuthenticationGuard },
-    AccessTokenGuard,
   ],
   controllers: [AppController],
 })
