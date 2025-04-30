@@ -10,6 +10,7 @@ import {
   Put,
   Req,
   UseGuards,
+  Query
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -48,6 +49,21 @@ export class UsuariosController {
   findAll() {
     return this.userService.findAll();
   }
+
+  @Get('user-by-email') // Define the specific endpoint
+  @ApiOperation({
+    summary: 'Obtiene usuarios por coincidencia parcial de email',
+  })
+  @ApiOkResponse({
+    description: 'Listado de usuarios que coinciden con el email',
+    type: UserResponseDto,
+    isArray: true,
+  })
+  findUsersByEmail(@Query('email') email: string) {
+    console.log("Estoy en getUserByEmail")
+    return this.userService.findUsersByEmail(email);
+  }
+
   @Put('delete')
   @ApiOperation({
     summary: 'Cambia is active del propio usuario a false',

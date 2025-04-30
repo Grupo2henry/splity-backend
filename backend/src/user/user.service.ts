@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConflictException,
@@ -8,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/response.user.dto';
 
@@ -19,6 +20,12 @@ export class UserService {
   ) {}
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
+  }
+
+  async findUsersByEmail(email: string): Promise<User[]> {
+    return await this.userRepository.find({
+      where: { email: Like(`%${email}%`) },
+    });
   }
 
   async findOne(id: string): Promise<User> {
