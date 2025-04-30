@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
@@ -53,7 +53,10 @@ export class AuthService {
     if (!user) {
       throw new HttpException('No matches found', 404);
     }
-    const isPasswordMatching = await bcrypt.compare(password, user.password);
+    if (!user.password) {
+      throw new BadRequestException();
+    }
+    const isPasswordMatching = bcrypt.compare(password, user.password);
     if (!isPasswordMatching) {
       throw new HttpException(
         'wrong credentials provided',
@@ -84,7 +87,6 @@ export class AuthService {
         audience: this.jwtConfiguration.audience,
         secret: this.jwtConfiguration.secret,
         issuer: this.jwtConfiguration.issuer,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expiresIn: this.jwtConfiguration.accessTokenTtl,
       },
     );

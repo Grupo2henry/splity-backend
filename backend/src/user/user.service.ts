@@ -12,11 +12,14 @@ import { User } from './entities/user.entity';
 import { Repository, Like } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/response.user.dto';
+import { FindOneByGoogleIdTs } from './providers/find-one-by-google-id.ts';
+import { GoogleUser } from './interfaces/google-user.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly findOneByGoogleIdprovider: FindOneByGoogleIdTs,
   ) {}
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
@@ -74,6 +77,22 @@ export class UserService {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         'Error al actualizar el usuario: ' + error.message,
       );
+    }
+  }
+
+  public async findByGoogleId(googleId: string) {
+    return await this.findOneByGoogleIdprovider.findOneByGoogleId(googleId);
+  }
+
+  public async createGoogleUser(googleUser: GoogleUser) {
+    try {
+      const user = this.userRepository.create(googleUser);
+      return await this.userRepository.save(user);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw new ConflictException(error, {
+        description: 'Could not create a new user',
+      });
     }
   }
 }
