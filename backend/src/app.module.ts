@@ -13,6 +13,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
 import { UserModule } from './user/user.module';
+import { PaymentModule } from './payment/payment.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,7 +29,8 @@ import { UserModule } from './user/user.module';
     GroupModule,
     SubscriptionModule,
     ExpensesModule,
-    SeedModule
+    SeedModule,
+    PaymentModule
   ],
   providers: [
     AppService,

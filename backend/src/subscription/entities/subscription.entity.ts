@@ -1,6 +1,8 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+// src/subscription/entities/subscription.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
+import { Payment } from '../../entities/payments.entity';
 
 @Entity()
 export class Subscription {
@@ -11,17 +13,19 @@ export class Subscription {
   user: User;
 
   @Column()
-  status: string;
+  status: 'active' | 'inactive';
 
   @Column({ default: true })
   active: boolean;
-
-  @Column()
-  tier: string;
 
   @Column()
   started_at: Date;
 
   @Column()
   ends_at: Date;
+
+  @OneToOne(() => Payment, { nullable: true })
+  @JoinColumn()
+  payment?: Payment;
 }
+
