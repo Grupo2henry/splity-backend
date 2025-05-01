@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { GroupMembership } from './group-membership.entity';
-import { Expense } from '../../entities/expense.entity';
+import { Expense } from '../../expenses/entities/expense.entity';
 
 @Entity('group')
 export class Group {

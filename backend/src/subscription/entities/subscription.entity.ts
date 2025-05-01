@@ -2,9 +2,9 @@
 // src/subscription/entities/subscription.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
-import { Payment } from '../../entities/payments.entity';
+import { Payment } from '../../payment/entities/payment.entity';
 
-@Entity()
+@Entity('subscription')
 export class Subscription {
   @PrimaryGeneratedColumn()
   id: number;

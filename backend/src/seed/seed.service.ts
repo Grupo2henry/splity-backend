@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,10 +6,10 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { Group } from '../group/entities/group.entity';
 import { GroupMembership } from '../group/entities/group-membership.entity';
-import { Expense } from '../entities/expense.entity';
-import { ExpenseSplit } from '../entities/expense-split.entity';
-import { Payment } from '../entities/payments.entity';
-import { Subscription } from '../entities/subscription.entity';
+import { Expense } from '../expenses/entities/expense.entity';
+import { ExpenseSplit } from '../expenses/entities/expense-split.entity';
+import { Payment } from '../payment/entities/payment.entity';
+import { Subscription } from '../subscription/entities/subscription.entity';
 
 // Importa los seeds de datos
 import { usersSeed } from './data/users.seed';
@@ -150,29 +149,42 @@ export class SeedService implements OnApplicationBootstrap {
     console.log('[SeedService] Divisiones cargadas.');
 
     // 6. Pagos
+    const savedPayments: Payment[] = [];
     for (const paymentSeed of paymentsSeed) {
-      const user = users.find((u) => u.email === paymentSeed.user.email);
+      const user = await this.userRepo.findOne({ where: { email: paymentSeed.user.email } });
       if (!user) {
-        throw new Error(`Usuario no encontrado para el pago`);
+        throw new Error(`Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`);
       }
       const newPayment = this.paymentRepo.create({
-        ...paymentSeed,
-        user: user,
-      });
-      await this.paymentRepo.save(newPayment);
+        amount: paymentSeed.amount,
+        status: paymentSeed.status,
+        payment_date: paymentSeed.payment_date,
+        user: user, // aseguramos que sea una entidad User real
+      } as Partial<Payment>); // ✅ Forzamos el tipo para evitar errores de sobrecarga
+    
+      const savedPayment = await this.paymentRepo.save(newPayment);
+      savedPayments.push(savedPayment);
     }
     console.log('[SeedService] Pagos cargados.');
 
     // 7. Subscripciones
-    for (const subscriptionSeed of subscriptionsSeed) {
+    for (let i = 0; i < subscriptionsSeed.length; i++) {
+      const subscriptionSeed = subscriptionsSeed[i];
       const user = users.find((u) => u.email === subscriptionSeed.user.email);
       if (!user) {
         throw new Error(`Usuario no encontrado para la subscripción`);
       }
+
+      const linkedPayment = savedPayments[i] ?? null; // Relación opcional 1 a 1
       const newSubscription = this.subscriptionRepo.create({
-        ...subscriptionSeed,
-        user: user,
-      });
+        status: subscriptionSeed.status,
+        started_at: subscriptionSeed.started_at,
+        ends_at: subscriptionSeed.ends_at,
+        active: subscriptionSeed.status === 'active',
+        user: user, // Asigna la instancia de User
+        payment: linkedPayment, // Asigna la instancia de Payment (o null)
+      }as Partial<Subscription>);
+
       await this.subscriptionRepo.save(newSubscription);
     }
     console.log('[SeedService] Subscripciones cargadas.');

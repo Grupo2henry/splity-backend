@@ -3,7 +3,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 
-@Entity()
+@Entity('payment')
 export class Payment {
   @PrimaryGeneratedColumn()
   id: number;

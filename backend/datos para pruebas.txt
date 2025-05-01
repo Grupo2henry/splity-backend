@@ -1,0 +1,10 @@
+POST 'groups'
+{
+  "creatorId": "d8a7382c-bb90-4e83-8882-c7486c9b279d",
+  "name": "Nuevo Grupo de Amigos",
+  "participants": [
+    "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
+    "14e8bb7f-a2c1-4f03-b244-635f970547ce",
+    "40586790-bca4-4e0b-b88b-2f104594337c"
+  ]
+}

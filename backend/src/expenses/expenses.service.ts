@@ -3,8 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Expense } from './entities/expense.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Group } from 'src/group/entities/group.entity';
+import { User } from '../user/entities/user.entity';
+import { Group } from '../group/entities/group.entity';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 
 @Injectable()

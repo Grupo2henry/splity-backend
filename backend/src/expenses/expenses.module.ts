@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { ExpensesController } from './expenses.controller';
 import { ExpensesService } from './expenses.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Expense } from 'src/entities/expense.entity';
+import { Expense } from '../expenses/entities/expense.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Expense])], // 👈 Agregado acá
