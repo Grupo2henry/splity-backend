@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { Role } from '../../auth/enums/role.enum';
-import { Expense } from '../../entities/expense.entity';
-import { ExpenseSplit } from '../../entities/expense-split.entity';
+import { Expense } from '../../expenses/entities/expense.entity';
+import { ExpenseSplit } from '../../expenses/entities/expense-split.entity';
 import { Group } from '../../group/entities/group.entity';
 import { GroupMembership } from '../../group/entities/group-membership.entity';
-import { Payment } from '../../entities/payments.entity';
-import { Subscription } from '../../entities/subscription.entity';
+import { Payment } from '../../payment/entities/payment.entity';
+import { Subscription } from '../../subscription/entities/subscription.entity';
 import {
   Column,
   Entity,

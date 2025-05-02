@@ -7,6 +7,12 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
+  @Get()
+  findAll(){
+    console.log("Estoy en GET 'expenses")
+    return this.expensesService.findAll();
+  }
+
   @Get('/groups/:groupId/expenses')
   getExpenses(@Param('groupId') groupId: string) {
     return this.expensesService.getExpenses(groupId);

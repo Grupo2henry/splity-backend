@@ -11,7 +11,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { GoogleAuthenticationController } from './social/google-authentication.controller';
 import { GoogleAuthenticationService } from './social/providers/google-authentication.service';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider';
-import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
 import { AuthenticationGuard } from './guards/authentication/authentication.guard';
 
@@ -26,7 +25,7 @@ import { AuthenticationGuard } from './guards/authentication/authentication.guar
     AuthService,
     GoogleAuthenticationService,
     GenerateTokensProvider,
-    { provide: APP_GUARD, useClass: AuthenticationGuard },
+    AuthenticationGuard,
     AccessTokenGuard,
   ],
   controllers: [AuthController, GoogleAuthenticationController],
