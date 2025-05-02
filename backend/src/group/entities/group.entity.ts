@@ -9,6 +9,7 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { GroupMembership } from './group-membership.entity';
 import { Expense } from '../../expenses/entities/expense.entity';
+import { Balance } from '../../balance/entities/balance.entity'; // Importa la entidad Balance
 
 @Entity('group')
 export class Group {
@@ -32,4 +33,8 @@ export class Group {
 
   @OneToMany(() => Expense, (expense) => expense.group)
   expenses: Expense[];
+
+  // Relación con la entidad Balance
+  @OneToMany(() => Balance, (balance) => balance.group)
+  balances: Balance[]; // Balances asociados a este grupo
 }

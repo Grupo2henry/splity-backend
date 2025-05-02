@@ -6,6 +6,7 @@ import { Group } from '../../group/entities/group.entity';
 import { GroupMembership } from '../../group/entities/group-membership.entity';
 import { Payment } from '../../payment/entities/payment.entity';
 import { Subscription } from '../../subscription/entities/subscription.entity';
+import { Balance } from '../../balance/entities/balance.entity'; // Importa la entidad Balance
 import {
   Column,
   Entity,
@@ -48,6 +49,7 @@ export class User {
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
+
   @OneToMany(() => Group, (group) => group.created_by)
   groupsCreated: Group[];
 
@@ -65,4 +67,11 @@ export class User {
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
+
+  // Relaciones con la entidad Balance
+  @OneToMany(() => Balance, (balance) => balance.debtor)
+  balancesOwed: Balance[]; // Balances donde este usuario es el deudor
+
+  @OneToMany(() => Balance, (balance) => balance.creditor)
+  balancesOwing: Balance[]; // Balances donde este usuario es el acreedor
 }
