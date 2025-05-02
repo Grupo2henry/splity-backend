@@ -11,6 +11,12 @@ console.log('DB_USERNAME cargado:', process.env.DB_USERNAME);
 export const dbConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   url: process.env.DATABASE_PUBLIC_URL,
+  // database: process.env.DB_NAME,
+  // host: process.env.DB_HOST,
+  // port: Number(process.env.DB_PORT),
+  // username: process.env.DB_USERNAME,
+  // password: process.env.DB_PASSWORD,
+  //sdf
   autoLoadEntities: true,
   dropSchema: false, //Poner en true llegado el caso
   synchronize: true,

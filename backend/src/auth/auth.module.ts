@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { GoogleAuthenticationController } from './social/google-authentication.controller';
 import { GoogleAuthenticationService } from './social/providers/google-authentication.service';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider';
+import { MailsModule } from 'src/mails/mails.module';
 
 @Module({
   providers: [AuthService, GoogleAuthenticationService, GenerateTokensProvider],
@@ -21,6 +22,7 @@ import { GenerateTokensProvider } from './providers/generate-tokens.provider';
     TypeOrmModule.forFeature([User]),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    MailsModule,
   ],
   exports: [AuthService, JwtModule],
 })

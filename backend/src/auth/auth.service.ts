@@ -17,6 +17,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from '../user/dto/signin.user.dto';
 import jwtConfig from '../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
+import { MailsService } from 'src/mails/mails.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly emailServie: MailsService,
   ) {}
   async signUpUser(credentials: CreateUserDto) {
     if (credentials.password !== credentials.confirm_password) {
@@ -46,6 +48,9 @@ export class AuthService {
       password: hashedPassword,
     });
     const savedUser = await this.usersRepository.save(newUser);
+    const { name, email } = savedUser;
+    console.log(name, email);
+    await this.emailServie.sendUserConfirmation({ name, email });
     return savedUser;
   }
   async signUser(email: string, password: string) {
