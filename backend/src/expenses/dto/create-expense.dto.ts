@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { IsString, IsNumber, IsUUID } from 'class-validator';
 
 export class CreateExpenseDto {

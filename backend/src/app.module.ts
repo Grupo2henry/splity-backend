@@ -14,6 +14,7 @@ import { PaymentModule } from './payment/payment.module'; // Módulo de Pago ant
 import { SubscriptionModule } from './subscription/subscription.module';
 import { GroupModule } from './group/group.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { BalanceModule } from './balance/balance.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ExpensesModule } from './expenses/expenses.module';
     SeedModule, // Puedes dejar SeedModule al final
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    BalanceModule,
   ],
   providers: [
     AppService,

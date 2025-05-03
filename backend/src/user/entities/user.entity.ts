@@ -48,6 +48,7 @@ export class User {
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
+
   @OneToMany(() => Group, (group) => group.created_by)
   groupsCreated: Group[];
 
@@ -65,4 +66,5 @@ export class User {
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
+
 }

@@ -7,7 +7,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
-  @Get()
+  @Get('expenses')
   findAll(){
     console.log("Estoy en GET 'expenses")
     return this.expensesService.findAll();
