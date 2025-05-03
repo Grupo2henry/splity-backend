@@ -10,4 +10,9 @@ export class BalanceController {
   async getBalancesByGroup(@Param('groupId') groupId: number) {
     return this.balanceService.calculateBalancesForGroup(groupId);
   }
+
+  @Get('group/:groupId/equal-division')
+  async getEqualDivisionByGroup(@Param('groupId') groupId: number){
+    return this.balanceService.calculateEqualDivision(groupId);
+  }
 }
