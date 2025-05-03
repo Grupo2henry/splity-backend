@@ -22,10 +22,11 @@ import {
 import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { RequestWithUser } from '../../auth/types/request-with-user';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
-  @Controller('memberships')
+  @Controller()
+  @ApiTags('GroupsMemberships')
   export class GroupMembershipController {
     constructor(
         private readonly groupMembershipService: GroupMembershipService,
@@ -33,7 +34,10 @@ import { ApiBearerAuth } from '@nestjs/swagger';
         private readonly groupService: GroupService,
     ) {}
   
-    @Post()
+  @Post('groups/memberships')
+  @ApiOperation({
+    summary: 'Registra una membersia de un usuario registrado a un grupo',
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
     const user = await this.userService.findOne(createGroupMembershipDto.userId);
@@ -63,19 +67,28 @@ import { ApiBearerAuth } from '@nestjs/swagger';
     };
   }
 
-  @Get()
+  @Get('groups/memberships')
+  @ApiOperation({
+    summary: 'Devuelve todas las membresias de grupos registradas',
+  })
   async findAll() {
     console.log("Estoy en group/membership")
     return this.groupMembershipService.findAll();
   }
 
-  @Get(':id')
+  @Get('groups/memberships/id/:id')
+  @ApiOperation({
+    summary: 'Devuelve la membresias de grupos segun id del parametro',
+  })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
 
-  @Put(':id')
+  @Put('groups/memberships/id/:id')
+  @ApiOperation({
+    summary: 'Actualiza la membresias de grupos segun id del parametro',
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
@@ -83,14 +96,19 @@ import { ApiBearerAuth } from '@nestjs/swagger';
     return this.groupMembershipService.update(id, updateGroupMembershipDto);
   }
 
-  @Delete(':id')
+  @Delete('groups/memberships/id/:id')
+  @ApiOperation({
+    summary: 'Borra la membresias de grupos segun id del parametro',
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupMembershipService.remove(id);
   }
-
   
-  @Get('users/groups')
+  @Get('groups/my-groups')
+  @ApiOperation({
+    summary: 'Devuelve todos los grupos a los que pertenezca el usuario logueado',
+  })
   @UseGuards(AccessTokenGuard)
   async findGroupsByUser(@Req() request: RequestWithUser) {
     console.log("Estoy en membership, pase el Guard.")
@@ -102,11 +120,17 @@ import { ApiBearerAuth } from '@nestjs/swagger';
   }
 
   @Get('groups/:groupId/members')
+  @ApiOperation({
+    summary: 'Devuelve todos los miembros de un grupos segun id del parametro',
+  })
   async findMembersByGroup(@Param('groupId', ParseIntPipe) groupId: number) {
     return this.groupMembershipService.findMembersByGroup(groupId);
   }
 
   @Get('groups/:groupId/members/:userId')
+  @ApiOperation({
+    summary: 'Devuelve un miembro de un grupos segun id del grupo y del usuario en el parametro',
+  })
   async findByUserAndGroup(
     @Param('userId') userId: string,
     @Param('groupId', ParseIntPipe) groupId: number,

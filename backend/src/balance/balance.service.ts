@@ -113,16 +113,10 @@ export class BalanceService {
       where: { group: { id: groupId }, active: true },
       relations: ['paid_by'],
     });
-
-    console.log("Gastos del grupo: ", expenses)
   
     const groupMemberships = await this.groupMembershipService.findMembersByGroup(groupId);
     const usersInGroup = groupMemberships.map((m) => m.user);
     const numberOfMembers = usersInGroup.length;
-
-    console.log("Usuarios del grupo: ", usersInGroup);
-    
-    console.log("Cantidad de usuarios: ", numberOfMembers);
   
     const userBalances: { [userId: string]: number } = {};
     const usersMap: Map<string, User> = new Map(usersInGroup.map((u) => [u.id, u]));
@@ -131,20 +125,14 @@ export class BalanceService {
     usersInGroup.forEach((user) => {
       userBalances[user.id] = 0;
     });
-
-    console.log("No se para que es usersMap: ", usersMap)
-
-    console.log("Balance de usuarios inicial: ", userBalances)
   
     // Calcular cuánto pagó cada uno y cuánto debería haber pagado
     for (const expense of expenses) {
       const share = expense.amount / numberOfMembers;
-      console.log("Nombre de gasto: ", expense.description, " | ", "Monto", expense.amount, " | ", "Pagador por: ", expense.paid_by)
       const payerId = expense.paid_by.id;
       userBalances[payerId] += expense.amount;
       for (const user of usersInGroup) {
         userBalances[user.id] -= share;
-        console.log("Balance de usuario: ", user.id, " | ", userBalances[user.id])
       }
     }
   
@@ -154,8 +142,6 @@ export class BalanceService {
       name: user.name,
       balance: parseFloat(userBalances[user.id].toFixed(2)),
     }));
-
-    console.log("Balance: ", balanceByUser);
   
     // Separar acreedores y deudores
     const creditors = balanceByUser
@@ -166,8 +152,6 @@ export class BalanceService {
       .filter((u) => u.balance < 0)
       .map((u) => ({ ...u }))
       .sort((a, b) => a.balance - b.balance); // más negativo primero
-
-    console.log("Balance: ", balanceByUser);
   
     const recommendedLiquidations: {
       debtorId: string;
@@ -205,8 +189,6 @@ export class BalanceService {
       console.log(balanceByUser)
     }
 
-    console.log(balanceByUser)
-  
     return {
       balanceByUser,
       recommendedLiquidations,

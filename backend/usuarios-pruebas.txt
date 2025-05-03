@@ -8,3 +8,5 @@
   {"email": "cesar.garcia@example.com", "password": "CesarG123*"},
   {"email": "nicolas.alvarez@example.com", "password": "NicolasA456!"}
 ]
+
+grupo: 17
