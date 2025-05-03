@@ -18,7 +18,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    role: 'user',
+    role: 'admin',
   },
   {
     name: 'Laura',
@@ -68,7 +68,7 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    role: 'user',
+    role: 'admin',
   },
   {
     name: 'Nicolas Alvarez',
@@ -78,6 +78,6 @@ export const usersSeed = [
     is_premium: false,
     active: true,
     created_at: new Date(),
-    role: 'user',
+    role: 'admin',
   },
 ];
