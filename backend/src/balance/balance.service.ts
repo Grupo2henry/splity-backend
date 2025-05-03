@@ -95,89 +95,121 @@ export class BalanceService {
     return finalBalances;
   }
 
-  async calculateEqualDivision(groupId: number): Promise<
-    {
+  async calculateEqualDivision(groupId: number): Promise<{
+    balanceByUser: {
+      userId: string;
+      name: string;
+      balance: number;
+    }[];
+    recommendedLiquidations: {
       debtorId: string;
       debtorName: string;
       creditorId: string;
       creditorName: string;
       amount: number;
-    }[]
-  > {
+    }[];
+  }> {
     const expenses = await this.expenseRepository.find({
       where: { group: { id: groupId }, active: true },
       relations: ['paid_by'],
     });
-    const groupMemberships = await this.groupMembershipService.findMembersByGroup(
-      groupId,
-    );
-    const usersInGroup = groupMemberships.map((membership) => membership.user);
+
+    console.log("Gastos del grupo: ", expenses)
+  
+    const groupMemberships = await this.groupMembershipService.findMembersByGroup(groupId);
+    const usersInGroup = groupMemberships.map((m) => m.user);
     const numberOfMembers = usersInGroup.length;
+
+    console.log("Usuarios del grupo: ", usersInGroup);
+    
+    console.log("Cantidad de usuarios: ", numberOfMembers);
+  
     const userBalances: { [userId: string]: number } = {};
+    const usersMap: Map<string, User> = new Map(usersInGroup.map((u) => [u.id, u]));
+  
+    // Inicializar en 0
+    usersInGroup.forEach((user) => {
+      userBalances[user.id] = 0;
+    });
 
-    // Inicializar balances en 0 para todos los usuarios del grupo
-    usersInGroup.forEach((user) => (userBalances[user.id] = 0));
+    console.log("No se para que es usersMap: ", usersMap)
 
-    // Calcular la parte equitativa y actualizar los balances
+    console.log("Balance de usuarios inicial: ", userBalances)
+  
+    // Calcular cuánto pagó cada uno y cuánto debería haber pagado
     for (const expense of expenses) {
       const share = expense.amount / numberOfMembers;
-      const paidBy = expense.paid_by.id;
-
-      userBalances[paidBy] += expense.amount; // El que paga adelanta el dinero
-
+      console.log("Nombre de gasto: ", expense.description, " | ", "Monto", expense.amount, " | ", "Pagador por: ", expense.paid_by)
+      const payerId = expense.paid_by.id;
+      userBalances[payerId] += expense.amount;
       for (const user of usersInGroup) {
-        if (user.id !== paidBy) {
-          userBalances[user.id] -= share; // Todos los miembros deben su parte equitativa
-        }
+        userBalances[user.id] -= share;
+        console.log("Balance de usuario: ", user.id, " | ", userBalances[user.id])
       }
     }
+  
+    // Convertir a array para procesar liquidaciones
+    const balanceByUser = usersInGroup.map((user) => ({
+      userId: user.id,
+      name: user.name,
+      balance: parseFloat(userBalances[user.id].toFixed(2)),
+    }));
 
-    // Generar la lista de balances finales entre pares de usuarios con nombres
-    const finalBalances: {
+    console.log("Balance: ", balanceByUser);
+  
+    // Separar acreedores y deudores
+    const creditors = balanceByUser
+      .filter((u) => u.balance > 0)
+      .map((u) => ({ ...u }))
+      .sort((a, b) => b.balance - a.balance);
+    const debtors = balanceByUser
+      .filter((u) => u.balance < 0)
+      .map((u) => ({ ...u }))
+      .sort((a, b) => a.balance - b.balance); // más negativo primero
+
+    console.log("Balance: ", balanceByUser);
+  
+    const recommendedLiquidations: {
       debtorId: string;
       debtorName: string;
       creditorId: string;
       creditorName: string;
       amount: number;
     }[] = [];
-    const userIds = Object.keys(userBalances);
-    const usersMap: Map<string, User> = new Map(
-      usersInGroup.map((user) => [user.id, user]),
-    );
-
-    for (let i = 0; i < userIds.length; i++) {
-      for (let j = i + 1; j < userIds.length; j++) {
-        const userAId = userIds[i];
-        const userBId = userIds[j];
-
-        const balanceA = userBalances[userAId] || 0;
-        const balanceB = userBalances[userBId] || 0;
-
-        const difference = balanceA + balanceB; // 👈 Declaración de 'difference' aquí
-
-        const userA = usersMap.get(userAId);
-        const userB = usersMap.get(userBId);
-
-        if (difference > 0) {
-          finalBalances.push({
-            debtorId: userBId,
-            debtorName: userB?.name || 'Nombre no encontrado', // 👈 Manejo de undefined
-            creditorId: userAId,
-            creditorName: userA?.name || 'Nombre no encontrado', // 👈 Manejo de undefined
-            amount: difference,
-          });
-        } else if (difference < 0) {
-          finalBalances.push({
-            debtorId: userAId,
-            debtorName: userA?.name || 'Nombre no encontrado', // 👈 Manejo de undefined
-            creditorId: userBId,
-            creditorName: userB?.name || 'Nombre no encontrado', // 👈 Manejo de undefined
-            amount: Math.abs(difference),
-          });
-        }
+  
+    let i = 0;
+    let j = 0;
+    
+    while (i < debtors.length && j < creditors.length) {
+      const debtor = debtors[i];
+      const creditor = creditors[j];
+  
+      const amount = Math.min(-debtor.balance, creditor.balance);
+      if (amount > 0.01) {
+        recommendedLiquidations.push({
+          debtorId: debtor.userId,
+          debtorName: debtor.name,
+          creditorId: creditor.userId,
+          creditorName: creditor.name,
+          amount: parseFloat(amount.toFixed(2)),
+        });
+  
+        // Actualizar saldos
+        debtor.balance += amount;
+        creditor.balance -= amount;
       }
+  
+      // Avanzar en listas si uno ya liquidó su parte
+      if (Math.abs(debtor.balance) < 0.01) i++;
+      if (creditor.balance < 0.01) j++;
+      console.log(balanceByUser)
     }
 
-    return finalBalances;
+    console.log(balanceByUser)
+  
+    return {
+      balanceByUser,
+      recommendedLiquidations,
+    };
   }
 }
