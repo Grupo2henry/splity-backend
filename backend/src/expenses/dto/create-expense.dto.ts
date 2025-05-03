@@ -1,6 +1,12 @@
-// dto/create-expense.dto.ts
+import { IsString, IsNumber, IsUUID } from 'class-validator';
+
 export class CreateExpenseDto {
-    description: string;
-    amount: number;
-    paid_by: number; // userId
-  }
+  @IsString()
+  description: string;
+
+  @IsNumber()
+  amount: number;
+
+  @IsUUID()
+  paid_by: string;
+}
