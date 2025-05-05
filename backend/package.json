@@ -43,15 +43,10 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cloudinary": "^2.6.0",
-    "dotenv": "^16.4.7",
-<<<<<<< HEAD
     "google-auth-library": "^9.11.0",
     "handlebars": "^4.7.8",
     "mercadopago": "^2.5.0",
     "nodemailer": "^6.10.1",
-=======
-    "google-auth-library": "^9.15.1",
->>>>>>> origin/develop
     "pg": "^8.13.3",
     "rxjs": "^7.8.1",
     "sqlite3": "^5.1.7",

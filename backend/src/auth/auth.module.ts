@@ -11,12 +11,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { GoogleAuthenticationController } from './social/google-authentication.controller';
 import { GoogleAuthenticationService } from './social/providers/google-authentication.service';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider';
-<<<<<<< HEAD
 import { MailsModule } from 'src/mails/mails.module';
-=======
 import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
 import { AuthenticationGuard } from './guards/authentication/authentication.guard';
->>>>>>> origin/develop
 
 @Module({
   imports: [

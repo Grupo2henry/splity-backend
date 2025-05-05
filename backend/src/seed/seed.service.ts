@@ -6,17 +6,10 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { Group } from '../group/entities/group.entity';
 import { GroupMembership } from '../group/entities/group-membership.entity';
-<<<<<<< HEAD
-import { Expense } from '../entities/expense.entity';
-import { ExpenseSplit } from '../entities/expense-split.entity';
-import { Payment } from 'src/payments/entities/payments.entity';
-import { Subscription } from '../entities/subscription.entity';
-=======
 import { Expense } from '../expenses/entities/expense.entity';
 import { ExpenseSplit } from '../expenses/entities/expense-split.entity';
 import { Payment } from '../payment/entities/payment.entity';
 import { Subscription } from '../subscription/entities/subscription.entity';
->>>>>>> origin/develop
 
 // Importa los seeds de datos
 import { usersSeed } from './data/users.seed';
@@ -158,9 +151,13 @@ export class SeedService implements OnApplicationBootstrap {
     // 6. Pagos
     const savedPayments: Payment[] = [];
     for (const paymentSeed of paymentsSeed) {
-      const user = await this.userRepo.findOne({ where: { email: paymentSeed.user.email } });
+      const user = await this.userRepo.findOne({
+        where: { email: paymentSeed.user.email },
+      });
       if (!user) {
-        throw new Error(`Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`);
+        throw new Error(
+          `Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`,
+        );
       }
       const newPayment = this.paymentRepo.create({
         amount: paymentSeed.amount,
@@ -168,7 +165,7 @@ export class SeedService implements OnApplicationBootstrap {
         payment_date: paymentSeed.payment_date,
         user: user, // aseguramos que sea una entidad User real
       } as Partial<Payment>); // ✅ Forzamos el tipo para evitar errores de sobrecarga
-    
+
       const savedPayment = await this.paymentRepo.save(newPayment);
       savedPayments.push(savedPayment);
     }
@@ -190,7 +187,7 @@ export class SeedService implements OnApplicationBootstrap {
         active: subscriptionSeed.status === 'active',
         user: user, // Asigna la instancia de User
         payment: linkedPayment, // Asigna la instancia de Payment (o null)
-      }as Partial<Subscription>);
+      } as Partial<Subscription>);
 
       await this.subscriptionRepo.save(newSubscription);
     }

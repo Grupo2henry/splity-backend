@@ -13,14 +13,10 @@ import { UserModule } from './user/user.module'; // Módulo de Usuario primero s
 import { PaymentModule } from './payment/payment.module'; // Módulo de Pago antes de Subscription
 import { SubscriptionModule } from './subscription/subscription.module';
 import { GroupModule } from './group/group.module';
-<<<<<<< HEAD
 // import { GroupMembershipModule } from './group-membership/group-membership.module';
 import { PaymentsModule } from './payments/payments.module';
-=======
 import { ExpensesModule } from './expenses/expenses.module';
 import { BalanceModule } from './balance/balance.module';
-
->>>>>>> origin/develop
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -37,19 +33,14 @@ import { BalanceModule } from './balance/balance.module';
     SeedModule, // Puedes dejar SeedModule al final
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
-<<<<<<< HEAD
     SeedModule,
     GroupModule,
     SubscriptionModule,
     ExpensesModule,
     PaymentsModule,
-=======
     BalanceModule,
->>>>>>> origin/develop
   ],
-  providers: [
-    AppService,
-  ],
+  providers: [AppService],
   controllers: [AppController],
 })
 export class AppModule {}
