@@ -24,6 +24,12 @@ export class PaymentController {
     return this.paymentService.create(createPaymentDto);
   }
 
+  @Post('test')
+  async test(@Body() body: any){
+    console.log("Esto viene del front: ", body)
+    return await body;
+  }
+
   @Put(':id')
   async updatePayment(@Param('id') id: number, @Body() updatePaymentDto: UpdatePaymentDto): Promise<Payment | undefined> {
     return this.paymentService.update(id, updatePaymentDto);
