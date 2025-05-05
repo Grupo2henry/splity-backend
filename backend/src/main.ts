@@ -25,7 +25,7 @@ async function bootstrap() {
         'http://172.22.240.1:3000',
         'https://9728-181-4-211-243.ngrok-free.app',
         'https://real-years-draw.loca.lt',
-      ], // Reemplaza con la URL del cliente*/
+      ], // Reemplaza con la URL del cliente en produccion*/
       origin: (origin, callback) => {
         // Permitir todas las requests si no hay origin (como en Postman o curl)
         if (!origin) return callback(null, true);
