@@ -4,6 +4,7 @@ import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentRepository } from './payment.repository'; // Importa el repositorio personalizado
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class PaymentService {
@@ -43,5 +44,18 @@ export class PaymentService {
   // Ejemplo de uso del método personalizado
   async getAcceptedPaymentsByUser(userId: number): Promise<Payment[]> {
     return this.paymentRepository.findAcceptedPaymentsByUser(userId);
+  }
+
+  async createFromMercadoPago(createDto: CreatePaymentDto): Promise<Payment> {
+    const { userId, amount, status = 'pending', payment_date } = createDto;
+  
+    const payment = this.paymentRepository.create({
+      user: { id: userId } as User,
+      amount,
+      status,
+      payment_date: payment_date || new Date(),
+    });
+  
+    return this.paymentRepository.save(payment);
   }
 }

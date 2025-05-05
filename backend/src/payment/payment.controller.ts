@@ -39,30 +39,44 @@ export class PaymentController {
     @Req() request: RequestWithUser,
   ) {
     const user = request[REQUEST_USER_KEY];
-    console.log("Este es el user: ", user.name);
-    console.log("Esto viene del front: ", paymentNotification);
     const { status, paymentId, preferenceId } = paymentNotification;
 
     try {
-      const paymentDetails: MercadoPagoPaymentDetails | null = await this.mercadoPagoService.getPaymentDetails(paymentId);
-      console.log('💰 Detalles del pago obtenidos de Mercado Pago (Nest.js):', paymentDetails);
+      const paymentDetails = await this.mercadoPagoService.getPaymentDetails(paymentId);
 
-      if (paymentDetails) {
-        const createPaymentDto: CreatePaymentDto = {
-          userId: user.id,
-          amount: paymentDetails.transaction_amount,
-          description: `Pago de Mercado Pago ID: ${paymentId}`, // Opcional: descripción
+      if (!paymentDetails) {
+        return {
+          message: 'No se pudieron obtener los detalles del pago de Mercado Pago',
+          status,
+          paymentId,
+          preferenceId,
         };
-
-        const newPayment = await this.paymentService.create({ createPaymentDto });
-
-        return { message: 'Pago procesado y guardado', status, paymentId, preferenceId, paymentDetails, newPayment };
-      } else {
-        return { message: 'Pago procesado, pero no se pudieron obtener los detalles de Mercado Pago', status, paymentId, preferenceId };
       }
+
+      const createPaymentDto: CreatePaymentDto = {
+        userId: user.id,
+        amount: paymentDetails.transaction_amount ?? 0,
+        description: `Pago Mercado Pago ID: ${paymentId}`,
+      };
+
+      const payment = await this.paymentService.createFromMercadoPago({
+        ...createPaymentDto,
+        status: status as 'accepted' | 'pending' | 'cancelled',
+        payment_date: new Date(paymentDetails.date_approved || paymentDetails.date_created),
+      });
+
+      console.log("Pago guardado en la base de datos: ", payment)
+
+      return {
+        message: 'Pago guardado correctamente',
+        status,
+        paymentId,
+        preferenceId,
+        payment,
+      };
     } catch (error) {
-      console.error('Error al obtener o guardar detalles del pago en Nest.js:', error);
-      return { error: 'Error al procesar el pago' };
+      console.error('Error al procesar el pago:', error);
+      return { error: 'Error interno al procesar el pago' };
     }
   }
 

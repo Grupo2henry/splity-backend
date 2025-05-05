@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
+// src/payment/dto/create-payment.dto.ts
+import { IsNotEmpty, IsNumber, IsString, IsOptional, IsDateString } from 'class-validator';
 
 export class CreatePaymentDto {
   @IsNotEmpty()
@@ -14,5 +15,11 @@ export class CreatePaymentDto {
   @IsString()
   description?: string;
 
-  // Otros campos relevantes para la creación de un pago interno
+  @IsOptional()
+  @IsString()
+  status?: 'accepted' | 'pending' | 'cancelled';
+
+  @IsOptional()
+  @IsDateString()
+  payment_date?: Date;
 }
