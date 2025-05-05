@@ -14,7 +14,7 @@ import { PaymentModule } from './payment/payment.module'; // Módulo de Pago ant
 import { SubscriptionModule } from './subscription/subscription.module';
 import { GroupModule } from './group/group.module';
 // import { GroupMembershipModule } from './group-membership/group-membership.module';
-import { PaymentsModule } from './payments/payments.module';
+import { PaymentsModule } from './payments_aux/payments.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { BalanceModule } from './balance/balance.module';
 @Module({

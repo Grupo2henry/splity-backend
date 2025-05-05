@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 

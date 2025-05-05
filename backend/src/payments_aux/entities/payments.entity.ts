@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
-@Entity()
+@Entity('payment_alternative')
 export class Payment {
   @PrimaryGeneratedColumn()
   id: number;

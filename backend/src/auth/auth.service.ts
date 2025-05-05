@@ -56,6 +56,7 @@ export class AuthService {
   }
   async signUser(email: string, password: string) {
     const user = await this.usersRepository.findOne({ where: { email } });
+    console.log("Este es user: ", user?.name);
     if (!user) {
       throw new HttpException('No matches found', 404);
     }
@@ -69,16 +70,10 @@ export class AuthService {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    // const userPayload = {
-    // sub: user.id,
-    // id: user.id,
-    // email: user.email,
-    // is_premium: user.is_premium,
-    // };
-    // console.log('payload', userPayload);
     if (!user.active) {
       throw new UnauthorizedException('User is not active');
     }
+    console.log("Pase verificaciones primarias. Proto a generar token.");
     const token = await this.jwtService.signAsync(
       {
         //payload
@@ -96,14 +91,7 @@ export class AuthService {
         expiresIn: this.jwtConfiguration.accessTokenTtl,
       },
     );
-    // console.log('retornado en auth service:', {
-    //   //payload
-    //   sub: user.id,
-    //   id: user.id,
-    //   email: user.email,
-    //   is_premium: user.is_premium,
-    //   rol: user.rol,
-    // });
+    console.log("Este es el token: ", token)
     return { token };
   }
 }

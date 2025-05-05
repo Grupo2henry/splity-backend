@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 // src/payment/dto/create-payment.dto.ts
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, IsDateString, IsEnum } from 'class-validator';
+import { Payment } from '../entities/payment.entity'; // Importa la entidad para usar los tipos
 
 export class CreatePaymentDto {
   @IsNotEmpty()
@@ -13,13 +14,17 @@ export class CreatePaymentDto {
 
   @IsOptional()
   @IsString()
-  description?: string;
+  transaction_id?: string;
+
+  @IsNotEmpty()
+  @IsDateString()
+  payment_date: Date;
+
+  @IsNotEmpty()
+  @IsEnum(['accepted', 'pending', 'cancelled'])
+  status: Payment['status']; // Usamos el tipo de la entidad
 
   @IsOptional()
   @IsString()
-  status?: 'accepted' | 'pending' | 'cancelled';
-
-  @IsOptional()
-  @IsDateString()
-  payment_date?: Date;
+  description?: string; // Aunque no está en la entidad, podría ser útil para logs o propósitos internos
 }

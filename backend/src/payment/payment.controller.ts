@@ -3,7 +3,7 @@ import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from 
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { Payment } from './entities/payment.entity'; // Asegúrate de que la ruta a la entidad sea correcta
+import { Payment } from './entities/payment.entity';
 import { MercadoPagoService } from './mercadopago.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
 import { RequestWithUser } from 'src/auth/types/request-with-user';
@@ -56,14 +56,12 @@ export class PaymentController {
       const createPaymentDto: CreatePaymentDto = {
         userId: user.id,
         amount: paymentDetails.transaction_amount ?? 0,
-        description: `Pago Mercado Pago ID: ${paymentId}`,
+        payment_date: new Date(paymentDetails.date_approved || paymentDetails.date_created),
+        status: status as Payment['status'], // Usamos el tipo de la entidad
+        transaction_id: paymentDetails.id?.toString(), // Intentamos obtener el ID de transacción
       };
 
-      const payment = await this.paymentService.createFromMercadoPago({
-        ...createPaymentDto,
-        status: status as 'accepted' | 'pending' | 'cancelled',
-        payment_date: new Date(paymentDetails.date_approved || paymentDetails.date_created),
-      });
+      const payment = await this.paymentService.create(createPaymentDto); // Usamos el método create estándar
 
       console.log("Pago guardado en la base de datos: ", payment)
 
