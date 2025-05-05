@@ -13,6 +13,7 @@ import {
   Inject,
   Post,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ import { Request } from 'express';
 import { REQUEST_USER_KEY } from './constants/auth.constants';
 import { UserService } from '../user/user.service';
 import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
+import { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -62,9 +64,16 @@ export class AuthController {
       },
     },
   })
-  async signIn(@Body() loginUserDto: LoginUserDto) {
+  async signIn(@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
     const { email, password } = loginUserDto;
     const { token } = await this.authService.signUser(email, password);
+    // // Establecer la cookie httpOnly con el token
+    // res.cookie('authToken', token, {
+    //   httpOnly: true,
+    //   secure: false, // true si usás HTTPS (grok), false si usás localhost
+    //   sameSite: 'lax', // permite el uso después de redirecciones como la de Mercado Pago
+    //   maxAge: 3600000, // 1 hora
+    // });
     return { access_token: token };
   }
 

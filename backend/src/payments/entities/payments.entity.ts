@@ -6,7 +6,7 @@ import {
   ManyToOne,
   CreateDateColumn,
 } from 'typeorm';
-import { User } from '../user/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Payment {
@@ -15,9 +15,6 @@ export class Payment {
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
-
-  @Column()
-  method: string;
 
   @Column()
   status: string;

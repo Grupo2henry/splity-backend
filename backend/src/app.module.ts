@@ -15,8 +15,8 @@ import { SeedModule } from './seed/seed.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
-import { MercadoPagoModule } from './mercado-pago/mp.module';
 // import { GroupMembershipModule } from './group-membership/group-membership.module';
+import { PaymentsModule } from './payments/payments.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,7 +31,7 @@ import { MercadoPagoModule } from './mercado-pago/mp.module';
     GroupModule,
     SubscriptionModule,
     ExpensesModule,
-    MercadoPagoModule,
+    PaymentsModule,
   ],
   providers: [
     AppService,

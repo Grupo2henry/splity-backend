@@ -9,7 +9,7 @@ import { Group } from '../group/entities/group.entity';
 import { GroupMembership } from '../group/entities/group-membership.entity';
 import { Expense } from '../entities/expense.entity';
 import { ExpenseSplit } from '../entities/expense-split.entity';
-import { Payment } from '../entities/payments.entity';
+import { Payment } from 'src/payments/entities/payments.entity';
 import { Subscription } from '../entities/subscription.entity';
 
 @Module({
