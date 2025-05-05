@@ -10,4 +10,7 @@ export class CreateExpenseDto {
 
   @IsUUID()
   paid_by: string;
+
+  @IsString()
+  imgUrl: string;
 }

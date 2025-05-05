@@ -36,4 +36,8 @@ export class Expense {
 
   @OneToMany(() => ExpenseSplit, (split) => split.expense)
   splits: ExpenseSplit[];
+
+  @Column({ nullable: true })
+  imgUrl: string;
+
 }
