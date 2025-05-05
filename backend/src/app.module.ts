@@ -8,15 +8,19 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
-import { AccessTokenGuard } from './auth/guards/access-token.guard/access-token.guard';
-import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { SeedModule } from './seed/seed.module';
+import { UserModule } from './user/user.module'; // Módulo de Usuario primero si Subscription depende de él
+import { PaymentModule } from './payment/payment.module'; // Módulo de Pago antes de Subscription
 import { SubscriptionModule } from './subscription/subscription.module';
-import { ExpensesModule } from './expenses/expenses.module';
 import { GroupModule } from './group/group.module';
+<<<<<<< HEAD
 // import { GroupMembershipModule } from './group-membership/group-membership.module';
 import { PaymentsModule } from './payments/payments.module';
+=======
+import { ExpensesModule } from './expenses/expenses.module';
+import { BalanceModule } from './balance/balance.module';
+
+>>>>>>> origin/develop
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,18 +29,26 @@ import { PaymentsModule } from './payments/payments.module';
     }),
     TypeOrmModule.forRoot(dbConfig),
     AuthModule,
+    UserModule,
+    PaymentModule, // Asegúrate de que PaymentModule esté antes de SubscriptionModule
+    SubscriptionModule,
+    GroupModule,
+    ExpensesModule,
+    SeedModule, // Puedes dejar SeedModule al final
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+<<<<<<< HEAD
     SeedModule,
     GroupModule,
     SubscriptionModule,
     ExpensesModule,
     PaymentsModule,
+=======
+    BalanceModule,
+>>>>>>> origin/develop
   ],
   providers: [
     AppService,
-    { provide: APP_GUARD, useClass: AuthenticationGuard },
-    AccessTokenGuard,
   ],
   controllers: [AppController],
 })

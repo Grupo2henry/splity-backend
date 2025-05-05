@@ -1,42 +1,21 @@
+/* eslint-disable prettier/prettier */
+// src/group/dto/create-group.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsArray, IsEnum } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateGroupDto {
-  /**
-   * Nombre del creador del grupo.
-   * @example "Juan Pérez"
-   */
-  @ApiProperty({ example: 'Juan Pérez' })
+  @ApiProperty({ example: 'f8c5d4b6-1c23-4a23-9b8c-6e8c5a33ef21' })
+  @IsNotEmpty()
+  @IsUUID()
+  creatorId: string;
+
+  @ApiProperty({ example: 'Viaje a Córdoba' })
   @IsNotEmpty()
   @IsString()
-  creatorName: string;
+  name: string;
 
-  /**
-   * Nombre del evento.
-   * @example "Cumpleaños de Pedro"
-   */
-  @ApiProperty({ example: 'Cumpleaños de Pedro' })
-  @IsNotEmpty()
-  @IsString()
-  eventName: string;
-
-  /**
-   * Lista de participantes.
-   * @example ["María", "Carlos", "Ana"]
-   */
-  @ApiProperty({ example: ['María', 'Carlos', 'Ana'] })
+  @ApiProperty({ example: ['uuid-user-1', 'uuid-user-2'] })
   @IsArray()
-  @IsString({ each: true })
+  @IsUUID('all', { each: true })
   participants: string[];
-
-  /**
-   * Tipo de moneda.
-   * @example "pesos"
-   */
-  @ApiProperty({ example: 'pesos' })
-  @IsNotEmpty()
-  @IsEnum(['pesos', 'dolares'], {
-    message: "La moneda debe ser 'pesos' o 'dolares'.",
-  })
-  currency: 'pesos' | 'dolares';
 }

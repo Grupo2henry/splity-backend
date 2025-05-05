@@ -1,0 +1,12 @@
+[
+  {"email": "gonzalo@example.com", "password": "Gonza123!"},
+  {"email": "nico@example.com", "password": "NicoDev2#"},
+  {"email": "laura@example.com", "password": "Laura888%"},
+  {"email": "martin@example.com", "password": "Martin44$"},
+  {"email": "sofia@example.com", "password": "Sofia123^"},
+  {"email": "javier@example.com", "password": "Javier77&"},
+  {"email": "cesar.garcia@example.com", "password": "CesarG123*"},
+  {"email": "nicolas.alvarez@example.com", "password": "NicolasA456!"}
+]
+
+grupo: 17

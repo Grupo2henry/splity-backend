@@ -1,11 +1,16 @@
 /* eslint-disable prettier/prettier */
 import { Role } from '../../auth/enums/role.enum';
-import { Expense } from '../../entities/expense.entity';
-import { ExpenseSplit } from '../../entities/expense-split.entity';
+import { Expense } from '../../expenses/entities/expense.entity';
+import { ExpenseSplit } from '../../expenses/entities/expense-split.entity';
 import { Group } from '../../group/entities/group.entity';
 import { GroupMembership } from '../../group/entities/group-membership.entity';
+<<<<<<< HEAD
 import { Payment } from 'src/payments/entities/payments.entity';
 import { Subscription } from '../../entities/subscription.entity';
+=======
+import { Payment } from '../../payment/entities/payment.entity';
+import { Subscription } from '../../subscription/entities/subscription.entity';
+>>>>>>> origin/develop
 import {
   Column,
   Entity,
@@ -41,13 +46,14 @@ export class User {
   is_premium: boolean;
 
   @Column({ default: Role.User })
-  rol: string;
+  role: string;
 
   @Column({ default: true })
   active: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
+
   @OneToMany(() => Group, (group) => group.created_by)
   groupsCreated: Group[];
 
@@ -65,4 +71,5 @@ export class User {
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
+
 }

@@ -8,6 +8,16 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../.env.development') });
 
 console.log('DB_USERNAME cargado:', process.env.DB_USERNAME);
+let dropSchemaDB = true;
+
+if(process.env.DROP_SCHEMA === 'false'){
+  dropSchemaDB = false;
+}else if(process.env.DROP_SCHEMA === 'true'){
+  dropSchemaDB = true;
+  }else{
+    dropSchemaDB = true;
+  }
+
 export const dbConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   url: process.env.DATABASE_PUBLIC_URL,
@@ -18,7 +28,7 @@ export const dbConfig: TypeOrmModuleOptions = {
   // password: process.env.DB_PASSWORD,
   //sdf
   autoLoadEntities: true,
-  dropSchema: false, //Poner en true llegado el caso
+  dropSchema: dropSchemaDB, //Poner en true llegado el caso
   synchronize: true,
   logging: false,
   ssl: false, // ponelo en true para prod con SSL

@@ -43,10 +43,12 @@ export class AccessTokenGuard implements CanActivate {
       console.log('necesitas un token');
       throw new UnauthorizedException();
     }
+    console.log("Estoy a punto de salir del access-token")
     return true;
   }
   private extractRequestFromHeader(request: Request): string | undefined {
     const [_, token] = request.headers.authorization?.split(' ') ?? [];
+    console.log("Esto no se que hace pero estoy antes de devolver el token")
     return token;
   }
 }

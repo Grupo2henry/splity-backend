@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from '../../config/jwt.config';
@@ -31,7 +32,7 @@ export class GenerateTokensProvider {
         id: user.id,
         email: user.email,
         is_premium: user.is_premium,
-        rol: user.rol,
+        role: user.role,
       },
       {
         //secrets
@@ -47,7 +48,7 @@ export class GenerateTokensProvider {
       id: user.id,
       email: user.email,
       is_premium: user.is_premium,
-      rol: user.rol,
+      role: user.role,
     });
     return { token };
   }

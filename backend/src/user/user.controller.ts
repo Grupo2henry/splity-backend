@@ -10,6 +10,7 @@ import {
   Put,
   Req,
   UseGuards,
+  Query
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -26,6 +27,8 @@ import {
 } from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response.user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
+
 @Controller('users')
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -34,8 +37,8 @@ export class UsuariosController {
 
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
+  //@Roles(Role.Admin)  inyecta rol a la metadata
+  @UseGuards(AccessTokenGuard) // comprueba el rol requerido
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los usuario, solo lo puede hacer el administrador',
@@ -48,6 +51,21 @@ export class UsuariosController {
   findAll() {
     return this.userService.findAll();
   }
+
+  @Get('user-by-email') // Define the specific endpoint
+  @ApiOperation({
+    summary: 'Obtiene usuarios por coincidencia parcial de email',
+  })
+  @ApiOkResponse({
+    description: 'Listado de usuarios que coinciden con el email',
+    type: UserResponseDto,
+    isArray: true,
+  })
+  findUsersByEmail(@Query('email') email: string) {
+    console.log("Estoy en getUserByEmail")
+    return this.userService.findUsersByEmail(email);
+  }
+
   @Put('delete')
   @ApiOperation({
     summary: 'Cambia is active del propio usuario a false',
