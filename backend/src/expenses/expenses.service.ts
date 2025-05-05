@@ -46,7 +46,13 @@ export class ExpensesService {
       ...updateData,
       paid_by: updateData.paid_by ? { id: String(updateData.paid_by) } : undefined,
     };
-    await this.expenseRepository.update(id, transformedData);
+
+    const updateResult = await this.expenseRepository.update(id, transformedData);
+
+    if (updateResult.affected === 0) {
+      throw new Error(`Expense with id ${id} not found or no changes were made.`);
+    }
+
     return this.getExpense(id);
   }
 
