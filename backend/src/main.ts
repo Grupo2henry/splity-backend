@@ -18,6 +18,7 @@ async function bootstrap() {
     );
 
     app.enableCors({
+<<<<<<< HEAD
       /*origin: [
         'http://172.22.240.1:3000/',
         'http://localhost:5173',
@@ -35,9 +36,19 @@ async function bootstrap() {
       },
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       
+=======
+      origin: [
+        client,
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://172.22.240.1:3000',
+        'https://27a0-2803-9800-98c5-a8c-c49b-6af8-fc85-6d76.ngrok-free.app',
+      ], // Reemplaza con la URL del cliente
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+>>>>>>> 4431f26f24fa0927f2253e62a60b19ac3606bbff
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true, // Si necesitas enviar cookies o encabezados de autenticación
-    })
+    });
 
     const config = new DocumentBuilder()
       .setTitle('Splity')

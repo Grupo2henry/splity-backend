@@ -11,6 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { GoogleAuthenticationController } from './social/google-authentication.controller';
 import { GoogleAuthenticationService } from './social/providers/google-authentication.service';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider';
+import { MailsModule } from 'src/mails/mails.module';
 import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
 import { AuthenticationGuard } from './guards/authentication/authentication.guard';
 
@@ -20,6 +21,7 @@ import { AuthenticationGuard } from './guards/authentication/authentication.guar
     TypeOrmModule.forFeature([User]),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    MailsModule,
   ],
   providers: [
     AuthService,

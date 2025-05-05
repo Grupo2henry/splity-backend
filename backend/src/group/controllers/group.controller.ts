@@ -31,7 +31,7 @@ import { RequestWithUser } from 'src/auth/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 
 @ApiBearerAuth()
-@Controller('groups')
+@Controller()
 @ApiTags('Groups')
 export class GroupController {
   constructor(
@@ -69,17 +69,40 @@ export class GroupController {
       return await this.groupService.createGroupWithParticipants(createGroupDto);
     }
 
-  @Get()
+  @Get('groups')
+  @ApiOperation({
+    summary: 'Devuelve todos los grupos en la base de datos',
+  })
+  @ApiOkResponse({
+    description: 'Grupos registrados',
+    schema: {
+      example: {
+        creatorId: "d8a7382c-bb90-4e83-8882-c7486c9b279d",
+        name: "Nuevo Grupo de Amigos",
+        participants: [
+          "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
+          "14e8bb7f-a2c1-4f03-b244-635f970547ce",
+          "40586790-bca4-4e0b-b88b-2f104594337c"
+        ]
+      },
+    },
+  })
   async findAll() {
     return this.groupService.findAll();
   }
 
-  @Get(':id')
+  @Get('groups/id/:id')
+  @ApiOperation({
+    summary: 'Devuelve el grupo segun la id',
+  })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.groupService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('groups/id/:id')
+  @ApiOperation({
+    summary: 'Actualiza el grupo segun la id',
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupDto: UpdateGroupDto,
@@ -87,7 +110,10 @@ export class GroupController {
     return this.groupService.update(id, updateGroupDto);
   }
 
-  @Delete(':id')
+  @Delete('groups/id/:id')
+  @ApiOperation({
+    summary: 'Elimina el grupo segun la id',
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupService.remove(id);
