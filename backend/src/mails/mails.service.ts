@@ -18,7 +18,7 @@ export class MailsService {
         template: './welcome',
         context: {
           name: user.name,
-          url: 'https://localhost:3000',
+          url: process.env.CLIENT_URL,
         },
       });
 
