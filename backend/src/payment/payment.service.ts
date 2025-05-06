@@ -3,12 +3,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { PaymentRepository } from './payment.repository'; // Importa el repositorio personalizado
+import { PaymentRepository } from './payment.repository';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class PaymentService {
   constructor(
-    private readonly paymentRepository: PaymentRepository, // Inyecta el repositorio personalizado
+    private readonly paymentRepository: PaymentRepository,
   ) {}
 
   async findAll(): Promise<Payment[]> {
@@ -20,7 +21,17 @@ export class PaymentService {
   }
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
-    const payment = this.paymentRepository.create(createPaymentDto);
+    const { userId, amount, status, payment_date, transaction_id } = createPaymentDto;
+
+    const payment = this.paymentRepository.create({
+      user: { id: userId } as User,
+      amount,
+      status,
+      payment_date,
+      transaction_id,
+      active: true, // Establecemos active por defecto al crear
+    });
+
     return this.paymentRepository.save(payment);
   }
 
@@ -40,7 +51,7 @@ export class PaymentService {
     }
   }
 
-  // Ejemplo de uso del método personalizado
+  // Ejemplo de uso del método personalizado (se mantiene sin cambios si es necesario)
   async getAcceptedPaymentsByUser(userId: number): Promise<Payment[]> {
     return this.paymentRepository.findAcceptedPaymentsByUser(userId);
   }

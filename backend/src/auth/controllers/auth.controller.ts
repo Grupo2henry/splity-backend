@@ -3,9 +3,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { AuthService } from './auth.service';
-import { CreateUserDto } from '../user/dto/create.user.dto';
-import { UserResponseDto } from '../user/dto/response.user.dto';
+import { AuthService } from '../service/auth.service';
+import { CreateUserDto } from '../../user/dto/create.user.dto';
+import { UserResponseDto } from '../../user/dto/response.user.dto';
 import {
   Body,
   Controller,
@@ -16,15 +16,15 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
+  HttpStatus
 } from '@nestjs/common';
-import { LoginUserDto } from '../user/dto/signin.user.dto';
-import { Auth } from './decorators/auth.decorator';
-import { AuthType } from './enums/auth-type.enum';
+import { LoginUserDto } from '../../user/dto/signin.user.dto';
+import { Auth } from '../decorators/auth.decorator';
+import { AuthType } from '../enums/auth-type.enum';
 import { Request } from 'express';
-import { REQUEST_USER_KEY } from './constants/auth.constants';
-import { UserService } from '../user/user.service';
-import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
-import { Response } from 'express';
+import { REQUEST_USER_KEY } from '../constants/auth.constants';
+import { UserService } from '../../user/user.service';
+import { AccessTokenGuard } from '../guards/access-token.guard/access-token.guard';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -64,16 +64,10 @@ export class AuthController {
       },
     },
   })
-  async signIn(@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
+  async signIn(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     const { token } = await this.authService.signUser(email, password);
-    // // Establecer la cookie httpOnly con el token
-    // res.cookie('authToken', token, {
-    //   httpOnly: true,
-    //   secure: false, // true si usás HTTPS (grok), false si usás localhost
-    //   sameSite: 'lax', // permite el uso después de redirecciones como la de Mercado Pago
-    //   maxAge: 3600000, // 1 hora
-    // });
+    console.log("Token obtenido del servicio: ", token)
     return { access_token: token };
   }
 

@@ -14,7 +14,7 @@ import { PaymentModule } from './payment/payment.module'; // Módulo de Pago ant
 import { SubscriptionModule } from './subscription/subscription.module';
 import { GroupModule } from './group/group.module';
 // import { GroupMembershipModule } from './group-membership/group-membership.module';
-import { PaymentsModule } from './payments/payments.module';
+import { LiquidationsModule } from './liquidations/liquidations.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { BalanceModule } from './balance/balance.module';
 @Module({
@@ -37,7 +37,7 @@ import { BalanceModule } from './balance/balance.module';
     GroupModule,
     SubscriptionModule,
     ExpensesModule,
-    PaymentsModule,
+    LiquidationsModule,
     BalanceModule,
   ],
   providers: [AppService],
