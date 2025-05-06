@@ -45,9 +45,10 @@ async function bootstrap() {
       .addBearerAuth() // Add Bearer Auth for Swagger
       .build();
     const document = SwaggerModule.createDocument(app, config);
+    const port = process.env.PORT || 4000;
     SwaggerModule.setup('api', app, document);
-    await app.listen(4000);
-    console.log(` Servidor corriendo en http://localhost:4000`);
+    await app.listen(port);
+    console.log(` Servidor corriendo en puerto: ${port}`);
   } catch (error) {
     console.error(' Error al iniciar el servidor:', error);
   }
