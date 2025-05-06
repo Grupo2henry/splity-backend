@@ -14,12 +14,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/response.user.dto';
 import { FindOneByGoogleIdTs } from './providers/find-one-by-google-id.ts';
 import { GoogleUser } from './interfaces/google-user.interface';
+import { MailsService } from 'src/mails/mails.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly findOneByGoogleIdprovider: FindOneByGoogleIdTs,
+    private readonly mailService: MailsService,
   ) {}
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
@@ -87,6 +89,10 @@ export class UserService {
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
       const user = this.userRepository.create(googleUser);
+      await this.mailService.sendUserConfirmation({
+        name: googleUser.name,
+        email: googleUser.email,
+      });
       return await this.userRepository.save(user);
     } catch (error) {
       console.error('Error creating user:', error);
