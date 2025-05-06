@@ -86,6 +86,7 @@ export class UserService {
 
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
+      console.log("Este es el google user: ", googleUser)
       const user = this.userRepository.create(googleUser);
       return await this.userRepository.save(user);
     } catch (error) {

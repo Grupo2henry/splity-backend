@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export interface GoogleUser {
   email: string;
   name: string;

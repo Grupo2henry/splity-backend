@@ -10,13 +10,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from '../user/dto/create.user.dto';
+import { CreateUserDto } from '../../user/dto/create.user.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginUserDto } from '../user/dto/signin.user.dto';
-import jwtConfig from '../config/jwt.config';
+import { LoginUserDto } from '../../user/dto/signin.user.dto';
+import jwtConfig from '../../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { MailsService } from 'src/mails/mails.service';
 

@@ -3,9 +3,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { AuthService } from './auth.service';
-import { CreateUserDto } from '../user/dto/create.user.dto';
-import { UserResponseDto } from '../user/dto/response.user.dto';
+import { AuthService } from '../service/auth.service';
+import { CreateUserDto } from '../../user/dto/create.user.dto';
+import { UserResponseDto } from '../../user/dto/response.user.dto';
 import {
   Body,
   Controller,
@@ -18,13 +18,13 @@ import {
   UseGuards,
   HttpStatus
 } from '@nestjs/common';
-import { LoginUserDto } from '../user/dto/signin.user.dto';
-import { Auth } from './decorators/auth.decorator';
-import { AuthType } from './enums/auth-type.enum';
+import { LoginUserDto } from '../../user/dto/signin.user.dto';
+import { Auth } from '../decorators/auth.decorator';
+import { AuthType } from '../enums/auth-type.enum';
 import { Request } from 'express';
-import { REQUEST_USER_KEY } from './constants/auth.constants';
-import { UserService } from '../user/user.service';
-import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
+import { REQUEST_USER_KEY } from '../constants/auth.constants';
+import { UserService } from '../../user/user.service';
+import { AccessTokenGuard } from '../guards/access-token.guard/access-token.guard';
 import { Response } from 'express';
 import {
   ApiBearerAuth,
