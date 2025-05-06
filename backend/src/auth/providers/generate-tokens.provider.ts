@@ -3,19 +3,12 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from '../../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Injectable()
 export class GenerateTokensProvider {
   constructor(
-    /**
-     * Inject jwtService
-     */
     private readonly jwtService: JwtService,
-
-    /**
-     * Inject jwtConfiguration
-     */
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
   ) {}
@@ -42,14 +35,6 @@ export class GenerateTokensProvider {
         expiresIn: this.jwtConfiguration.accessTokenTtl,
       },
     );
-    console.log('retornado del token de google:', {
-      //payload
-      sub: user.id,
-      id: user.id,
-      email: user.email,
-      is_premium: user.is_premium,
-      role: user.role,
-    });
-    return { token };
+    return token ;
   }
 }
