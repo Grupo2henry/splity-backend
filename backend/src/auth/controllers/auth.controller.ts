@@ -25,7 +25,6 @@ import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../constants/auth.constants';
 import { UserService } from '../../user/user.service';
 import { AccessTokenGuard } from '../guards/access-token.guard/access-token.guard';
-import { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -65,11 +64,11 @@ export class AuthController {
       },
     },
   })
-  async signIn(@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
+  async signIn(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     const { token } = await this.authService.signUser(email, password);
     console.log("Token obtenido del servicio: ", token)
-    return res.status(HttpStatus.OK).json({ access_token: token });
+    return { access_token: token };
   }
 
   @Get('me')
