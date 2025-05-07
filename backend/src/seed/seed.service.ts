@@ -148,24 +148,30 @@ export class SeedService implements OnApplicationBootstrap {
     }
     console.log('[SeedService] Divisiones cargadas.');
 
-    // 6. Pagos
-    const savedPayments: Payment[] = [];
-    for (const paymentSeed of paymentsSeed) {
-      const user = await this.userRepo.findOne({ where: { email: paymentSeed.user.email } });
-      if (!user) {
-        throw new Error(`Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`);
-      }
-      const newPayment = this.paymentRepo.create({
-        amount: paymentSeed.amount,
-        status: paymentSeed.status,
-        payment_date: paymentSeed.payment_date,
-        user: user, // aseguramos que sea una entidad User real
-      } as Partial<Payment>); // ✅ Forzamos el tipo para evitar errores de sobrecarga
-    
-      const savedPayment = await this.paymentRepo.save(newPayment);
-      savedPayments.push(savedPayment);
+  // 6. Pagos
+  const savedPayments: Payment[] = [];
+  for (const paymentSeed of paymentsSeed) {
+    const user = await this.userRepo.findOne({
+      where: { email: paymentSeed.user.email },
+    });
+    if (!user) {
+      throw new Error(
+        `Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`,
+      );
     }
-    console.log('[SeedService] Pagos cargados.');
+    const newPayment = this.paymentRepo.create({
+      amount: paymentSeed.amount,
+      status: paymentSeed.status,
+      transaction_id: paymentSeed.transaction_id,
+      payment_date: paymentSeed.payment_date,
+      user: user,
+      active: paymentSeed.active,
+    } as Partial<Payment>);
+
+    const savedPayment = await this.paymentRepo.save(newPayment);
+    savedPayments.push(savedPayment);
+  }
+  console.log('[SeedService] Pagos cargados.');
 
     // 7. Subscripciones
     for (let i = 0; i < subscriptionsSeed.length; i++) {
@@ -183,7 +189,7 @@ export class SeedService implements OnApplicationBootstrap {
         active: subscriptionSeed.status === 'active',
         user: user, // Asigna la instancia de User
         payment: linkedPayment, // Asigna la instancia de Payment (o null)
-      }as Partial<Subscription>);
+      } as Partial<Subscription>);
 
       await this.subscriptionRepo.save(newSubscription);
     }

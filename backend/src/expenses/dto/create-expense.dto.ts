@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsString, IsNumber, IsUUID, IsDateString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsUUID, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateExpenseDto {
   @ApiProperty({
@@ -29,12 +28,14 @@ export class CreateExpenseDto {
   @IsUUID()
   paid_by: string;
 
+
   @ApiProperty({
     description: 'URL of the expense image (optional)',
     example: 'https://res.cloudinary.com/example/image/upload/v1234567890/expense_image.jpg',
     required: false,
     nullable: true
   })
+  @IsOptional()
   @IsString()
   imgUrl: string;
 

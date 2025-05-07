@@ -18,11 +18,26 @@ async function bootstrap() {
     );
 
     app.enableCors({
-      origin: [client, 'http://localhost:5173', 'http://localhost:3000', 'http://172.22.240.1:3000'], // Reemplaza con la URL del cliente
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      /*origin: [
+        'http://172.22.240.1:3000/',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://172.22.240.1:3000',
+        'https://9728-181-4-211-243.ngrok-free.app',
+        'https://real-years-draw.loca.lt',
+      ], // Reemplaza con la URL del cliente en produccion*/
+      origin: (origin, callback) => {
+        // Permitir todas las requests si no hay origin (como en Postman o curl)
+        if (!origin) return callback(null, true);
+    
+        // Permitir todas las origins en desarrollo
+        return callback(null, true);
+      },
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true, // Si necesitas enviar cookies o encabezados de autenticación
-    })
+    });
 
     const config = new DocumentBuilder()
       .setTitle('Splity')
@@ -30,9 +45,10 @@ async function bootstrap() {
       .addBearerAuth() // Add Bearer Auth for Swagger
       .build();
     const document = SwaggerModule.createDocument(app, config);
+    const port = process.env.PORT || 4000;
     SwaggerModule.setup('api', app, document);
-    await app.listen(4000);
-    console.log(` Servidor corriendo en http://localhost:4000`);
+    await app.listen(port);
+    console.log(` Servidor corriendo en puerto: ${port}`);
   } catch (error) {
     console.error(' Error al iniciar el servidor:', error);
   }

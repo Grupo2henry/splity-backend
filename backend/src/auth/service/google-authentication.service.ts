@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   forwardRef,
@@ -10,10 +10,10 @@ import {
 import { ConfigType } from '@nestjs/config';
 
 import { OAuth2Client } from 'google-auth-library';
-import jwtConfig from 'src/config/jwt.config';
-import { GoogleTokenDto } from './dtos/google-authentication.dto';
-import { UserService } from 'src/user/user.service';
-import { GenerateTokensProvider } from 'src/auth/providers/generate-tokens.provider';
+import jwtConfig from '../../config/jwt.config';
+import { GoogleTokenDto } from '../dtos/google-authentication.dto';
+import { UserService } from '../../user/user.service';
+import { GenerateTokensProvider } from '../../auth/providers/generate-tokens.provider';
 
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {
@@ -37,7 +37,6 @@ export class GoogleAuthenticationService implements OnModuleInit {
       const loginTicket = await this.oauthclient.verifyIdToken({
         idToken: googleTokenDto.token,
       });
-      console.log('login de google', loginTicket);
       const payload = loginTicket.getPayload();
       if (!payload) throw new Error('Token inválido');
       const {
@@ -53,11 +52,9 @@ export class GoogleAuthenticationService implements OnModuleInit {
         );
       }
       const user = await this.userService.findByGoogleId(googleId);
-      console.log('hay user?', user);
       if (user) {
         return this.generateTokensprovider.generateToken(user);
       }
-      console.log('por crear usuario');
       const newUser = await this.userService.createGoogleUser({
         email: email,
         name: name,
@@ -65,7 +62,6 @@ export class GoogleAuthenticationService implements OnModuleInit {
         googleId: googleId,
         profile_picture_url: profile_picture_url,
       });
-      console.log('newUser');
       return this.generateTokensprovider.generateToken(newUser);
     } catch (error) {
       throw new UnauthorizedException(error);
