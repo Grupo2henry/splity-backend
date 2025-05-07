@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
@@ -18,7 +17,7 @@ export class MailsService {
         template: './welcome',
         context: {
           name: user.name,
-          url: process.env.CLIENT_URL,
+          url: 'https://localhost:3000',
         },
       });
 
