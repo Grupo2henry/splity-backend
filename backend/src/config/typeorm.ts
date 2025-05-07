@@ -8,7 +8,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../.env.development') });
 
 console.log('DB_USERNAME cargado:', process.env.DB_USERNAME);
-let dropSchemaDB = true;
+let dropSchemaDB = false;
 
 if(process.env.DROP_SCHEMA === 'false'){
   dropSchemaDB = false;

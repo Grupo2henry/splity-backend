@@ -36,6 +36,8 @@ export class ExpensesService {
       amount: dto.amount,
       paid_by: { id: String(dto.paid_by) } as Partial<User>,
       group: { id: groupId } as Group,
+      date: new Date(dto.date),
+      imgUrl: dto.imgUrl,
     });
 
     return this.expenseRepository.save(expense);

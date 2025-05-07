@@ -39,4 +39,20 @@ export class CloudinaryController {
     return this.cloudinaryService.uploadImage(file, id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Post('users/:id/profile-image')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadProfileImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    if (!file) {
+      return {
+        statusCode: 400,
+        message: 'No image file uploaded',
+      };
+    }
+    return this.cloudinaryService.uploadProfileImage(file, id);
+  }
 }
