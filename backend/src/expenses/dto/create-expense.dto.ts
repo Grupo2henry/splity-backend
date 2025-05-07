@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 
-import { IsString, IsNumber, IsUUID, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsUUID, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateExpenseDto {
   @IsString()
