@@ -10,14 +10,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from '../user/dto/create.user.dto';
+import { CreateUserDto } from '../../user/dto/create.user.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginUserDto } from '../user/dto/signin.user.dto';
-import jwtConfig from '../config/jwt.config';
+import { LoginUserDto } from '../../user/dto/signin.user.dto';
+import jwtConfig from '../../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
+import { MailsService } from 'src/mails/mails.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly emailServie: MailsService,
   ) {}
   async signUpUser(credentials: CreateUserDto) {
     if (credentials.password !== credentials.confirm_password) {
@@ -47,10 +49,14 @@ export class AuthService {
       password: hashedPassword,
     });
     const savedUser = await this.usersRepository.save(newUser);
+    const { name, email } = savedUser;
+    console.log(name, email);
+    await this.emailServie.sendUserConfirmation({ name, email });
     return savedUser;
   }
   async signUser(email: string, password: string) {
     const user = await this.usersRepository.findOne({ where: { email } });
+    console.log("Este es user: ", user?.name);
     if (!user) {
       throw new HttpException('No matches found', 404);
     }
@@ -64,16 +70,10 @@ export class AuthService {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    // const userPayload = {
-    // sub: user.id,
-    // id: user.id,
-    // email: user.email,
-    // is_premium: user.is_premium,
-    // };
-    // console.log('payload', userPayload);
     if (!user.active) {
       throw new UnauthorizedException('User is not active');
     }
+    console.log("Pase verificaciones primarias. Proto a generar token.");
     const token = await this.jwtService.signAsync(
       {
         //payload
@@ -91,14 +91,7 @@ export class AuthService {
         expiresIn: this.jwtConfiguration.accessTokenTtl,
       },
     );
-    // console.log('retornado en auth service:', {
-    //   //payload
-    //   sub: user.id,
-    //   id: user.id,
-    //   email: user.email,
-    //   is_premium: user.is_premium,
-    //   rol: user.rol,
-    // });
+    console.log("Este es el token: ", token)
     return { token };
   }
 }

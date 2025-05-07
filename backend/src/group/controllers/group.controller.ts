@@ -41,7 +41,7 @@ export class GroupController {
   ) {}
 
   @UseGuards(AccessTokenGuard)
-  @Post()
+  @Post('groups')
   @ApiOperation({
       summary: 'Crea un grupo/evento nuevo con un listado de participantes',
     })

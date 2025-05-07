@@ -1,5 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
@@ -20,7 +32,9 @@ export class SubscriptionController {
   }
 
   @Post()
-  async create(@Body() createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
+  async create(
+    @Body() createSubscriptionDto: CreateSubscriptionDto,
+  ): Promise<Subscription> {
     return this.subscriptionService.create(createSubscriptionDto);
   }
 
