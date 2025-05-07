@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsString, IsNumber, IsUUID } from 'class-validator';
+import { IsString, IsNumber, IsUUID, IsDateString } from 'class-validator';
 
 export class CreateExpenseDto {
   @IsString()
@@ -13,4 +13,7 @@ export class CreateExpenseDto {
 
   @IsString()
   imgUrl: string;
+
+  @IsDateString()
+  date: string;
 }

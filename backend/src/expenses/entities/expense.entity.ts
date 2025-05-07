@@ -34,6 +34,9 @@ export class Expense {
   @CreateDateColumn()
   created_at: Date;
 
+  @Column({ type: 'timestamp' })
+  date: Date;
+
   @OneToMany(() => ExpenseSplit, (split) => split.expense)
   splits: ExpenseSplit[];
 
