@@ -88,8 +88,9 @@ export class UserService {
 
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
-      console.log("Este es el google user: ", googleUser)
+      console.log('Este es el google user: ', googleUser);
       const user = this.userRepository.create(googleUser);
+      console.log('por mandar mail');
       await this.mailService.sendUserConfirmation({
         name: googleUser.name,
         email: googleUser.email,

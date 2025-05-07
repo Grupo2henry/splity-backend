@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -29,12 +32,12 @@ async function bootstrap() {
       origin: (origin, callback) => {
         // Permitir todas las requests si no hay origin (como en Postman o curl)
         if (!origin) return callback(null, true);
-    
+
         // Permitir todas las origins en desarrollo
         return callback(null, true);
       },
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      
+
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true, // Si necesitas enviar cookies o encabezados de autenticación
     });
