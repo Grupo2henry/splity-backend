@@ -97,7 +97,7 @@ import {
     return this.groupMembershipService.findOne(id);
   }
   
-  @Get('users/me/groups')
+  @Get('users/me/groups/all')
   @ApiOperation({
     summary: 'Devuelve todos los grupos a los que pertenezca el usuario logueado',
   })
@@ -112,7 +112,7 @@ import {
   }
 
 
-  @Get('users/me/groups/joined')
+  @Get('users/me/groups/')
   @ApiOperation({
     summary: 'Devuelve los grupos del usuario logueado filtrados por su rol (query parameter)',
   })
