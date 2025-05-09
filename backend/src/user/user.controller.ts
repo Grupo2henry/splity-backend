@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -10,7 +10,9 @@ import {
   Put,
   Req,
   UseGuards,
-  Query
+  Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -28,6 +30,9 @@ import {
 import { UserResponseDto } from './dto/response.user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 @ApiBearerAuth()
@@ -62,7 +67,7 @@ export class UsuariosController {
     isArray: true,
   })
   findUsersByEmail(@Query('email') email: string) {
-    console.log("Estoy en getUserByEmail")
+    console.log('Estoy en getUserByEmail');
     return this.userService.findUsersByEmail(email);
   }
 
@@ -88,7 +93,6 @@ export class UsuariosController {
       if (!userPayload) {
         return { message: 'Usuario no autenticado' };
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const user = await this.userService.desactivateUser(userPayload.sub);
       return new UserResponseDto(user);
     } catch (error) {
@@ -118,6 +122,41 @@ export class UsuariosController {
     const result = await this.userService.desactivateUser(id);
     return result;
   }
+  //modificar los auth luego
+  @Auth(AuthType.None)
+  @Get('usersByAdmin')
+  @ApiOperation({
+    summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de usuarios',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+            name: 'Juan Pérez',
+            email: 'juan.perez@example.com',
+            createdAt: '2024-04-27T12:00:00.000Z',
+          },
+        ],
+        total: 1,
+        page: 1,
+        lastPage: 1,
+      },
+    },
+  })
+  async getUsersByadmin(
+    @Query('page') page = 1,
+    @Query('limit') limit = 6,
+    @Query('search') search = '',
+  ): Promise<{ data: User[]; total: number; page: number; lastPage: number }> {
+    try {
+      return await this.userService.getUsersAdmin(page, limit, search);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   @Get(':id')
   @ApiOperation({
     summary: 'Obtiene usuario por id',
@@ -127,10 +166,11 @@ export class UsuariosController {
     type: UserResponseDto,
   })
   async getUserById(@Param('id', UUIDValidationPipe) id: string) {
-    const userFound = await this.userService.findOne(id);
+    const userFound = await this.userService.findOneAdmin(id);
     if (!userFound) {
       throw new NotFoundException('Usuario no encontrado');
     }
+    console.log(userFound);
     return userFound;
   }
 

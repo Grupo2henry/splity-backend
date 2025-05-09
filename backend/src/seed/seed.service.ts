@@ -41,7 +41,7 @@ export class SeedService implements OnApplicationBootstrap {
     }
     console.log('[SeedService] Ejecutando onModuleInit...');
     const userCount = await this.userRepo.count();
-    if (userCount > 0) {
+    if (userCount > 3) {
       console.log('[SeedService] Datos ya cargados. Ignorando precarga.');
       return;
     }
@@ -148,30 +148,30 @@ export class SeedService implements OnApplicationBootstrap {
     }
     console.log('[SeedService] Divisiones cargadas.');
 
-  // 6. Pagos
-  const savedPayments: Payment[] = [];
-  for (const paymentSeed of paymentsSeed) {
-    const user = await this.userRepo.findOne({
-      where: { email: paymentSeed.user.email },
-    });
-    if (!user) {
-      throw new Error(
-        `Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`,
-      );
-    }
-    const newPayment = this.paymentRepo.create({
-      amount: paymentSeed.amount,
-      status: paymentSeed.status,
-      transaction_id: paymentSeed.transaction_id,
-      payment_date: paymentSeed.payment_date,
-      user: user,
-      active: paymentSeed.active,
-    } as Partial<Payment>);
+    // 6. Pagos
+    const savedPayments: Payment[] = [];
+    for (const paymentSeed of paymentsSeed) {
+      const user = await this.userRepo.findOne({
+        where: { email: paymentSeed.user.email },
+      });
+      if (!user) {
+        throw new Error(
+          `Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`,
+        );
+      }
+      const newPayment = this.paymentRepo.create({
+        amount: paymentSeed.amount,
+        status: paymentSeed.status,
+        transaction_id: paymentSeed.transaction_id,
+        payment_date: paymentSeed.payment_date,
+        user: user,
+        active: paymentSeed.active,
+      } as Partial<Payment>);
 
-    const savedPayment = await this.paymentRepo.save(newPayment);
-    savedPayments.push(savedPayment);
-  }
-  console.log('[SeedService] Pagos cargados.');
+      const savedPayment = await this.paymentRepo.save(newPayment);
+      savedPayments.push(savedPayment);
+    }
+    console.log('[SeedService] Pagos cargados.');
 
     // 7. Subscripciones
     for (let i = 0; i < subscriptionsSeed.length; i++) {

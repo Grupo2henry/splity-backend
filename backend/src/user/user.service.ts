@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, ILike } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/response.user.dto';
 import { FindOneByGoogleIdTs } from './providers/find-one-by-google-id.ts';
@@ -38,7 +38,16 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
+    console.log(user);
     return user;
+  }
+  async findOneAdmin(id: string): Promise<User> {
+    const gUser = await this.findUserGroups(id);
+    if (!gUser) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    console.log('guser: ', gUser);
+    return gUser;
   }
 
   async findUserGroups(id: string): Promise<Omit<User, 'password'>> {
@@ -102,5 +111,22 @@ export class UserService {
         description: 'Could not create a new user',
       });
     }
+  }
+
+  public async getUsersAdmin(page: number, limit: number, search?: string) {
+    const take = Number(limit);
+    const skip = (Number(page) - 1) * take;
+    const [data, total] = await this.userRepository.findAndCount({
+      where: search ? { name: ILike(`%${search}%`) } : {},
+      skip,
+      take,
+      order: { created_at: 'DESC' },
+    });
+    return {
+      data,
+      total,
+      page: Number(page),
+      lastPage: Math.ceil(total / take),
+    };
   }
 }
