@@ -9,4 +9,32 @@
   {"email": "nicolas.alvarez@example.com", "password": "NicolasA456!"}
 ]
 
-grupo: 17
+Grupo a crear:
+
+{
+  "creatorId": "2cb7308a-8c55-4196-bf99-3800b35a3170",
+  "name": "Comida de grupo",
+  "participants": [
+    "8ef07d85-4607-4034-ab52-e06057fb05f6",
+    "91c712a1-85b5-4959-9671-6e35efa78686",
+    "4a9b3ba4-1eaf-4f36-a9da-6448e63e08f1"
+  ]
+}
+
+grupo: **
+
+Gastos a crear:
+
+{
+	"description": "Pizza",
+	"amount": 15000,
+	"paid_by": "91c712a1-85b5-4959-9671-6e35efa78686"
+},
+{
+	"description": "Gaseosa",
+	"amount": 6000,
+	"paid_by": "4a9b3ba4-1eaf-4f36-a9da-6448e63e08f1"
+}
+
+
+

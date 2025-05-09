@@ -138,7 +138,7 @@ export class ExpensesController {
     return this.expensesService.updateExpense(id, updateData);
   }
 
-  @Delete('/expenses/:id')
+  @Delete('/expenses/:id') //Debería solo poder ser eliminado por super admin
   @ApiOperation({
     summary: 'Delete expense',
     description: 'Deletes an existing expense'

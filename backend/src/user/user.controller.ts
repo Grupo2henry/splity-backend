@@ -52,7 +52,7 @@ export class UsuariosController {
     return this.userService.findAll();
   }
 
-  @Get('user-by-email') // Define the specific endpoint
+  @Get('search/email')
   @ApiOperation({
     summary: 'Obtiene usuarios por coincidencia parcial de email',
   })
@@ -61,12 +61,12 @@ export class UsuariosController {
     type: UserResponseDto,
     isArray: true,
   })
-  findUsersByEmail(@Query('email') email: string) {
+  findUsersByEmail(@Query('q') email: string) {
     console.log("Estoy en getUserByEmail")
     return this.userService.findUsersByEmail(email);
   }
 
-  @Put('delete')
+  @Put('delete') //Se recomienda utilizar Patch
   @ApiOperation({
     summary: 'Cambia is active del propio usuario a false',
   })
@@ -96,6 +96,7 @@ export class UsuariosController {
       return { message: 'Error interno del servidor' };
     }
   }
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('admin/:id')

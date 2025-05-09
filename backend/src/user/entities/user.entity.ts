@@ -32,7 +32,7 @@ export class User {
   password?: string;
 
   @Column({ nullable: true, type: 'varchar' })
-  googleId?: string;
+  google_id?: string;
 
   @Column({ nullable: true })
   profile_picture_url: string;
@@ -50,13 +50,13 @@ export class User {
   created_at: Date;
 
   @OneToMany(() => Group, (group) => group.created_by)
-  groupsCreated: Group[];
+  groups_created: Group[];
 
   @OneToMany(() => GroupMembership, (gm) => gm.user)
   memberships: GroupMembership[];
 
   @OneToMany(() => Expense, (expense) => expense.paid_by)
-  expensesPaid: Expense[];
+  expenses_paid: Expense[];
 
   @OneToMany(() => ExpenseSplit, (split) => split.user)
   splits: ExpenseSplit[];
@@ -66,4 +66,7 @@ export class User {
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
+
+  @Column({ default: 0 }) // Nueva columna para el total de grupos creados
+  total_groups_created: number;
 }

@@ -65,7 +65,6 @@ export class GroupController {
           if (!user) {
             throw new Error('User not found in request.');
           }
-      console.log("datos del usuario logueado creando el grupo: ", user)
       return await this.groupService.createGroupWithParticipants(createGroupDto);
     }
 
@@ -110,6 +109,7 @@ export class GroupController {
     return this.groupService.update(id, updateGroupDto);
   }
 
+  //Solo debería acceder super admin, agregar Guard.
   @Delete('groups/id/:id')
   @ApiOperation({
     summary: 'Elimina el grupo segun la id',
