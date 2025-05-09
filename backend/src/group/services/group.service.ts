@@ -89,12 +89,16 @@ export class GroupService {
     }, creator, group);
   }
 
+  async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
+    return await this.groupRepository.findGroupsCreatedByUser(userId)
+  }
+
   async softDelete(id: number): Promise<Group | undefined> {
     const group = await this.groupRepository.findOne(id);
     if (!group) {
       return undefined; // O lanza una NotFoundException aquí
     }
     group.active = false;
-    return await this.groupRepository.save(group);
+    return await this.groupRepository.saveSoftDeleted(group); // 👈 Llama a un método en el repositorio
   }
 }

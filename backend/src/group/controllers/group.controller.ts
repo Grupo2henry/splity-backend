@@ -103,6 +103,23 @@ export class GroupController {
     return this.groupService.findOne(id);
   }
 
+  @Get('users/me/groups/created')
+  @ApiOperation({
+    summary: 'Devuelve todos los grupos creados por el usuario logueado',
+  })
+  @ApiOkResponse({
+    description: 'Listado de grupos creados por el usuario',
+    type: [GroupResponseDto],
+  })
+  async findCreatedGroups(@Req() request: RequestWithUser): Promise<GroupResponseDto[]> {
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
+    }
+    const createdGroups = await this.groupService.findGroupsCreatedByUser(user.id);
+    return createdGroups.map(group => new GroupResponseDto(group));
+  }
+
   @Patch('groups/id/:id/update')
   @ApiOperation({
     summary: 'Actualiza el grupo segun la id',

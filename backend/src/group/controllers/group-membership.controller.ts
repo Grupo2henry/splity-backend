@@ -13,24 +13,27 @@ import {
     HttpCode,
     NotFoundException,
     UseGuards,
-    Req
+    Req,
+    Query
   } from '@nestjs/common';
   import { GroupMembershipService } from '../services/group-membership.service';
   import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
   import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
+  import { GroupResponseDto } from '../dto/group-response.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
 import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { RequestWithUser } from '../../auth/types/request-with-user';
+import { GroupRole } from '../enums/group-role.enum';
 import { 
   ApiBearerAuth, 
   ApiOperation, 
   ApiTags,
   ApiNotFoundResponse,
   ApiOkResponse,
-
+  ApiQuery
  } from '@nestjs/swagger';
 
 @ApiBearerAuth()
@@ -109,7 +112,37 @@ import {
   }
 
 
-  
+  @Get('users/me/groups/joined')
+  @ApiOperation({
+    summary: 'Devuelve los grupos del usuario logueado filtrados por su rol (query parameter)',
+  })
+  @ApiQuery({
+    name: 'role',
+    enum: GroupRole,
+    description: 'Filtrar grupos por el rol del usuario (ADMIN o MEMBER)',
+    required: false, // O true si siempre quieres filtrar por rol
+  })
+  @ApiOkResponse({
+    description: 'Listado de grupos filtrados por el rol del usuario',
+    type: [GroupResponseDto],
+  })
+  async findGroupsByUserRoleQuery(
+    @Req() request: RequestWithUser,
+    @Query('role') role?: GroupRole,
+  ): Promise<GroupResponseDto[]> {
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
+    }
+    if (role) {
+      const memberships = await this.groupMembershipService.findGroupsByUserAndRole(user.id, role);
+      return memberships.map(membership => new GroupResponseDto(membership.group));
+    } else {
+      // Si no se proporciona el rol, podrías devolver todos los grupos del usuario
+      const memberships = await this.groupMembershipService.findGroupsByUser(user.id);
+      return memberships.map(membership => new GroupResponseDto(membership.group));
+    }
+  }
 
   @Get('groups/:groupId/members')
   @ApiOperation({

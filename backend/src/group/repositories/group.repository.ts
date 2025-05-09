@@ -64,4 +64,15 @@ export class GroupRepository {
   async remove(id: number): Promise<void> {
     await this.groupRepository.delete(id);
   }
+
+  async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
+    return this.groupRepository.find({
+      where: { created_by: { id: userId } },
+      relations: ['created_by', 'memberships', 'expenses'], // Ajusta las relaciones según necesites
+    });
+  }
+
+  async saveSoftDeleted(group: Group): Promise<Group> {
+    return await this.groupRepository.save(group); // 👈 Usa la instancia del repositorio
+  }
 }

@@ -75,7 +75,19 @@ export class GroupMembershipRepository {
       relations: ['group'],
     });
   }
-  
+
+  async findGroupsByUserAndRole(userId: string, role: string): Promise<GroupMembership[]> {
+    let roleEnumValue: GroupRole | undefined;
+    if (role in GroupRole) {
+      roleEnumValue = GroupRole[role as keyof typeof GroupRole];
+    }
+
+    return this.groupMembershipRepository.find({
+      where: { user: { id: userId }, role: roleEnumValue },
+      relations: ['group'],
+    });
+  }
+
   async findByGroupAndRole(groupId: number, role: GroupRole) {
     return this.groupMembershipRepository.findOne({
       where: {
@@ -83,5 +95,9 @@ export class GroupMembershipRepository {
         role: role,
       },
     });
+  }
+
+  async saveDeactivated(membership: GroupMembership): Promise<GroupMembership> {
+    return await this.groupMembershipRepository.save(membership); // 👈 Usa la instancia del repositorio
   }
 }
