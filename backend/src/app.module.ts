@@ -17,6 +17,7 @@ import { GroupModule } from './group/group.module';
 import { LiquidationsModule } from './liquidations/liquidations.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { BalanceModule } from './balance/balance.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,6 +40,7 @@ import { BalanceModule } from './balance/balance.module';
     ExpensesModule,
     LiquidationsModule,
     BalanceModule,
+    CloudinaryModule
   ],
   providers: [AppService],
   controllers: [AppController],
