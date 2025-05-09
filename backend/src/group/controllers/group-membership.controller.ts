@@ -5,6 +5,7 @@ import {
     Post,
     Body,
     Put,
+    Patch,
     Param,
     Delete,
     ParseIntPipe,
@@ -17,12 +18,20 @@ import {
   import { GroupMembershipService } from '../services/group-membership.service';
   import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+  import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
 import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { RequestWithUser } from '../../auth/types/request-with-user';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { 
+  ApiBearerAuth, 
+  ApiOperation, 
+  ApiTags,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+
+ } from '@nestjs/swagger';
 
 @ApiBearerAuth()
   @Controller()
@@ -84,28 +93,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
     console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
-
-  @Put('groups/memberships/id/:id')
-  @ApiOperation({
-    summary: 'Actualiza la membresias de grupos segun id del parametro',
-  })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
-  ) {
-    return this.groupMembershipService.update(id, updateGroupMembershipDto);
-  }
-
-  @Delete('groups/memberships/id/:id')
-  @ApiOperation({
-    summary: 'Borra la membresias de grupos segun id del parametro',
-  })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.groupMembershipService.remove(id);
-  }
   
-  @Get('groups/my-groups')
+  @Get('users/me/groups')
   @ApiOperation({
     summary: 'Devuelve todos los grupos a los que pertenezca el usuario logueado',
   })
@@ -118,6 +107,9 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
     }
     return this.groupMembershipService.findGroupsByUser(user.id);
   }
+
+
+  
 
   @Get('groups/:groupId/members')
   @ApiOperation({
@@ -137,4 +129,46 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
   ) {
     return this.groupMembershipService.findByUserAndGroup(userId, groupId);
   }
+  
+  @Put('groups/memberships/id/:id')
+  @ApiOperation({
+    summary: 'Actualiza la membresias de grupos segun id del parametro',
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
+  ) {
+    return this.groupMembershipService.update(id, updateGroupMembershipDto);
+  }
+
+  @Patch('groups/memberships/id/:id/deactivate') // 👈 Nuevo endpoint para la desactivación lógica
+  @ApiOperation({
+    summary: 'Desactiva una membresía de grupo (borrado lógico)',
+    description: 'Modifica la propiedad "active" de la membresía a false.',
+  })
+  @ApiOkResponse({
+    description: 'Membresía de grupo desactivada exitosamente',
+    type: GroupMembershipResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'No se encontró la membresía con el ID proporcionado' })
+  @HttpCode(HttpStatus.OK)
+  async deactivateMembership(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupMembershipResponseDto> {
+    const deactivatedMembership = await this.groupMembershipService.deactivate(id);
+    if (!deactivatedMembership) {
+      throw new NotFoundException(`No se encontró la membresía con el ID: ${id}`);
+    }
+    return new GroupMembershipResponseDto(deactivatedMembership);
+  }
+
+  @Delete('groups/memberships/id/:id') //Solo accesible para super Admin. Utilizar guard.
+  @ApiOperation({
+    summary: 'Borra la membresias de grupos segun id del parametro',
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.groupMembershipService.remove(id);
+  }
+
 }

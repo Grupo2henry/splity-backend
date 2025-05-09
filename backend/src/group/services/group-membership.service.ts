@@ -6,6 +6,7 @@ import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
 import { User } from '../../user/entities/user.entity';
 import { Group } from '../entities/group.entity';
 import { GroupRole } from '../enums/group-role.enum';
+import { GroupMembership } from '../entities/group-membership.entity';
 
 @Injectable()
 export class GroupMembershipService {
@@ -53,5 +54,14 @@ export class GroupMembershipService {
 
   async findGroupsByUser(userId: string) {
     return this.groupMembershipRepository.findGroupsByUser(userId);
+  }
+
+  async deactivate(id: number): Promise<GroupMembership | undefined> {
+    const membership = await this.findOne(id);
+    if (!membership) {
+      return undefined; // O lanza una NotFoundException aquí
+    }
+    membership.active = false;
+    return await this.groupMembershipRepository.save(membership);
   }
 }

@@ -88,4 +88,13 @@ export class GroupService {
       role: GroupRole.ADMIN,
     }, creator, group);
   }
+
+  async softDelete(id: number): Promise<Group | undefined> {
+    const group = await this.groupRepository.findOne(id);
+    if (!group) {
+      return undefined; // O lanza una NotFoundException aquí
+    }
+    group.active = false;
+    return await this.groupRepository.save(group);
+  }
 }

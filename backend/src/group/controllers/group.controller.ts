@@ -12,13 +12,17 @@ import {
   Param,
   Patch,
   Delete,
-  Req
+  Req,
+  NotFoundException
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
-  ApiTags
+  ApiTags,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+
   } from '@nestjs/swagger';
 import { GroupService } from '../services/group.service';
 import { GroupMembershipService } from '../services/group-membership.service';
@@ -29,6 +33,7 @@ import { Group } from '../entities/group.entity';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
 import { RequestWithUser } from 'src/auth/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
+import { GroupResponseDto } from '../dto/group-response.dto';
 
 @ApiBearerAuth()
 @Controller()
@@ -98,7 +103,7 @@ export class GroupController {
     return this.groupService.findOne(id);
   }
 
-  @Patch('groups/id/:id')
+  @Patch('groups/id/:id/update')
   @ApiOperation({
     summary: 'Actualiza el grupo segun la id',
   })
@@ -107,6 +112,28 @@ export class GroupController {
     @Body() updateGroupDto: UpdateGroupDto,
   ) {
     return this.groupService.update(id, updateGroupDto);
+  }
+
+  @Patch('groups/id/:id/deactivate') // Endpoint que denota un borrado lógico
+  @ApiOperation({
+    summary: 'Realiza un borrado lógico del grupo según su ID',
+    description: 'Modifica la propiedad "active" del grupo a false.',
+  })
+  @ApiOkResponse({
+    description: 'Grupo desactivado exitosamente',
+    type: GroupResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'No se encontró el grupo con el ID proporcionado' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autorizado' }) // Puedes personalizar esto según tu lógica de autorización
+  @HttpCode(HttpStatus.OK) // Indica que la operación fue exitosa (aunque no se esté "creando" nada)
+  async softDeleteGroup(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupResponseDto> {
+    const updatedGroup = await this.groupService.softDelete(id);
+    if (!updatedGroup) {
+      throw new NotFoundException(`No se encontró el grupo con el ID: ${id}`);
+    }
+    return new GroupResponseDto(updatedGroup);
   }
 
   //Solo debería acceder super admin, agregar Guard.
