@@ -3,6 +3,8 @@ import { CloudinaryService } from './cloudinary.service';
 import { CloudinaryController } from './cloudinary.controller';
 import { CloudinaryConfig } from './cloudinary';
 import { UserModule } from '../user/user.module';
+import { ExpensesModule } from '../expenses/expenses.module';
+import { AuthModule } from 'src/auth/auth.module';
 /* import { ProductsModule } from '../products/products.module'; */
 
 /**
@@ -11,9 +13,10 @@ import { UserModule } from '../user/user.module';
  * 
  * @module CloudinaryModule
  * @requires UserModule - For user profile picture updates
+ * @requires ExpensesModule - For expense image updates
  */
 @Module({
-    imports: [UserModule],
+    imports: [UserModule, ExpensesModule,AuthModule],
     providers: [CloudinaryService, CloudinaryConfig],
     controllers: [CloudinaryController],
     exports: [CloudinaryService],
