@@ -1,37 +1,41 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from '../user/user.service';
+import { GroupService } from '../group/services/group.service';
+import { GroupMembershipService } from '../group/services/group-membership.service';
+import { ExpensesService } from '../expenses/expenses.service';
+import { PaymentService } from '../payment/payment.service';
+import { SubscriptionService } from '../subscription/subscription.service';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { User } from '../user/entities/user.entity';
-import { Group } from '../group/entities/group.entity';
-import { GroupMembership } from '../group/entities/group-membership.entity';
-import { Expense } from '../expenses/entities/expense.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ExpenseSplit } from '../expenses/entities/expense-split.entity';
-import { Payment } from '../payment/entities/payment.entity';
-import { Subscription } from '../subscription/entities/subscription.entity';
 
 // Importa los seeds de datos
 import { usersSeed } from './data/users.seed';
 import { groupsSeed } from './data/groups.seed';
 import { groupMembershipsSeed } from './data/group-membership.seed';
 import { expensesSeed } from './data/expenses.seed';
-import { expenseSplitsSeed } from './data/expense-splits.seed';
+import { expenseSplitsSeed } from './data/expense-splits.seed'; // Asegúrate de tener este seed
 import { paymentsSeed } from './data/payments.seed';
-import { subscriptionsSeed } from './data/subscription.seed';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { Group } from '../group/entities/group.entity';
+import { CreateGroupDto as CreateGroupServiceDto } from '../group/dto/create-group.dto'; // Alias para evitar conflicto
+import { CreateGroupMembershipDto } from '../group/dto/create-group-membership.dto';
+import { CreateExpenseDto } from '../expenses/dto/create-expense.dto';
+import { CreatePaymentDto } from '../payment/dto/create-payment.dto';
+import { User } from '../user/entities/user.entity';
+import { Expense } from 'src/expenses/entities/expense.entity';
 
 @Injectable()
 export class SeedService implements OnApplicationBootstrap {
   constructor(
-    @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(Group) private groupRepo: Repository<Group>,
-    @InjectRepository(GroupMembership)
-    private membershipRepo: Repository<GroupMembership>,
-    @InjectRepository(Expense) private expenseRepo: Repository<Expense>,
-    @InjectRepository(ExpenseSplit) private splitRepo: Repository<ExpenseSplit>,
-    @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
-    @InjectRepository(Subscription)
-    private subscriptionRepo: Repository<Subscription>,
+    private readonly userService: UserService,
+    private readonly groupService: GroupService,
+    private readonly groupMembershipService: GroupMembershipService,
+    private readonly expensesService: ExpensesService,
+    @InjectRepository(ExpenseSplit) private readonly expenseSplitRepository: Repository<ExpenseSplit>, // Inyecta el repositorio directamente
+    private readonly paymentService: PaymentService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -40,8 +44,8 @@ export class SeedService implements OnApplicationBootstrap {
       return;
     }
     console.log('[SeedService] Ejecutando onModuleInit...');
-    const userCount = await this.userRepo.count();
-    if (userCount > 0) {
+    const users = await this.userService.findAll();
+    if (users.length > 0) {
       console.log('[SeedService] Datos ya cargados. Ignorando precarga.');
       return;
     }
@@ -49,156 +53,105 @@ export class SeedService implements OnApplicationBootstrap {
     console.log('[SeedService] Precargando base de datos...');
 
     // 1. Usuarios
-    const usersWithHashedPasswords = await Promise.all(
-      usersSeed.map(async (user) => ({
-        ...user,
-        password: await this.hashPassword(user.password),
-      })),
+    const createdUsers: User[] = await Promise.all(
+      usersSeed.map(async (user) => this.userService.createUserWithHashedPassword(user as CreateUserDto)), // Usa createUserWithHashedPassword
     );
-
-    const users = await this.userRepo.save(usersWithHashedPasswords);
-    console.log('[SeedService] Usuarios cargados con contraseñas hasheadas.');
+    console.log('[SeedService] Usuarios cargados.');
 
     // 2. Grupos
-    const savedGroups: Group[] = []; // Array para guardar los grupos creados
+    const createdGroups: Group[] = [];
     for (const groupSeed of groupsSeed) {
-      const createdByUser = users.find(
-        (u) => u.email === groupSeed.created_by.email,
-      );
-      if (!createdByUser) {
-        throw new Error(
-          `Usuario no encontrado para el grupo: ${groupSeed.name}`,
-        );
+      const createdBy = createdUsers.find((u) => u.email === groupSeed.created_by.email);
+      if (!createdBy) {
+        throw new Error(`Usuario no encontrado para el grupo: ${groupSeed.name}`);
       }
-      const newGroup = this.groupRepo.create({
-        ...groupSeed,
-        created_by: createdByUser,
-      });
-      const savedGroup = await this.groupRepo.save(newGroup); // Guardar y obtener el grupo guardado
-      savedGroups.push(savedGroup); // Agregar al array
+      const createdGroup = await this.groupService.create(
+        { name: groupSeed.name, creatorId: createdBy.id } as CreateGroupServiceDto, // Usa CreateGroupServiceDto
+        createdBy,
+      );
+      createdGroups.push(createdGroup);
     }
     console.log('[SeedService] Grupos cargados.');
 
     // 3. Membresías
-    const savedMemberships: GroupMembership[] = [];
     for (const membershipSeed of groupMembershipsSeed) {
-      const user = users.find((u) => u.email === membershipSeed.user.email);
-      const group = savedGroups.find(
-        (g) => g.name === membershipSeed.group.name,
-      ); // Buscar en los grupos guardados
-      if (!user) {
-        throw new Error(`Usuario no encontrado para la membresía`);
+      const user = createdUsers.find((u) => u.email === membershipSeed.user.email);
+      const group = createdGroups.find((g) => g.name === membershipSeed.group.name);
+      if (!user || !group) {
+        throw new Error(`Usuario o grupo no encontrado para la membresía`);
       }
-      if (!group) {
-        throw new Error(`Grupo no encontrado para la membresía`);
-      }
-      const newMembership = this.membershipRepo.create({
-        ...membershipSeed,
-        user: user,
-        group: group,
-      });
-      const savedMembership = await this.membershipRepo.save(newMembership);
-      savedMemberships.push(savedMembership);
+      await this.groupMembershipService.create(
+        {
+          status: membershipSeed.status,
+          userId: user.id,
+          groupId: group.id,
+          role: membershipSeed.role,
+        } as CreateGroupMembershipDto, // Usa CreateGroupMembershipDto
+        user,
+        group,
+      );
     }
     console.log('[SeedService] Membresías cargadas.');
 
-    // 4. Gastos
-    const savedExpenses: Expense[] = [];
-    for (const expenseSeed of expensesSeed) {
-      const group = savedGroups.find((g) => g.name === expenseSeed.group.name);
-      const paidBy = users.find((u) => u.email === expenseSeed.paid_by.email);
-      if (!group) {
-        throw new Error(
-          `Grupo no encontrado para el gasto: ${expenseSeed.description}`,
-        );
-      }
-      if (!paidBy) {
-        throw new Error(
-          `Usuario pagador no encontrado para el gasto: ${expenseSeed.description}`,
-        );
-      }
-      const newExpense = this.expenseRepo.create({
-        ...expenseSeed,
-        group: group,
-        paid_by: paidBy,
-      });
-      const savedExpense = await this.expenseRepo.save(newExpense);
-      savedExpenses.push(savedExpense);
-    }
-    console.log('[SeedService] Gastos cargados.');
-
-    // 5. Divisiones
-    for (const splitSeed of expenseSplitsSeed) {
-      const expense = savedExpenses.find(
-        (e) => e.description === splitSeed.expense.description,
-      );
-      const user = users.find((u) => u.email === splitSeed.user.email);
-      if (!expense) {
-        throw new Error(`Gasto no encontrado para la división`);
-      }
-      if (!user) {
-        throw new Error(`Usuario no encontrado para la división`);
-      }
-      const newSplit = this.splitRepo.create({
-        ...splitSeed,
-        expense: expense,
-        user: user,
-      });
-      await this.splitRepo.save(newSplit);
-    }
-    console.log('[SeedService] Divisiones cargadas.');
-
-  // 6. Pagos
-  const savedPayments: Payment[] = [];
-  for (const paymentSeed of paymentsSeed) {
-    const user = await this.userRepo.findOne({
-      where: { email: paymentSeed.user.email },
-    });
-    if (!user) {
-      throw new Error(
-        `Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`,
-      );
-    }
-    const newPayment = this.paymentRepo.create({
-      amount: paymentSeed.amount,
-      status: paymentSeed.status,
-      transaction_id: paymentSeed.transaction_id,
-      payment_date: paymentSeed.payment_date,
-      user: user,
-      active: paymentSeed.active,
-    } as Partial<Payment>);
-
-    const savedPayment = await this.paymentRepo.save(newPayment);
-    savedPayments.push(savedPayment);
+// 4. Gastos
+const createdExpenses: Expense[] = [];
+for (const expenseSeed of expensesSeed) {
+  const group = createdGroups.find((g) => g.name === expenseSeed.group.name);
+  const paidBy = createdUsers.find((u) => u.email === expenseSeed.paid_by.email);
+  if (!group || !paidBy) {
+    throw new Error(`Grupo o usuario pagador no encontrado para el gasto: ${expenseSeed.description}`);
   }
-  console.log('[SeedService] Pagos cargados.');
 
-    // 7. Subscripciones
-    for (let i = 0; i < subscriptionsSeed.length; i++) {
-      const subscriptionSeed = subscriptionsSeed[i];
-      const user = users.find((u) => u.email === subscriptionSeed.user.email);
-      if (!user) {
-        throw new Error(`Usuario no encontrado para la subscripción`);
+  const expenseDate = typeof expenseSeed.date === 'string' ? expenseSeed.date : new Date().toISOString();
+if (!expenseSeed.date) {
+  console.warn(`[SeedService] La fecha del gasto "${expenseSeed.description}" no está definida. Se usará la fecha actual.`);
+}
+
+  const created = await this.expensesService.createExpense(
+    group.id,
+    {
+      description: expenseSeed.description,
+      amount: expenseSeed.amount,
+      paid_by: paidBy.id,
+      date: expenseDate,
+      imgUrl: expenseSeed.imgUrl, // Si no existe en expenseSeed, será undefined
+    } as CreateExpenseDto,
+  );
+  createdExpenses.push(created);
+}
+console.log('[SeedService] Gastos cargados.');
+
+    // 5. Divisiones (Manejo directo con el repositorio)
+    if (this.expenseSplitRepository && expenseSplitsSeed) {
+      for (const splitSeed of expenseSplitsSeed) {
+        const expense = await this.expensesService.getExpenseByDescription(splitSeed.expense.description); // Asume que tienes un ID en el seed
+        const user = createdUsers.find((u) => u.email === splitSeed.user.email);
+        if (!expense || !user) {
+          throw new Error(`Gasto o usuario no encontrado para la división`);
+        }
+        await this.expenseSplitRepository.save({
+          expense: expense,
+          user: user,
+          amount_owed: splitSeed.amount_owed,
+        });
       }
-
-      const linkedPayment = savedPayments[i] ?? null; // Relación opcional 1 a 1
-      const newSubscription = this.subscriptionRepo.create({
-        status: subscriptionSeed.status,
-        started_at: subscriptionSeed.started_at,
-        ends_at: subscriptionSeed.ends_at,
-        active: subscriptionSeed.status === 'active',
-        user: user, // Asigna la instancia de User
-        payment: linkedPayment, // Asigna la instancia de Payment (o null)
-      } as Partial<Subscription>);
-
-      await this.subscriptionRepo.save(newSubscription);
+      console.log('[SeedService] Divisiones cargadas.');
     }
-    console.log('[SeedService] Subscripciones cargadas.');
 
-    console.log('[SeedService] Datos precargados correctamente.');
-  }
-  private async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return await bcrypt.hash(password, saltRounds);
+    // 6. Pagos
+    for (const paymentSeed of paymentsSeed) {
+      const user = createdUsers.find((u) => u.email === paymentSeed.user.email);
+      if (!user) {
+        throw new Error(`Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`);
+      }
+      await this.paymentService.create({
+        userId: user.id,
+        amount: paymentSeed.amount,
+        status: paymentSeed.status,
+        payment_date: paymentSeed.payment_date,
+        transaction_id: paymentSeed.transaction_id,
+      } as CreatePaymentDto); // Usa CreatePaymentDto
+    }
+    console.log('[SeedService] Pagos cargados.');
   }
 }

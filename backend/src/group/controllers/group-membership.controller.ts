@@ -5,6 +5,7 @@ import {
     Post,
     Body,
     Put,
+    Patch,
     Param,
     Delete,
     ParseIntPipe,
@@ -12,17 +13,28 @@ import {
     HttpCode,
     NotFoundException,
     UseGuards,
-    Req
+    Req,
+    Query
   } from '@nestjs/common';
   import { GroupMembershipService } from '../services/group-membership.service';
   import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+  import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
+  import { GroupResponseDto } from '../dto/group-response.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
 import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { RequestWithUser } from '../../auth/types/request-with-user';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { GroupRole } from '../enums/group-role.enum';
+import { 
+  ApiBearerAuth, 
+  ApiOperation, 
+  ApiTags,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiQuery
+ } from '@nestjs/swagger';
 
 @ApiBearerAuth()
   @Controller()
@@ -84,28 +96,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
     console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
-
-  @Put('groups/memberships/id/:id')
-  @ApiOperation({
-    summary: 'Actualiza la membresias de grupos segun id del parametro',
-  })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
-  ) {
-    return this.groupMembershipService.update(id, updateGroupMembershipDto);
-  }
-
-  @Delete('groups/memberships/id/:id')
-  @ApiOperation({
-    summary: 'Borra la membresias de grupos segun id del parametro',
-  })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.groupMembershipService.remove(id);
-  }
   
-  @Get('groups/my-groups')
+  @Get('users/me/groups/all')
   @ApiOperation({
     summary: 'Devuelve todos los grupos a los que pertenezca el usuario logueado',
   })
@@ -117,6 +109,40 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
       throw new Error('User not found in request.');
     }
     return this.groupMembershipService.findGroupsByUser(user.id);
+  }
+
+
+  @Get('users/me/groups/')
+  @ApiOperation({
+    summary: 'Devuelve los grupos del usuario logueado filtrados por su rol (query parameter)',
+  })
+  @ApiQuery({
+    name: 'role',
+    enum: GroupRole,
+    description: 'Filtrar grupos por el rol del usuario (ADMIN o MEMBER)',
+    required: false, // O true si siempre quieres filtrar por rol
+  })
+  @ApiOkResponse({
+    description: 'Listado de grupos filtrados por el rol del usuario',
+    type: [GroupResponseDto],
+  })
+  @UseGuards(AccessTokenGuard)
+  async findGroupsByUserRoleQuery(
+    @Req() request: RequestWithUser,
+    @Query('role') role?: GroupRole,
+  ): Promise<GroupResponseDto[]> {
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
+    }
+    if (role) {
+      const memberships = await this.groupMembershipService.findGroupsByUserAndRole(user.id, role);
+      return memberships.map(membership => new GroupResponseDto(membership.group));
+    } else {
+      // Si no se proporciona el rol, podrías devolver todos los grupos del usuario
+      const memberships = await this.groupMembershipService.findGroupsByUser(user.id);
+      return memberships.map(membership => new GroupResponseDto(membership.group));
+    }
   }
 
   @Get('groups/:groupId/members')
@@ -137,4 +163,46 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
   ) {
     return this.groupMembershipService.findByUserAndGroup(userId, groupId);
   }
+  
+  @Put('groups/memberships/id/:id')
+  @ApiOperation({
+    summary: 'Actualiza la membresias de grupos segun id del parametro',
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateGroupMembershipDto: UpdateGroupMembershipDto,
+  ) {
+    return this.groupMembershipService.update(id, updateGroupMembershipDto);
+  }
+
+  @Patch('groups/memberships/id/:id/deactivate') // 👈 Nuevo endpoint para la desactivación lógica
+  @ApiOperation({
+    summary: 'Desactiva una membresía de grupo (borrado lógico)',
+    description: 'Modifica la propiedad "active" de la membresía a false.',
+  })
+  @ApiOkResponse({
+    description: 'Membresía de grupo desactivada exitosamente',
+    type: GroupMembershipResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'No se encontró la membresía con el ID proporcionado' })
+  @HttpCode(HttpStatus.OK)
+  async deactivateMembership(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupMembershipResponseDto> {
+    const deactivatedMembership = await this.groupMembershipService.deactivate(id);
+    if (!deactivatedMembership) {
+      throw new NotFoundException(`No se encontró la membresía con el ID: ${id}`);
+    }
+    return new GroupMembershipResponseDto(deactivatedMembership);
+  }
+
+  @Delete('groups/memberships/id/:id') //Solo accesible para super Admin. Utilizar guard.
+  @ApiOperation({
+    summary: 'Borra la membresias de grupos segun id del parametro',
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.groupMembershipService.remove(id);
+  }
+
 }

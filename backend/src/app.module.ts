@@ -31,7 +31,6 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     SubscriptionModule,
     GroupModule,
     ExpensesModule,
-    SeedModule, // Puedes dejar SeedModule al final
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     SeedModule,
@@ -40,7 +39,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     ExpensesModule,
     LiquidationsModule,
     BalanceModule,
-    CloudinaryModule
+    CloudinaryModule,
+    SeedModule, // Puedes dejar SeedModule al final
   ],
   providers: [AppService],
   controllers: [AppController],

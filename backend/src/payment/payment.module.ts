@@ -11,12 +11,14 @@ import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from 'src/config/jwt.config';
+import { SubscriptionModule } from 'src/subscription/subscription.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Payment]),
   UserModule,
   AuthModule,
   JwtModule,
+  SubscriptionModule,
   ConfigModule.forFeature(jwtConfig)
 ],
   controllers: [PaymentController],

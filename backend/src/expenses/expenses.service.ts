@@ -34,6 +34,15 @@ export class ExpensesService {
     return expense;
   }
 
+  // Nuevo método para buscar un gasto por su descripción exacta
+  async getExpenseByDescription(description: string): Promise<Expense> {
+    const expense = await this.expenseRepository.findOne({ where: { description } });
+    if (!expense) {
+      throw new NotFoundException(`Expense with description "${description}" not found`);
+    }
+    return expense;
+  }
+
   async createExpense(groupId: number, dto: CreateExpenseDto) {
     try {
       // Verificar que el usuario existe
