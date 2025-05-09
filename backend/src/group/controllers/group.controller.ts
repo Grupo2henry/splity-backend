@@ -104,7 +104,7 @@ export class GroupController {
     return this.groupService.findOne(id);
   }
 
-  @Get('users/me/groups/created')
+  @Get('users/me/groups/created') //Arreglar, comportamiento indeseado
   @UseGuards(AccessTokenGuard)
   @ApiOperation({
     summary: 'Devuelve todos los grupos creados por el usuario logueado',
