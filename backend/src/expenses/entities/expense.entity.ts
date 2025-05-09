@@ -28,7 +28,7 @@ export class Expense {
   @Column('float')
   amount: number;
 
-  @ManyToOne(() => User, (user) => user.expensesPaid)
+  @ManyToOne(() => User, (user) => user.expenses_paid)
   paid_by: User;
 
   @CreateDateColumn()

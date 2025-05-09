@@ -2,50 +2,45 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConflictException,
-  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository, Like } from 'typeorm';
+import { Like } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/response.user.dto';
-import { FindOneByGoogleIdTs } from './providers/find-one-by-google-id.ts';
 import { GoogleUser } from './interfaces/google-user.interface';
 import { MailsService } from 'src/mails/mails.service';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
-    private readonly findOneByGoogleIdprovider: FindOneByGoogleIdTs,
+    private readonly userRepository: UserRepository,
     private readonly mailService: MailsService,
   ) {}
+
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    return await this.userRepository.findAll(); // Usa el método del repositorio
   }
 
   async findUsersByEmail(email: string): Promise<User[]> {
-    return await this.userRepository.find({
+    return await this.userRepository.find({ // Usa el método del repositorio
       where: { email: Like(`%${email}%`) },
     });
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne(id); // Usa el método del repositorio
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
     return user;
   }
 
-  async findUserGroups(id: string): Promise<Omit<User, 'password'>> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['groupsCreated', 'memberships', 'memberships.group'],
-    });
+  async findUserGroups(id: string): Promise<Omit<User, 'password'>> { //Metodo muy similar en groups y memberships
+    const user = await this.userRepository.findUserWithGroups(id); // 👈 Llama al nuevo método del repositorio
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -56,8 +51,8 @@ export class UserService {
   async desactivateUser(id: string) {
     const user = await this.findOne(id);
     user.active = false;
-    await this.userRepository.save(user);
-    return new UserResponseDto(user);
+    const updatedUser = await this.userRepository.save(user); // Usa el método del repositorio
+    return new UserResponseDto(updatedUser);
   }
 
   async modifiedUser(
@@ -67,7 +62,7 @@ export class UserService {
     const userToModify = await this.findOne(id);
     Object.assign(userToModify, user);
     try {
-      const modifiedUser = await this.userRepository.save(userToModify);
+      const modifiedUser = await this.userRepository.save(userToModify); // Usa el método del repositorio
 
       if (!modifiedUser) {
         throw new InternalServerErrorException('No se pudo guardar el usuario');
@@ -85,22 +80,22 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
     Object.assign(user, updateUserDto);
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user); // Usa el método del repositorio
   }
 
   public async findByGoogleId(googleId: string) {
-    return await this.findOneByGoogleIdprovider.findOneByGoogleId(googleId);
+    return await this.userRepository.findOneByGoogleId(googleId); // Usa el método del repositorio
   }
 
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
       console.log("Este es el google user: ", googleUser)
-      const user = this.userRepository.create(googleUser);
+      const user = await this.userRepository.createGoogleUser(googleUser); // 👈 Llama al método del repositorio
       await this.mailService.sendUserConfirmation({
         name: googleUser.name,
         email: googleUser.email,
       });
-      return await this.userRepository.save(user);
+      return user;
     } catch (error) {
       console.error('Error creating user:', error);
       throw new ConflictException(error, {

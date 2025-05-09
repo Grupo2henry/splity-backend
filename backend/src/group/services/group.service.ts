@@ -22,7 +22,6 @@ export class GroupService {
   }
 
   async findAll() {
-    console.log('Estoy en group.service');
     return await this.groupRepository.findAll();
   }
 

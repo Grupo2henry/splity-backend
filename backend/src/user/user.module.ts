@@ -4,7 +4,6 @@ import { UserService } from './user.service';
 import { UsuariosController } from './user.controller';
 import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { FindOneByGoogleIdTs } from './providers/find-one-by-google-id.ts';
 import { AuthModule } from '../auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
@@ -17,7 +16,7 @@ import jwtConfig from 'src/config/jwt.config';
       ConfigModule.forFeature(jwtConfig)
   ],
   controllers: [UsuariosController],
-  providers: [UserService, FindOneByGoogleIdTs],
+  providers: [UserService],
   exports: [UserService, TypeOrmModule],
 })
 export class UserModule {}

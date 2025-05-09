@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { Group } from '../entities/group.entity';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
-
 @Injectable()
 export class GroupRepository {
   constructor(
@@ -29,7 +28,6 @@ export class GroupRepository {
   }
 
   async findAll(): Promise<Group[]> {
-    console.log('Estoy en group.repository');
     return this.groupRepository.find({
       relations: [
         'created_by',
