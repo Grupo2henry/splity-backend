@@ -19,7 +19,7 @@ export class GroupRepository {
         'created_by',
         'memberships',
         'expenses',
-        'memberships.user',
+        'memberships.user', // Asegúrate de cargar el usuario de la membresía
         'expenses.paid_by',
         'expenses.splits',
         'expenses.splits.user',
@@ -33,7 +33,7 @@ export class GroupRepository {
         'created_by',
         'memberships',
         'expenses',
-        'memberships.user',
+        'memberships.user', // Asegúrate de cargar el usuario de la membresía
         'expenses.paid_by',
         'expenses.splits',
         'expenses.splits.user',
@@ -66,11 +66,11 @@ export class GroupRepository {
   async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
     return this.groupRepository.find({
       where: { created_by: { id: userId } },
-      relations: ['created_by', 'memberships', 'expenses'], // Ajusta las relaciones según necesites
+      relations: ['created_by', 'memberships', 'expenses', 'memberships.user'], // ¡Carga también 'memberships.user'!
     });
   }
 
   async saveSoftDeleted(group: Group): Promise<Group> {
-    return await this.groupRepository.save(group); // 👈 Usa la instancia del repositorio
+    return await this.groupRepository.save(group);
   }
 }

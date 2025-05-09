@@ -126,6 +126,7 @@ import {
     description: 'Listado de grupos filtrados por el rol del usuario',
     type: [GroupResponseDto],
   })
+  @UseGuards(AccessTokenGuard)
   async findGroupsByUserRoleQuery(
     @Req() request: RequestWithUser,
     @Query('role') role?: GroupRole,

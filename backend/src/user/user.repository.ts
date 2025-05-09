@@ -41,7 +41,7 @@ export class UserRepository{
   async findUserWithGroups(id: string): Promise<User | null | undefined> {
     return await this.userRepository.findOne({
       where: { id },
-      relations: ['groupsCreated', 'memberships', 'memberships.group'],
+      relations: ['groups_created', 'memberships', 'memberships.group'],
     });
   }
 

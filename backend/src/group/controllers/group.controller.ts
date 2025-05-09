@@ -45,7 +45,7 @@ export class GroupController {
     private readonly userService: UserService,
   ) {}
 
-  @UseGuards(AccessTokenGuard)
+  
   @Post('groups')
   @ApiOperation({
       summary: 'Crea un grupo/evento nuevo con un listado de participantes',
@@ -64,6 +64,7 @@ export class GroupController {
         },
       },
     })
+    @UseGuards(AccessTokenGuard)
     async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
        console.log("Estoy en membership, pase el Guard.")
           const user = request[REQUEST_USER_KEY];
@@ -104,6 +105,7 @@ export class GroupController {
   }
 
   @Get('users/me/groups/created')
+  @UseGuards(AccessTokenGuard)
   @ApiOperation({
     summary: 'Devuelve todos los grupos creados por el usuario logueado',
   })
