@@ -8,15 +8,15 @@ export class ExpenseSplit {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Expense, (expense) => expense.splits)
+  @ManyToOne(() => Expense, (expense) => expense.splits, { onDelete: 'CASCADE' })
   expense: Expense;
 
-  @ManyToOne(() => User, (user) => user.splits)
+  @ManyToOne(() => User, (user) => user.splits, { onDelete: 'CASCADE' })
   user: User;
 
   @Column({ default: true })
   active: boolean;
 
-  @Column('float')
+  @Column('decimal', { precision: 10, scale: 2 })
   amount_owed: number;
 }
