@@ -1,16 +1,16 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 import { User } from "./entities/user.entity";
+import { Repository, Like} from "typeorm";
 import { GoogleUser } from "./interfaces/google-user.interface";
 
 @Injectable()
-export class UserRepository {
+export class UserRepository{
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
+      @InjectRepository(User)
+      private readonly userRepository: Repository<User>,
+    ) {}
 
   async findAll(): Promise<User[]> {
     return await this.userRepository.find();
@@ -24,8 +24,18 @@ export class UserRepository {
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  async find(options: any): Promise<User[]> {
-    return await this.userRepository.find(options);
+  async findUserByEmail(email: string): Promise <User | null | undefined>{
+    return await this.userRepository.findOne({
+      where: { email: email },
+    })
+  }
+  
+  async findUsersByEmail(email: string): Promise<User[]> {
+    return await this.userRepository.find({
+      where: {
+        email: Like(`%${email}%`),
+      },
+    });
   }
 
   async findUserWithGroups(id: string): Promise<User | null | undefined> {

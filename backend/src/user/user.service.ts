@@ -7,12 +7,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { Like } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserResponseDto } from './dto/response.user.dto';
+import { UserResponseDto } from './dto/response-user.dto';
 import { GoogleUser } from './interfaces/google-user.interface';
 import { MailsService } from 'src/mails/mails.service';
 import { UserRepository } from './user.repository';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -21,14 +22,21 @@ export class UserService {
     private readonly mailService: MailsService,
   ) {}
 
+  async createUserWithHashedPassword(credentials: CreateUserDto): Promise<User> {
+    const hashedPassword = await bcrypt.hash(credentials.password, 10);
+    const newUser = this.userRepository['userRepository'].create({
+      ...credentials,
+      password: hashedPassword,
+    });
+    return await this.userRepository['userRepository'].save(newUser);
+  }
+
   async findAll(): Promise<User[]> {
     return await this.userRepository.findAll(); // Usa el método del repositorio
   }
 
   async findUsersByEmail(email: string): Promise<User[]> {
-    return await this.userRepository.find({ // Usa el método del repositorio
-      where: { email: Like(`%${email}%`) },
-    });
+    return await this.userRepository.findUsersByEmail(email)
   }
 
   async findOne(id: string): Promise<User> {
@@ -37,6 +45,10 @@ export class UserService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
     return user;
+  }
+
+  async findOneByEmail(email: string): Promise<User | null | undefined> {
+    return await this.userRepository.findUserByEmail(email);
   }
 
   async findUserGroups(id: string): Promise<Omit<User, 'password'>> { //Metodo muy similar en groups y memberships

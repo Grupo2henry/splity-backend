@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
 import { ExpenseSplit } from '../entities/expense-split.entity';
-import { UserResponseDto } from '../../user/dto/response.user.dto';
+import { UserResponseDto } from '../../user/dto/response-user.dto';
 import { ExpenseResponseDto } from './expense-response.dto';
 
 export class ExpenseSplitResponseDto {

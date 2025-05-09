@@ -8,12 +8,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-
 import { OAuth2Client } from 'google-auth-library';
 import jwtConfig from '../../config/jwt.config';
 import { GoogleTokenDto } from '../dtos/google-authentication.dto';
 import { UserService } from '../../user/user.service';
-import { GenerateTokensProvider } from '../../auth/providers/generate-tokens.provider';
+import { GenerateTokensProvider } from './generate-token.service';
 
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {

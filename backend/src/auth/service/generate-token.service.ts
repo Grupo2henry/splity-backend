@@ -15,7 +15,6 @@ export class GenerateTokensProvider {
 
   public async generateToken(user: User) {
     if (!user) {
-      console.log('falta user');
       throw new BadRequestException('No se pudo generar token ');
     }
     const token = await this.jwtService.signAsync(

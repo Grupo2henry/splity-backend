@@ -2,7 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expense } from '../entities/expense.entity';
 import { GroupResponseDto } from '../../group/dto/group-response.dto';
-import { UserResponseDto } from '../../user/dto/response.user.dto';
+import { UserResponseDto } from '../../user/dto/response-user.dto';
 import { ExpenseSplitResponseDto } from './expense-split-response.dto';
 
 export class ExpenseResponseDto {

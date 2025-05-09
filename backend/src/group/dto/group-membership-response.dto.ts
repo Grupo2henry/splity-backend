@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
 import { GroupMembership } from '../entities/group-membership.entity';
-import { UserResponseDto } from '../../user/dto/response.user.dto';
+import { UserResponseDto } from '../../user/dto/response-user.dto';
 import { GroupResponseDto } from './group-response.dto';
 import { GroupRole } from '../enums/group-role.enum';
 
