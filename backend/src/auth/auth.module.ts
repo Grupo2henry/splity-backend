@@ -31,6 +31,6 @@ import { AuthenticationGuard } from './guards/authentication/authentication.guar
     AccessTokenGuard,
   ],
   controllers: [AuthController, GoogleAuthenticationController],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule,AccessTokenGuard],
 })
 export class AuthModule {}
