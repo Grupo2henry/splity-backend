@@ -11,7 +11,7 @@ import { Group } from '../../group/entities/group.entity';
 import { User } from '../../user/entities/user.entity';
 import { ExpenseSplit } from './expense-split.entity';
 
-@Entity()
+@Entity('expense')
 export class Expense {
   @PrimaryGeneratedColumn()
   id: number;
