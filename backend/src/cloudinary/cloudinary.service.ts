@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { UploadApiResponse, v2 } from 'cloudinary';
 import * as toStream from 'buffer-to-stream';

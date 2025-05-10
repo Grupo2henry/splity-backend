@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Controller,
   Post,
@@ -5,9 +6,6 @@ import {
   UseInterceptors,
   Param,
   ParseUUIDPipe,
-  Body,
-  Put,
-  HttpStatus,
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -21,7 +19,6 @@ import {
   ApiResponse,
   ApiParam,
   ApiHeader,
-  ApiExtraModels
 } from '@nestjs/swagger';
 import { AuthenticationGuard } from '../auth/guards/authentication/authentication.guard';
 
