@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { loggerGlobal } from './middleware/global-loger-middleware';
@@ -33,7 +34,7 @@ async function bootstrap() {
           callback(null, true);
       },
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      
+
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true,
     });

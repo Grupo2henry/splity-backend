@@ -8,6 +8,7 @@ import { UserService } from '../../user/user.service';
 import { GroupMembershipService } from './group-membership.service';
 import { GroupRole } from '../enums/group-role.enum';
 import { User } from '../../user/entities/user.entity'; // 👈 Importa la entidad User
+import { MailsService } from 'src/mails/mails.service';
 
 @Injectable()
 export class GroupService {
@@ -15,6 +16,7 @@ export class GroupService {
     private readonly groupRepository: GroupRepository,
     private readonly userService: UserService,
     private readonly groupMembershipService: GroupMembershipService,
+    private readonly mailService: MailsService,
   ) {}
 
   async findOne(id: number): Promise<Group | null | undefined> {
@@ -29,7 +31,11 @@ export class GroupService {
     //
   }
 
-  async create(createGroupDto: CreateGroupDto, createdBy: User): Promise<Group> { // 👈 Define el tipo de createdBy como User
+  async create(
+    createGroupDto: CreateGroupDto,
+    createdBy: User,
+  ): Promise<Group> {
+    // 👈 Define el tipo de createdBy como User
     return await this.groupRepository.create(createGroupDto, createdBy);
   }
 
@@ -41,7 +47,9 @@ export class GroupService {
     return this.groupRepository.remove(id);
   }
 
-  async createGroupWithParticipants(createGroupDto: CreateGroupDto): Promise<Group> {
+  async createGroupWithParticipants(
+    createGroupDto: CreateGroupDto,
+  ): Promise<Group> {
     const creator = await this.validateCreator(createGroupDto.creatorId);
     const group = await this.createGroup(createGroupDto.name, creator);
 
@@ -57,7 +65,9 @@ export class GroupService {
   private async validateCreator(creatorId: string): Promise<User> {
     const creator = await this.userService.findOne(creatorId);
     if (!creator) {
-      throw new NotFoundException(`No se encontró el creador con ID: ${creatorId}`);
+      throw new NotFoundException(
+        `No se encontró el creador con ID: ${creatorId}`,
+      );
     }
     return creator;
   }
@@ -71,12 +81,16 @@ export class GroupService {
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
       if (user) {
-        await this.groupMembershipService.create({
-          status: 'active',
-          userId: user.id,
-          groupId: group.id,
-          role: GroupRole.GUEST,
-        }, user, group);
+        await this.groupMembershipService.create(
+          {
+            status: 'active',
+            userId: user.id,
+            groupId: group.id,
+            role: GroupRole.GUEST,
+          },
+          user,
+          group,
+        );
       }
     }
 
