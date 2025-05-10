@@ -21,7 +21,7 @@ export class Group {
   @Column({ default: true })
   active: boolean;
 
-  @ManyToOne(() => User, (user) => user.groupsCreated)
+  @ManyToOne(() => User, (user) => user.groups_created)
   created_by: User;
 
   @Column()

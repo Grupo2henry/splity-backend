@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { AuthService } from '../service/auth.service';
-import { CreateUserDto } from '../../user/dto/create.user.dto';
-import { UserResponseDto } from '../../user/dto/response.user.dto';
+import { CreateUserDto } from '../../user/dto/create-user.dto';
+import { UserResponseDto } from '../../user/dto/response-user.dto';
 import {
   Body,
   Controller,
@@ -18,13 +18,13 @@ import {
   UseGuards,
   HttpStatus
 } from '@nestjs/common';
-import { LoginUserDto } from '../../user/dto/signin.user.dto';
+import { LoginUserDto } from '../../user/dto/signin-user.dto';
 import { Auth } from '../decorators/auth.decorator';
 import { AuthType } from '../enums/auth-type.enum';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../constants/auth.constants';
 import { UserService } from '../../user/user.service';
-import { AccessTokenGuard } from '../guards/access-token.guard/access-token.guard';
+import { AccessTokenGuard } from '../guards/access-token.guard';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -65,6 +65,7 @@ export class AuthController {
     },
   })
   async signIn(@Body() loginUserDto: LoginUserDto) {
+    console.log("Estoy en POST auth/login");
     const { email, password } = loginUserDto;
     const { token } = await this.authService.signUser(email, password);
     console.log("Token obtenido del servicio: ", token)

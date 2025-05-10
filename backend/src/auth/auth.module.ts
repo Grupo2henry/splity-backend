@@ -10,10 +10,10 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { GoogleAuthenticationController } from './controllers/google-authentication.controller';
 import { GoogleAuthenticationService } from './service/google-authentication.service';
-import { GenerateTokensProvider } from './providers/generate-tokens.provider';
+import { GenerateTokensProvider } from './service/generate-token.service';
 import { MailsModule } from 'src/mails/mails.module';
-import { AccessTokenGuard } from './guards/access-token.guard/access-token.guard';
-import { AuthenticationGuard } from './guards/authentication/authentication.guard';
+import { AccessTokenGuard } from './guards/access-token.guard';
+import { AuthenticationGuard } from './guards/authentication.guard';
 
 @Module({
   imports: [
@@ -31,6 +31,6 @@ import { AuthenticationGuard } from './guards/authentication/authentication.guar
     AccessTokenGuard,
   ],
   controllers: [AuthController, GoogleAuthenticationController],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule,AccessTokenGuard],
 })
 export class AuthModule {}

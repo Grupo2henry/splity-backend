@@ -11,7 +11,7 @@ import { Group } from '../../group/entities/group.entity';
 import { User } from '../../user/entities/user.entity';
 import { ExpenseSplit } from './expense-split.entity';
 
-@Entity()
+@Entity('expense')
 export class Expense {
   @PrimaryGeneratedColumn()
   id: number;
@@ -28,11 +28,14 @@ export class Expense {
   @Column('float')
   amount: number;
 
-  @ManyToOne(() => User, (user) => user.expensesPaid)
+  @ManyToOne(() => User, (user) => user.expenses_paid)
   paid_by: User;
 
   @CreateDateColumn()
   created_at: Date;
+
+  @Column({ type: 'timestamp' })
+  date: Date;
 
   @OneToMany(() => ExpenseSplit, (split) => split.expense)
   splits: ExpenseSplit[];

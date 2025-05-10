@@ -12,13 +12,17 @@ import {
   Param,
   Patch,
   Delete,
-  Req
+  Req,
+  NotFoundException
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
-  ApiTags
+  ApiTags,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+
   } from '@nestjs/swagger';
 import { GroupService } from '../services/group.service';
 import { GroupMembershipService } from '../services/group-membership.service';
@@ -26,9 +30,10 @@ import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
 import { UserService } from 'src/user/user.service';
 import { Group } from '../entities/group.entity';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
-import { RequestWithUser } from 'src/auth/types/request-with-user';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { RequestWithUser } from 'src/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
+import { GroupResponseDto } from '../dto/group-response.dto';
 
 @ApiBearerAuth()
 @Controller()
@@ -40,7 +45,7 @@ export class GroupController {
     private readonly userService: UserService,
   ) {}
 
-  @UseGuards(AccessTokenGuard)
+  
   @Post('groups')
   @ApiOperation({
       summary: 'Crea un grupo/evento nuevo con un listado de participantes',
@@ -59,13 +64,13 @@ export class GroupController {
         },
       },
     })
+    @UseGuards(AccessTokenGuard)
     async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
        console.log("Estoy en membership, pase el Guard.")
           const user = request[REQUEST_USER_KEY];
           if (!user) {
             throw new Error('User not found in request.');
           }
-      console.log("datos del usuario logueado creando el grupo: ", user)
       return await this.groupService.createGroupWithParticipants(createGroupDto);
     }
 
@@ -99,7 +104,25 @@ export class GroupController {
     return this.groupService.findOne(id);
   }
 
-  @Patch('groups/id/:id')
+  @Get('users/me/groups/created') //Arreglar, comportamiento indeseado
+  @UseGuards(AccessTokenGuard)
+  @ApiOperation({
+    summary: 'Devuelve todos los grupos creados por el usuario logueado',
+  })
+  @ApiOkResponse({
+    description: 'Listado de grupos creados por el usuario',
+    type: [GroupResponseDto],
+  })
+  async findCreatedGroups(@Req() request: RequestWithUser): Promise<GroupResponseDto[]> {
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
+    }
+    const createdGroups = await this.groupService.findGroupsCreatedByUser(user.id);
+    return createdGroups.map(group => new GroupResponseDto(group));
+  }
+
+  @Patch('groups/id/:id/update')
   @ApiOperation({
     summary: 'Actualiza el grupo segun la id',
   })
@@ -110,6 +133,29 @@ export class GroupController {
     return this.groupService.update(id, updateGroupDto);
   }
 
+  @Patch('groups/id/:id/deactivate') // Endpoint que denota un borrado lógico
+  @ApiOperation({
+    summary: 'Realiza un borrado lógico del grupo según su ID',
+    description: 'Modifica la propiedad "active" del grupo a false.',
+  })
+  @ApiOkResponse({
+    description: 'Grupo desactivado exitosamente',
+    type: GroupResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'No se encontró el grupo con el ID proporcionado' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autorizado' }) // Puedes personalizar esto según tu lógica de autorización
+  @HttpCode(HttpStatus.OK) // Indica que la operación fue exitosa (aunque no se esté "creando" nada)
+  async softDeleteGroup(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupResponseDto> {
+    const updatedGroup = await this.groupService.softDelete(id);
+    if (!updatedGroup) {
+      throw new NotFoundException(`No se encontró el grupo con el ID: ${id}`);
+    }
+    return new GroupResponseDto(updatedGroup);
+  }
+
+  //Solo debería acceder super admin, agregar Guard.
   @Delete('groups/id/:id')
   @ApiOperation({
     summary: 'Elimina el grupo segun la id',

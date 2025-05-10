@@ -3,7 +3,8 @@
 
 import { usersSeed } from './users.seed';
 import { expensesSeed } from './expenses.seed';
-export const expenseSplitsSeed = [
+import { ExpenseSplitSeed } from '../interfaces/expense-split.interface';
+export const expenseSplitsSeed: ExpenseSplitSeed[] = [
   // Grupo 1: Viaje a Bariloche (Gasto 0: Alojamiento - 8 miembros)
   { expense: expensesSeed[0], user: usersSeed[1], amount_owed: parseFloat((expensesSeed[0].amount / 8).toFixed(2)) },
   { expense: expensesSeed[0], user: usersSeed[2], amount_owed: parseFloat((expensesSeed[0].amount / 8).toFixed(2)) },

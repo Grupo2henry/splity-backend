@@ -17,6 +17,7 @@ import { GroupModule } from './group/group.module';
 import { LiquidationsModule } from './liquidations/liquidations.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { BalanceModule } from './balance/balance.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,7 +31,6 @@ import { BalanceModule } from './balance/balance.module';
     SubscriptionModule,
     GroupModule,
     ExpensesModule,
-    SeedModule, // Puedes dejar SeedModule al final
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     SeedModule,
@@ -39,6 +39,8 @@ import { BalanceModule } from './balance/balance.module';
     ExpensesModule,
     LiquidationsModule,
     BalanceModule,
+    CloudinaryModule,
+    SeedModule, // Puedes dejar SeedModule al final
   ],
   providers: [AppService],
   controllers: [AppController],
