@@ -32,7 +32,7 @@ export class UserService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.findAll(); // Usa el método del repositorio
+    return await this.userRepository.findAll();
   }
 
   async findUsersByEmail(email: string): Promise<User[]> {
@@ -40,7 +40,7 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne(id); // Usa el método del repositorio
+    const user = await this.userRepository.findOne(id);
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -51,8 +51,8 @@ export class UserService {
     return await this.userRepository.findUserByEmail(email);
   }
 
-  async findUserGroups(id: string): Promise<Omit<User, 'password'>> { //Metodo muy similar en groups y memberships
-    const user = await this.userRepository.findUserWithGroups(id); // 👈 Llama al nuevo método del repositorio
+  async findUserGroups(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.userRepository.findUserWithGroups(id);
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -63,7 +63,7 @@ export class UserService {
   async desactivateUser(id: string) {
     const user = await this.findOne(id);
     user.active = false;
-    const updatedUser = await this.userRepository.save(user); // Usa el método del repositorio
+    const updatedUser = await this.userRepository.save(user);
     return new UserResponseDto(updatedUser);
   }
 
@@ -74,7 +74,7 @@ export class UserService {
     const userToModify = await this.findOne(id);
     Object.assign(userToModify, user);
     try {
-      const modifiedUser = await this.userRepository.save(userToModify); // Usa el método del repositorio
+      const modifiedUser = await this.userRepository.save(userToModify);
 
       if (!modifiedUser) {
         throw new InternalServerErrorException('No se pudo guardar el usuario');
@@ -92,17 +92,17 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
     Object.assign(user, updateUserDto);
-    return await this.userRepository.save(user); // Usa el método del repositorio
+    return await this.userRepository.save(user);
   }
 
   public async findByGoogleId(googleId: string) {
-    return await this.userRepository.findOneByGoogleId(googleId); // Usa el método del repositorio
+    return await this.userRepository.findOneByGoogleId(googleId);
   }
 
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
       console.log("Este es el google user: ", googleUser)
-      const user = await this.userRepository.createGoogleUser(googleUser); // 👈 Llama al método del repositorio
+      const user = await this.userRepository.createGoogleUser(googleUser);
       await this.mailService.sendUserConfirmation({
         name: googleUser.name,
         email: googleUser.email,

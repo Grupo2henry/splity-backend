@@ -5,13 +5,13 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentRepository } from './payment.repository';
 import { User } from '../user/entities/user.entity';
-import { SubscriptionService } from '../subscription/subscription.service'; // Importa el SubscriptionService
+import { SubscriptionService } from '../subscription/subscription.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private readonly paymentRepository: PaymentRepository,
-    @Inject(SubscriptionService) // Inyecta el SubscriptionService
+    @Inject(SubscriptionService)
     private readonly subscriptionService: SubscriptionService,
   ) {}
 
@@ -32,21 +32,18 @@ export class PaymentService {
       status,
       payment_date,
       transaction_id,
-      active: true, // Establecemos active por defecto al crear
+      active: true,
     });
 
     const savedPayment = await this.paymentRepository.save(payment);
 
-    // Si el pago es aceptado, crea una nueva suscripción
     if (savedPayment.status === 'accepted') {
-      // Define los datos necesarios para crear la suscripción
-      // ¡Importante! Ajusta estos valores según la lógica de tu aplicación
       const subscriptionData = {
-        userId: userId.toString(), // Asegúrate de que userId sea un string si es necesario
-        status: 'active' as 'active' | 'inactive', // Establece el estado inicial de la suscripción
-        started_at: new Date(), // Puedes definir la fecha de inicio según tu lógica
-        ends_at: this.calculateSubscriptionEndDate(), // Implementa esta función según la duración de tu suscripción
-        paymentId: savedPayment.id, // Asocia el pago a la suscripción
+        userId: userId.toString(),
+        status: 'active' as 'active' | 'inactive',
+        started_at: new Date(),
+        ends_at: this.calculateSubscriptionEndDate(),
+        paymentId: savedPayment.id,
       };
 
       try {
@@ -54,14 +51,12 @@ export class PaymentService {
         console.log(`[PaymentService] Subscripción creada para el usuario ${userId} tras pago aceptado.`);
       } catch (error) {
         console.error('[PaymentService] Error al crear la subscripción:', error);
-        // Considera si quieres revertir el pago o manejar el error de otra manera
       }
     }
 
     return savedPayment;
   }
 
-  // Función para calcular la fecha de fin de la suscripción (fijo a un año)
   private calculateSubscriptionEndDate(): Date {
     const endDate = new Date();
     endDate.setFullYear(endDate.getFullYear() + 1);

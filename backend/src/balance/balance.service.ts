@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/balance/balance.service.ts
 
 import { Injectable, Inject, forwardRef } from '@nestjs/common';

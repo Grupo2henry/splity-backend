@@ -20,7 +20,7 @@ import {
   ApiParam,
   ApiHeader,
 } from '@nestjs/swagger';
-import { AuthenticationGuard } from '../auth/guards/authentication/authentication.guard';
+import { AuthenticationGuard } from '../auth/guards/authentication.guard';
 
 @ApiTags('Images')
 @Controller()

@@ -67,6 +67,6 @@ export class User {
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
 
-  @Column({ default: 0 }) // Nueva columna para el total de grupos creados
+  @Column({ default: 0 })
   total_groups_created: number;
 }

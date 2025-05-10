@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 // src/payment/mercadopago.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
