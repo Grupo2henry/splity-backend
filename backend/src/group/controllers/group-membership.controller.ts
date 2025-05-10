@@ -23,9 +23,9 @@ import {
   import { GroupResponseDto } from '../dto/group-response.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
-import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
+import { AccessTokenGuard } from '../../auth/guards/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
-import { RequestWithUser } from '../../auth/types/request-with-user';
+import { RequestWithUser } from '../../types/request-with-user';
 import { GroupRole } from '../enums/group-role.enum';
 import { 
   ApiBearerAuth, 

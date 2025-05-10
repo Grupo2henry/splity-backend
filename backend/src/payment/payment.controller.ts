@@ -19,8 +19,8 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Payment } from './entities/payment.entity';
 import { MercadoPagoService } from './mercadopago.service';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
-import { RequestWithUser } from 'src/auth/types/request-with-user';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { RequestWithUser } from 'src/types/request-with-user';
 import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
 import { PaymentNotificationDto } from './dto/payment-notification.dto';
 

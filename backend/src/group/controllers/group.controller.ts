@@ -30,8 +30,8 @@ import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
 import { UserService } from 'src/user/user.service';
 import { Group } from '../entities/group.entity';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard/access-token.guard';
-import { RequestWithUser } from 'src/auth/types/request-with-user';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { RequestWithUser } from 'src/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { GroupResponseDto } from '../dto/group-response.dto';
 
