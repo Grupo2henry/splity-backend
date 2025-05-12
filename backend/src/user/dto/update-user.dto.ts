@@ -1,10 +1,4 @@
 /* eslint-disable prettier/prettier */
-// import { PartialType } from '@nestjs/mapped-types';
-// import { CreateUsuarioDto } from './create-usuario.dto';
-
-// export class UpdateUsuarioDto extends PartialType(CreateUsuarioDto) {}
-// ../../user/dto/update-user.dto.ts
-
 import {
   IsEmail,
   IsOptional,
@@ -34,4 +28,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsUrl({}, { message: 'La URL de la imagen de perfil no es válida' })
   profile_picture_url?: string;
+
+  @IsOptional()
+  @IsString()
+  googleId?: string;
 }
