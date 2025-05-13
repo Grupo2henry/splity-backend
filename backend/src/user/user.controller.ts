@@ -16,9 +16,9 @@ import {
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
-import { Roles } from '../auth/decorators/role.decorator';
-import { Role } from '../auth/enums/role.enum';
-import { RolesGuard } from '../auth/guards/role.guard';
+// import { Roles } from '../auth/decorators/role.decorator';
+// import { Role } from '../auth/enums/role.enum';
+// import { RolesGuard } from '../auth/guards/role.guard';
 import { UUIDValidationPipe } from '../pipes/uuid.validation';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
@@ -100,9 +100,10 @@ export class UsuariosController {
       return { message: 'Error interno del servidor' };
     }
   }
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
-  @Put('admin/:id')
+  // @Roles(Role.Admin) // inyecta rol a la metadata
+  // @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Auth(AuthType.None)
+  @Put('desactivate-admin/:id')
   @ApiOperation({
     summary: 'Cambia is active del usuario a false',
   })
@@ -118,11 +119,33 @@ export class UsuariosController {
       },
     },
   })
-  async putUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
+  async desactivateUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
     const result = await this.userService.desactivateUser(id);
     return result;
   }
-  //modificar los auth luego
+  ///activa usuario
+  @Auth(AuthType.None)
+  @Put('activate-admin/:id')
+  @ApiOperation({
+    summary: 'Cambia is active del usuario a false',
+  })
+  @ApiOkResponse({
+    description: 'Usuario activado exitosamente',
+    schema: {
+      example: {
+        id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+        name: 'Juan Pérez',
+        email: 'juan.perez@example.com',
+        created_at: '2024-04-27T12:00:00.000Z',
+        active: true,
+      },
+    },
+  })
+  async activateUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
+    const result = await this.userService.activateUser(id);
+    return result;
+  }
+  ///////
   @Auth(AuthType.None)
   @Get('usersByAdmin')
   @ApiOperation({

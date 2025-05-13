@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Role } from '../../auth/enums/role.enum';
 import { Expense } from '../../expenses/entities/expense.entity';
 import { ExpenseSplit } from '../../expenses/entities/expense-split.entity';

@@ -41,13 +41,15 @@ export class UserService {
     console.log(user);
     return user;
   }
-  async findOneAdmin(id: string): Promise<User> {
+  async findOneAdmin(id: string) {
     const gUser = await this.findUserGroups(id);
     if (!gUser) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
-    console.log('guser: ', gUser);
-    return gUser;
+    const quantity = gUser.memberships.length;
+    const { memberships, groupsCreated, ...rest } = gUser;
+    const user = { ...rest, quantity };
+    return user;
   }
 
   async findUserGroups(id: string): Promise<Omit<User, 'password'>> {
@@ -68,7 +70,12 @@ export class UserService {
     await this.userRepository.save(user);
     return new UserResponseDto(user);
   }
-
+  async activateUser(id: string) {
+    const user = await this.findOne(id);
+    user.active = true;
+    await this.userRepository.save(user);
+    return new UserResponseDto(user);
+  }
   async modifiedUser(
     id: string,
     user: UpdateUserDto,

@@ -1,78 +1,98 @@
 /* eslint-disable prettier/prettier */
 import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Put,
-    Param,
-    Delete,
-    ParseIntPipe,
-    HttpStatus,
-    HttpCode,
-    NotFoundException,
-    UseGuards,
-    Req
-  } from '@nestjs/common';
-  import { GroupMembershipService } from '../services/group-membership.service';
-  import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
-  import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
-  import { UserService } from '../../user/user.service';
-  import { GroupService } from '../services/group.service';
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  ParseIntPipe,
+  HttpStatus,
+  HttpCode,
+  NotFoundException,
+  UseGuards,
+  Req,
+  Query,
+} from '@nestjs/common';
+import { GroupMembershipService } from '../services/group-membership.service';
+import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
+import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+import { UserService } from '../../user/user.service';
+import { GroupService } from '../services/group.service';
 import { AccessTokenGuard } from '../../auth/guards/access-token.guard/access-token.guard';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { RequestWithUser } from '../../auth/types/request-with-user';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { GetGroupsDto } from '../dto/get-groups.dto';
 
 @ApiBearerAuth()
-  @Controller()
-  @ApiTags('GroupsMemberships')
-  export class GroupMembershipController {
-    constructor(
-        private readonly groupMembershipService: GroupMembershipService,
-        private readonly userService: UserService,
-        private readonly groupService: GroupService,
-    ) {}
-  
+@Controller()
+@ApiTags('GroupsMemberships')
+export class GroupMembershipController {
+  constructor(
+    private readonly groupMembershipService: GroupMembershipService,
+    private readonly userService: UserService,
+    private readonly groupService: GroupService,
+  ) {}
+
   @Post('groups/memberships')
   @ApiOperation({
     summary: 'Registra una membersia de un usuario registrado a un grupo',
   })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
-    const user = await this.userService.findOne(createGroupMembershipDto.userId);
+    const user = await this.userService.findOne(
+      createGroupMembershipDto.userId,
+    );
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    const group = await this.groupService.findOne(createGroupMembershipDto.groupId);
+    const group = await this.groupService.findOne(
+      createGroupMembershipDto.groupId,
+    );
     if (!group) {
       throw new NotFoundException('Grupo no encontrado');
     }
 
-    const existingMembership = await this.groupMembershipService.findByUserAndGroup(
-      createGroupMembershipDto.userId,
-      createGroupMembershipDto.groupId,
-    );
+    const existingMembership =
+      await this.groupMembershipService.findByUserAndGroup(
+        createGroupMembershipDto.userId,
+        createGroupMembershipDto.groupId,
+      );
 
     if (existingMembership) {
       throw new Error('El usuario ya es miembro del grupo.');
     }
 
-    const membership = await this.groupMembershipService.create(createGroupMembershipDto, user, group);
+    const membership = await this.groupMembershipService.create(
+      createGroupMembershipDto,
+      user,
+      group,
+    );
 
     return {
       message: 'Membresía creada exitosamente',
       membership,
     };
   }
-
+  @Get('AdminMembershipsUser/:userId')
+  @Auth(AuthType.None)
+  async getGroups(
+    @Param('userId') userId: string,
+    @Query() query: GetGroupsDto,
+  ) {
+    return this.groupMembershipService.getGroups(userId, query);
+  }
   @Get('groups/memberships')
   @ApiOperation({
     summary: 'Devuelve todas las membresias de grupos registradas',
   })
   async findAll() {
-    console.log("Estoy en group/membership")
+    console.log('Estoy en group/membership');
     return this.groupMembershipService.findAll();
   }
 
@@ -81,7 +101,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
     summary: 'Devuelve la membresias de grupos segun id del parametro',
   })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    console.log("Estoy en group/membership/:id")
+    console.log('Estoy en group/membership/:id');
     return this.groupMembershipService.findOne(id);
   }
 
@@ -104,14 +124,15 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupMembershipService.remove(id);
   }
-  
+
   @Get('groups/my-groups')
   @ApiOperation({
-    summary: 'Devuelve todos los grupos a los que pertenezca el usuario logueado',
+    summary:
+      'Devuelve todos los grupos a los que pertenezca el usuario logueado',
   })
   @UseGuards(AccessTokenGuard)
   async findGroupsByUser(@Req() request: RequestWithUser) {
-    console.log("Estoy en membership, pase el Guard.")
+    console.log('Estoy en membership, pase el Guard.');
     const user = request[REQUEST_USER_KEY];
     if (!user) {
       throw new Error('User not found in request.');
@@ -129,7 +150,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
   @Get('groups/:groupId/members/:userId')
   @ApiOperation({
-    summary: 'Devuelve un miembro de un grupos segun id del grupo y del usuario en el parametro',
+    summary:
+      'Devuelve un miembro de un grupos segun id del grupo y del usuario en el parametro',
   })
   async findByUserAndGroup(
     @Param('userId') userId: string,

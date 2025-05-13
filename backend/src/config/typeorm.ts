@@ -30,7 +30,7 @@ export const dbConfig: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   dropSchema: dropSchemaDB, //Poner en true llegado el caso
   synchronize: true,
-  logging: false,
+  logging: true,
   ssl: false, // ponelo en true para prod con SSL
   entities: ['dist/**/*.entity.{ts,js}'],
   migrations: ['dist/migrations/*.{ts,js}'],
