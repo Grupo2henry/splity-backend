@@ -20,13 +20,13 @@ if (process.env.DROP_SCHEMA === 'false') {
 
 export const dbConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  url: process.env.DATABASE_PUBLIC_URL,
-  // database: process.env.DB_NAME,
-  // host: process.env.DB_HOST,
-  // port: Number(process.env.DB_PORT),
-  // username: process.env.DB_USERNAME,
-  // password: process.env.DB_PASSWORD,
-  // ///
+  // url: process.env.DATABASE_PUBLIC_URL,
+  database: process.env.DB_NAME,
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  ///
   autoLoadEntities: true,
   dropSchema: dropSchemaDB, //Poner en true llegado el caso
   synchronize: true,
