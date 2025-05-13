@@ -24,7 +24,6 @@ export class GroupService {
   }
 
   async findAll() {
-    console.log('Estoy en group.service');
     return await this.groupRepository.findAll();
   }
 
@@ -53,25 +52,17 @@ export class GroupService {
   ): Promise<Group> {
     const creator = await this.validateCreator(createGroupDto.creatorId);
     const group = await this.createGroup(createGroupDto.name, creator);
-    await this.addParticipantsToGroup(
-      group,
-      creator,
-      createGroupDto.participants,
-    );
-    const groupName = createGroupDto.name;
-    const user = await this.userService.findOne(creator.id);
-    const users = await Promise.all(
-      createGroupDto.participants.map((participant) =>
-        this.userService.findOne(participant),
-      ),
-    );
-    const allUsers = [user, ...users];
-    await this.mailService.sendGruopConfirmation(allUsers, groupName);
+
+    if (group) { 
+      creator.total_groups_created++;
+      await this.userService.update(creator.id, creator);
+    }
+
+    await this.addParticipantsToGroup(group, creator, createGroupDto.participants);
     return group;
   }
 
   private async validateCreator(creatorId: string): Promise<User> {
-    // 👈 Define el tipo de retorno como Promise<User>
     const creator = await this.userService.findOne(creatorId);
     if (!creator) {
       throw new NotFoundException(
@@ -82,18 +73,11 @@ export class GroupService {
   }
 
   private async createGroup(name: string, creator: User): Promise<Group> {
-    // 👈 Define el tipo de creator como User
-    const groupDto: CreateGroupDto = { name } as CreateGroupDto; // Creamos un DTO parcial para la creación del grupo
+    const groupDto: CreateGroupDto = { name } as CreateGroupDto;
     return await this.create(groupDto, creator);
   }
 
-  private async addParticipantsToGroup(
-    group: Group,
-    creator: User,
-    participantIds: string[],
-  ): Promise<void> {
-    // 👈 Define los tipos de creator como User
-    // Agregar participantes como GUEST
+  private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
       if (user) {
@@ -110,16 +94,24 @@ export class GroupService {
       }
     }
 
-    // Agregar al creador como ADMIN
-    await this.groupMembershipService.create(
-      {
-        status: 'active',
-        userId: creator.id,
-        groupId: group.id,
-        role: GroupRole.ADMIN,
-      },
-      creator,
-      group,
-    );
+    await this.groupMembershipService.create({
+      status: 'active',
+      userId: creator.id,
+      groupId: group.id,
+      role: GroupRole.ADMIN,
+    }, creator, group);
+  }
+
+  async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
+    return await this.groupRepository.findGroupsCreatedByUser(userId)
+  }
+
+  async softDelete(id: number): Promise<Group | undefined> {
+    const group = await this.groupRepository.findOne(id);
+    if (!group) {
+      return undefined; // O lanza una NotFoundException aquí
+    }
+    group.active = false;
+    return await this.groupRepository.saveSoftDeleted(group); // 👈 Llama a un método en el repositorio
   }
 }

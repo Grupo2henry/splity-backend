@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { Group } from '../entities/group.entity';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
-
 @Injectable()
 export class GroupRepository {
   constructor(
@@ -20,7 +19,7 @@ export class GroupRepository {
         'created_by',
         'memberships',
         'expenses',
-        'memberships.user',
+        'memberships.user', // Asegúrate de cargar el usuario de la membresía
         'expenses.paid_by',
         'expenses.splits',
         'expenses.splits.user',
@@ -29,13 +28,12 @@ export class GroupRepository {
   }
 
   async findAll(): Promise<Group[]> {
-    console.log('Estoy en group.repository');
     return this.groupRepository.find({
       relations: [
         'created_by',
         'memberships',
         'expenses',
-        'memberships.user',
+        'memberships.user', // Asegúrate de cargar el usuario de la membresía
         'expenses.paid_by',
         'expenses.splits',
         'expenses.splits.user',
@@ -63,5 +61,16 @@ export class GroupRepository {
 
   async remove(id: number): Promise<void> {
     await this.groupRepository.delete(id);
+  }
+
+  async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
+    return this.groupRepository.find({
+      where: { created_by: { id: userId } },
+      relations: ['created_by', 'memberships', 'expenses', 'memberships.user'], // ¡Carga también 'memberships.user'!
+    });
+  }
+
+  async saveSoftDeleted(group: Group): Promise<Group> {
+    return await this.groupRepository.save(group);
   }
 }

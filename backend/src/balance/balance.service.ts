@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/balance/balance.service.ts
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Expense } from '../expenses/entities/expense.entity';
@@ -17,9 +18,9 @@ export class BalanceService {
     private readonly expenseRepository: Repository<Expense>,
     @InjectRepository(ExpenseSplit)
     private readonly expenseSplitRepository: Repository<ExpenseSplit>,
-    @Inject(GroupMembershipService)
+    @Inject(forwardRef(() => GroupMembershipService))
     private readonly groupMembershipService: GroupMembershipService,
-    @Inject(UserService)
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
   ) {}
 

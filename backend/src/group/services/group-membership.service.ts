@@ -76,6 +76,7 @@ export class GroupMembershipService {
   async findGroupsByUser(userId: string) {
     return this.groupMembershipRepository.findGroupsByUser(userId);
   }
+
   async getGroups(userId: string, query: GetGroupsDto) {
     const { page = 1, limit = 6, search = '', startDate, endDate } = query;
     if (startDate && isNaN(new Date(startDate).getTime())) {
@@ -140,4 +141,23 @@ export class GroupMembershipService {
       throw new BadRequestException('Error fetching groups: ' + error.message);
     }
   }
+
+  // async findGroupsByUserAndRole(
+  //   userId: string,
+  //   role: string,
+  // ): Promise<GroupMembership[]> {
+  //   return await this.groupMembershipRepository.findGroupsByUserAndRole(
+  //     userId,
+  //     role,
+  //   );
+  // }
+
+  // async deactivate(id: number): Promise<GroupMembership | undefined> {
+  //   const membership = await this.findOne(id);
+  //   if (!membership) {
+  //     return undefined; // O lanza una NotFoundException aquí
+  //   }
+  //   membership.active = false;
+  //   return await this.groupMembershipRepository.saveDeactivated(membership); // 👈 Llama a un método en el repositorio
+  // }
 }
