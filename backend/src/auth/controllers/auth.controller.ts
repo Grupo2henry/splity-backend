@@ -90,7 +90,7 @@ export class AuthController {
         return { message: 'Usuario no encontrado' };
       }
       console.log("Este devuelve auth/me: ", user);
-      return { user };
+      return user ;
     } catch (error) {
       console.error('Error obteniendo el usuario:', error);
       return { message: 'Error interno del servidor' };
