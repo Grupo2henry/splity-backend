@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // src/group/dto/create-group.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsString, IsUUID, IsOptional } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, IsUUID, IsOptional, IsLatitude, IsLongitude } from 'class-validator';
 
 export class CreateGroupDto {
   @ApiProperty({ example: 'Viaje a Córdoba' })
@@ -18,4 +18,16 @@ export class CreateGroupDto {
   @IsOptional() // Marca el emoji como opcional
   @IsString()
   emoji?: string;
+
+  @IsOptional()
+  @IsString()
+  locationName?: string;
+
+  @IsOptional()
+  @IsLatitude()
+  latitude?: number;
+
+  @IsOptional()
+  @IsLongitude()
+  longitude?: number;
 }

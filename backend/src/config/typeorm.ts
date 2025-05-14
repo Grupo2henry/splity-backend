@@ -28,7 +28,7 @@ export const dbConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD, //Descomentar para usar local con variables de entorno
   autoLoadEntities: true,
   dropSchema: dropSchemaDB, //Poner en true llegado el caso
-  synchronize: true,
+  synchronize: false,
   logging: false,
   ssl: false,
   entities: ['dist/**/*.entity.{ts,js}'],

@@ -30,6 +30,15 @@ export class Group {
   @Column({ nullable: true })
   emoji?: string;
 
+  @Column({ nullable: true })
+  locationName?: string; // Nombre o descripción, ej: "Parque Sarmiento"
+
+  @Column('float', { nullable: true })
+  latitude?: number;
+
+  @Column('float', { nullable: true })
+  longitude?: number;
+
   @OneToMany(() => GroupMembership, (gm) => gm.group)
   memberships: GroupMembership[];
 

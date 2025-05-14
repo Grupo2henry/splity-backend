@@ -27,18 +27,6 @@ export class GroupService {
     return await this.groupRepository.findAll();
   }
 
-  async findByUserid() {
-    //
-  }
-
-  // async create( // Eliminamos esta función
-  //   createGroupDto: CreateGroupDto,
-  //   createdBy: User,
-  // ): Promise<Group> {
-  //   // 👈 Define el tipo de createdBy como User
-  //   return await this.groupRepository.create(createGroupDto, createdBy);
-  // }
-
   async update(id: number, updateGroupDto: UpdateGroupDto) {
     return this.groupRepository.update(id, updateGroupDto);
   }
@@ -72,10 +60,6 @@ export class GroupService {
     }
     return creator;
   }
-
-  // private async createGroup(createGroupDto: CreateGroupDto, creator: User): Promise<Group> { // Eliminamos esta función
-  //   return await this.create(createGroupDto, creator);
-  // }
 
   private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
     for (const userId of participantIds) {
