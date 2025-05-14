@@ -34,6 +34,8 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RequestWithUser } from 'src/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { GroupResponseDto } from '../dto/group-response.dto';
+import { GroupLimit } from '../decorators/group-limit.decorator';
+import { GroupLimitGuard } from '../guards/group-limit.guard';
 
 @ApiBearerAuth()
 @Controller()
@@ -65,6 +67,8 @@ export class GroupController {
     },
   })
   @UseGuards(AccessTokenGuard)
+  @GroupLimit(3) // 👈 Aplica límite a esta ruta
+  @UseGuards(GroupLimitGuard)
   async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
     console.log("Estoy en membership, pase el Guard.")
     const user = request[REQUEST_USER_KEY];

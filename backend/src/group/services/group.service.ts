@@ -114,4 +114,8 @@ export class GroupService {
     group.active = false;
     return await this.groupRepository.saveSoftDeleted(group);
   }
+
+  async countActiveGroupsCreatedByUser(userId: string): Promise<number> {
+    return await this.groupRepository.countActiveGroupsCreatedByUser(userId);
+  }
 }

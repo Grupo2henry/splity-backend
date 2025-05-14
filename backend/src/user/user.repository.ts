@@ -2,7 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entities/user.entity";
-import { Repository, Like} from "typeorm";
+import { Repository, Like, FindOneOptions} from "typeorm";
 import { GoogleUser } from "./interfaces/google-user.interface";
 
 @Injectable()
@@ -20,9 +20,12 @@ export class UserRepository{
     return await this.userRepository.findOneBy({ google_id: googleId }); // 👈 Corrección aquí
   }
 
-  async findOne(id: string): Promise<User | null | undefined> {
-    return await this.userRepository.findOne({ where: { id } });
-  }
+  async findOne(id: string, options?: FindOneOptions<User>): Promise<User | null | undefined> {
+  return await this.userRepository.findOne({
+    where: { id },
+    ...options,
+  });
+}
 
   async findUserByEmail(email: string): Promise <User | null | undefined>{
     return await this.userRepository.findOne({
