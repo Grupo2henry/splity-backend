@@ -19,7 +19,7 @@ import { expenseSplitsSeed } from './data/expense-splits.seed'; // Asegúrate de
 import { paymentsSeed } from './data/payments.seed';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Group } from '../group/entities/group.entity';
-import { CreateGroupDto as CreateGroupServiceDto } from '../group/dto/create-group.dto'; // Alias para evitar conflicto
+import { CreateGroupDto } from '../group/dto/create-group.dto';
 import { CreateGroupMembershipDto } from '../group/dto/create-group-membership.dto';
 import { CreateExpenseDto } from '../expenses/dto/create-expense.dto';
 import { CreatePaymentDto } from '../payment/dto/create-payment.dto';
@@ -65,9 +65,9 @@ export class SeedService implements OnApplicationBootstrap {
       if (!createdBy) {
         throw new Error(`Usuario no encontrado para el grupo: ${groupSeed.name}`);
       }
-      const createdGroup = await this.groupService.create(
-        { name: groupSeed.name, creatorId: createdBy.id } as CreateGroupServiceDto, // Usa CreateGroupServiceDto
-        createdBy,
+      const createdGroup = await this.groupService.createGroupWithParticipants(
+        { name: groupSeed.name, participants: [], emoji: undefined } as CreateGroupDto, // Asigna las propiedades necesarias del DTO
+        createdBy.id,
       );
       createdGroups.push(createdGroup);
     }
@@ -93,33 +93,33 @@ export class SeedService implements OnApplicationBootstrap {
     }
     console.log('[SeedService] Membresías cargadas.');
 
-// 4. Gastos
-const createdExpenses: Expense[] = [];
-for (const expenseSeed of expensesSeed) {
-  const group = createdGroups.find((g) => g.name === expenseSeed.group.name);
-  const paidBy = createdUsers.find((u) => u.email === expenseSeed.paid_by.email);
-  if (!group || !paidBy) {
-    throw new Error(`Grupo o usuario pagador no encontrado para el gasto: ${expenseSeed.description}`);
-  }
+    // 4. Gastos
+    const createdExpenses: Expense[] = [];
+    for (const expenseSeed of expensesSeed) {
+      const group = createdGroups.find((g) => g.name === expenseSeed.group.name);
+      const paidBy = createdUsers.find((u) => u.email === expenseSeed.paid_by.email);
+      if (!group || !paidBy) {
+        throw new Error(`Grupo o usuario pagador no encontrado para el gasto: ${expenseSeed.description}`);
+      }
 
-  const expenseDate = typeof expenseSeed.date === 'string' ? expenseSeed.date : new Date().toISOString();
-if (!expenseSeed.date) {
-  console.warn(`[SeedService] La fecha del gasto "${expenseSeed.description}" no está definida. Se usará la fecha actual.`);
-}
+      const expenseDate = typeof expenseSeed.date === 'string' ? expenseSeed.date : new Date().toISOString();
+      if (!expenseSeed.date) {
+        console.warn(`[SeedService] La fecha del gasto "${expenseSeed.description}" no está definida. Se usará la fecha actual.`);
+      }
 
-  const created = await this.expensesService.createExpense(
-    group.id,
-    {
-      description: expenseSeed.description,
-      amount: expenseSeed.amount,
-      paid_by: paidBy.id,
-      date: expenseDate,
-      imgUrl: expenseSeed.imgUrl, // Si no existe en expenseSeed, será undefined
-    } as CreateExpenseDto,
-  );
-  createdExpenses.push(created);
-}
-console.log('[SeedService] Gastos cargados.');
+      const created = await this.expensesService.createExpense(
+        group.id,
+        {
+          description: expenseSeed.description,
+          amount: expenseSeed.amount,
+          paid_by: paidBy.id,
+          date: expenseDate,
+          imgUrl: expenseSeed.imgUrl, // Si no existe en expenseSeed, será undefined
+        } as CreateExpenseDto,
+      );
+      createdExpenses.push(created);
+    }
+    console.log('[SeedService] Gastos cargados.');
 
     // 5. Divisiones (Manejo directo con el repositorio)
     if (this.expenseSplitRepository && expenseSplitsSeed) {

@@ -31,13 +31,13 @@ export class GroupService {
     //
   }
 
-  async create(
-    createGroupDto: CreateGroupDto,
-    createdBy: User,
-  ): Promise<Group> {
-    // 👈 Define el tipo de createdBy como User
-    return await this.groupRepository.create(createGroupDto, createdBy);
-  }
+  // async create( // Eliminamos esta función
+  //   createGroupDto: CreateGroupDto,
+  //   createdBy: User,
+  // ): Promise<Group> {
+  //   // 👈 Define el tipo de createdBy como User
+  //   return await this.groupRepository.create(createGroupDto, createdBy);
+  // }
 
   async update(id: number, updateGroupDto: UpdateGroupDto) {
     return this.groupRepository.update(id, updateGroupDto);
@@ -49,11 +49,12 @@ export class GroupService {
 
   async createGroupWithParticipants(
     createGroupDto: CreateGroupDto,
+    creatorId: string,
   ): Promise<Group> {
-    const creator = await this.validateCreator(createGroupDto.creatorId);
-    const group = await this.createGroup(createGroupDto.name, creator);
+    const creator = await this.validateCreator(creatorId);
+    const group = await this.groupRepository.create(createGroupDto, creator); // Creamos el grupo directamente aquí
 
-    if (group) { 
+    if (group) {
       creator.total_groups_created++;
       await this.userService.update(creator.id, creator);
     }
@@ -72,10 +73,9 @@ export class GroupService {
     return creator;
   }
 
-  private async createGroup(name: string, creator: User): Promise<Group> {
-    const groupDto: CreateGroupDto = { name } as CreateGroupDto;
-    return await this.create(groupDto, creator);
-  }
+  // private async createGroup(createGroupDto: CreateGroupDto, creator: User): Promise<Group> { // Eliminamos esta función
+  //   return await this.create(createGroupDto, creator);
+  // }
 
   private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
     for (const userId of participantIds) {
@@ -109,9 +109,9 @@ export class GroupService {
   async softDelete(id: number): Promise<Group | undefined> {
     const group = await this.groupRepository.findOne(id);
     if (!group) {
-      return undefined; // O lanza una NotFoundException aquí
+      return undefined;
     }
     group.active = false;
-    return await this.groupRepository.saveSoftDeleted(group); // 👈 Llama a un método en el repositorio
+    return await this.groupRepository.saveSoftDeleted(group);
   }
 }

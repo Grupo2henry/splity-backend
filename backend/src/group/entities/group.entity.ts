@@ -27,6 +27,9 @@ export class Group {
   @Column()
   created_at: Date;
 
+  @Column({ nullable: true })
+  emoji?: string;
+
   @OneToMany(() => GroupMembership, (gm) => gm.group)
   memberships: GroupMembership[];
 
