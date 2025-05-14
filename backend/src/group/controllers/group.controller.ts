@@ -66,11 +66,10 @@ export class GroupController {
       },
     },
   })
-  @UseGuards(AccessTokenGuard)
-  @GroupLimit(3) // 👈 Aplica límite a esta ruta
-  @UseGuards(GroupLimitGuard)
+  @UseGuards(AccessTokenGuard, GroupLimitGuard) // ✅ orden correcto y guard apilado
+  @GroupLimit(3)
   async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
-    console.log("Estoy en membership, pase el Guard.")
+    console.log("Estoy en group, pase el Guard.")
     const user = request[REQUEST_USER_KEY];
     if (!user) {
       throw new Error('User not found in request.');

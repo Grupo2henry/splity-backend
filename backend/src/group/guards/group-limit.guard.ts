@@ -19,7 +19,7 @@ export class GroupLimitGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const user = request[REQUEST_USER_KEY];
-
+    console.log("User es: ", user);
     if (!user?.id) {
       throw new ForbiddenException('No se encontró el usuario en la request.');
     }
@@ -31,7 +31,7 @@ export class GroupLimitGuard implements CanActivate {
 
     const isPremium = await this.userService.calculateIsPremium(user.id);
     const activeGroups = await this.groupService.countActiveGroupsCreatedByUser(user.id);
-
+    console.log("El usuario es premium: ", isPremium, " | ", "Grupos activos: ", activeGroups);
     if (!isPremium && activeGroups >= groupLimit) {
       throw new ForbiddenException(
         `Límite de ${groupLimit} grupos alcanzado para usuarios no premium.`,
