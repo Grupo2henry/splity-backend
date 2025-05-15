@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { UploadApiResponse, v2 } from 'cloudinary';
 import { ExpensesService } from '../expenses/expenses.service';
 import { UserService } from '../user/user.service';
-import toStream from 'buffer-to-stream';
+const toStream = require('buffer-to-stream');
 
 @Injectable()
 export class CloudinaryService {
@@ -40,7 +40,7 @@ export class CloudinaryService {
       }
     );
 
-    (toStream(file.buffer)).pipe(upload);
+    toStream(file.buffer).pipe(upload);
   });
 }
 
