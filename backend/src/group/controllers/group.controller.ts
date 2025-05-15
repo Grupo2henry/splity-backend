@@ -36,6 +36,7 @@ import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { GroupResponseDto } from '../dto/group-response.dto';
 import { GroupLimit } from '../decorators/group-limit.decorator';
 import { GroupLimitGuard } from '../guards/group-limit.guard';
+import { IsGroupMemberGuard } from '../guards/is-group-member.guard';
 
 @ApiBearerAuth()
 @Controller()
@@ -98,8 +99,9 @@ export class GroupController {
   async findAll() {
     return this.groupService.findAll();
   }
-
+  //Agregar Guard aquí para rechazar petición si el user no está en el grupo
   @Get('groups/id/:id')
+  @UseGuards(AccessTokenGuard, IsGroupMemberGuard)
   @ApiOperation({
     summary: 'Devuelve el grupo segun la id',
   })
@@ -126,6 +128,7 @@ export class GroupController {
   }
 
   @Patch('groups/id/:id/update')
+  @UseGuards(AccessTokenGuard, IsGroupMemberGuard)
   @ApiOperation({
     summary: 'Actualiza el grupo segun la id',
   })
