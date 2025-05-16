@@ -34,6 +34,9 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RequestWithUser } from 'src/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { GroupResponseDto } from '../dto/group-response.dto';
+import { GroupLimit } from '../decorators/group-limit.decorator';
+import { GroupLimitGuard } from '../guards/group-limit.guard';
+import { IsGroupMemberGuard } from '../guards/is-group-member.guard';
 
 @ApiBearerAuth()
 @Controller()
@@ -48,31 +51,32 @@ export class GroupController {
   
   @Post('groups')
   @ApiOperation({
-      summary: 'Crea un grupo/evento nuevo con un listado de participantes',
-    })
-    @ApiOkResponse({
-      description: 'Grupo creado nuevamente',
-      schema: {
-        example: {
-          creatorId: "d8a7382c-bb90-4e83-8882-c7486c9b279d",
-          name: "Nuevo Grupo de Amigos",
-          participants: [
-            "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
-            "14e8bb7f-a2c1-4f03-b244-635f970547ce",
-            "40586790-bca4-4e0b-b88b-2f104594337c"
-          ]
-        },
+    summary: 'Crea un grupo/evento nuevo con un listado de participantes',
+  })
+  @ApiOkResponse({
+    description: 'Grupo creado nuevamente',
+    schema: {
+      example: {
+        name: "Nuevo Grupo de Amigos",
+        participants: [
+          "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
+          "14e8bb7f-a2c1-4f03-b244-635f970547ce",
+          "40586790-bca4-4e0b-b88b-2f104594337c"
+        ],
+        emoji: "🎉"
       },
-    })
-    @UseGuards(AccessTokenGuard)
-    async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
-       console.log("Estoy en membership, pase el Guard.")
-          const user = request[REQUEST_USER_KEY];
-          if (!user) {
-            throw new Error('User not found in request.');
-          }
-      return await this.groupService.createGroupWithParticipants(createGroupDto);
+    },
+  })
+  @UseGuards(AccessTokenGuard, GroupLimitGuard) // ✅ orden correcto y guard apilado
+  @GroupLimit(3)
+  async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
+    console.log("Estoy en group, pase el Guard.")
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
     }
+    return await this.groupService.createGroupWithParticipants(createGroupDto, user.id);
+  }
 
   @Get('groups')
   @ApiOperation({
@@ -95,8 +99,9 @@ export class GroupController {
   async findAll() {
     return this.groupService.findAll();
   }
-
+  //Agregar Guard aquí para rechazar petición si el user no está en el grupo
   @Get('groups/id/:id')
+  @UseGuards(AccessTokenGuard, IsGroupMemberGuard)
   @ApiOperation({
     summary: 'Devuelve el grupo segun la id',
   })
@@ -123,6 +128,7 @@ export class GroupController {
   }
 
   @Patch('groups/id/:id/update')
+  @UseGuards(AccessTokenGuard, IsGroupMemberGuard)
   @ApiOperation({
     summary: 'Actualiza el grupo segun la id',
   })
