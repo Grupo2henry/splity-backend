@@ -121,7 +121,7 @@ export class CloudinaryController {
   })
   async getUserImages(
     @UploadedFile() file: Express.Multer.File,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
   ) {
     if (!file) {
       return {        
