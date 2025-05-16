@@ -8,7 +8,7 @@ import { Group } from '../entities/group.entity';
 import { GroupRole } from '../enums/group-role.enum';
 import { GroupMembership } from '../entities/group-membership.entity';
 import { GroupMemberResponseDto } from '../dto/group-member-response.dto';
-import { UsersMembershipsDto } from '../dto/user-membership.dto';
+import { UsersMembershipsDto, UserMembershipWithGroupDetailsDto } from '../dto/user-membership.dto';
 
 @Injectable()
 export class GroupMembershipService {
@@ -86,6 +86,34 @@ export class GroupMembershipService {
         emoji: membership.group.emoji, // Asegúrate de que esta propiedad exista
       },
     }));
+  }
+
+  async getUserMembershipInGroup(userId: string, groupId: number): Promise<UserMembershipWithGroupDetailsDto> {
+    const membership = await this.findByUserAndGroup(userId, groupId);
+    if (!membership) {
+      throw new Error('No membership found for this user in the specified group');
+    }
+    return {
+      id: membership.id,
+      active: membership.active,
+      joined_at: membership.joined_at,
+      status: membership.status,
+      role: membership.role,
+      group: {
+        id: membership.group.id,
+        name: membership.group.name,
+        active: membership.group.active,
+        emoji: membership.group.emoji ?? null,
+        created_at: membership.group.created_at,
+        locationName: membership.group.locationName ?? null,
+        latitude: membership.group.latitude ?? null,
+        longitude: membership.group.longitude ?? null,
+        created_by: {
+          id: membership.group.created_by.id,
+          name: membership.group.created_by.name,
+        },
+      },
+    };
   }
 
   async findGroupsByUserAndRole(userId: string, role: string): Promise<GroupMembership[]> {

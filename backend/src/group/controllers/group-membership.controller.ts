@@ -21,7 +21,7 @@ import {
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
   import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
   import { GroupResponseDto } from '../dto/group-response.dto';
-  import { UsersMembershipsDto } from '../dto/user-membership.dto';
+  import { UserMembershipWithGroupDetailsDto, UsersMembershipsDto } from '../dto/user-membership.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
   import { AccessTokenGuard } from '../../auth/guards/access-token.guard';
@@ -106,7 +106,20 @@ import {
     return await this.groupMembershipService.getUserMemberships(userId);
   }
 
-  
+  @Get('users/me/memberships/group/:groupId')
+  @UseGuards(AccessTokenGuard)
+  async getMembershipByUserAndGroup(
+    @Req() request: RequestWithUser,
+    @Param('groupId') groupId: number,
+    ): Promise<UserMembershipWithGroupDetailsDto> {
+      const user = request[REQUEST_USER_KEY];
+
+      if (!user.id) {
+        throw new Error('User not found in request.');
+      }
+
+    return await this.groupMembershipService.getUserMembershipInGroup(user.id, groupId);
+  }
   
   @Get('users/me/groups/all')
   @ApiOperation({
