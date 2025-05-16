@@ -32,7 +32,10 @@ import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { User } from './entities/user.entity';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+// import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('users')
 @ApiBearerAuth()
@@ -43,7 +46,7 @@ export class UsuariosController {
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
   //@Roles(Role.Admin)  inyecta rol a la metadata
-  @UseGuards(AccessTokenGuard) // comprueba el rol requerido
+  // @UseGuards(AccessTokenGuard) // comprueba el rol requerido
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los usuario, solo lo puede hacer el administrador',
@@ -100,9 +103,8 @@ export class UsuariosController {
       return { message: 'Error interno del servidor' };
     }
   }
-  // @Roles(Role.Admin) // inyecta rol a la metadata
-  // @UseGuards(RolesGuard) // comprueba el rol requerido
-  @Auth(AuthType.None)
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('desactivate-admin/:id')
   @ApiOperation({
     summary: 'Cambia is active del usuario a false',
@@ -123,8 +125,8 @@ export class UsuariosController {
     const result = await this.userService.desactivateUser(id);
     return result;
   }
-  ///activa usuario
-  @Auth(AuthType.None)
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('activate-admin/:id')
   @ApiOperation({
     summary: 'Cambia is active del usuario a false',
@@ -146,7 +148,8 @@ export class UsuariosController {
     return result;
   }
   ///////
-  @Auth(AuthType.None)
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('usersByAdmin')
   @ApiOperation({
     summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',

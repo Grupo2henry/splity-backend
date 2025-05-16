@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { GroupRepository } from '../repositories/group.repository';
@@ -9,15 +11,42 @@ import { GroupMembershipService } from './group-membership.service';
 import { GroupRole } from '../enums/group-role.enum';
 import { User } from '../../user/entities/user.entity'; // 👈 Importa la entidad User
 import { MailsService } from 'src/mails/mails.service';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class GroupService {
   constructor(
+    @InjectRepository(Group)
+    private readonly groupRepositoryDefault: Repository<Group>,
     private readonly groupRepository: GroupRepository,
     private readonly userService: UserService,
     private readonly groupMembershipService: GroupMembershipService,
     private readonly mailService: MailsService,
   ) {}
+
+  async findOneAdmin(id: number) {
+    const group = await this.groupRepositoryDefault.findOne({
+      where: { id },
+      relations: ['memberships', 'expenses', 'created_by'], // Carga las relaciones necesarias
+    });
+
+    if (!group) {
+      return {
+        group: null,
+        membershipCount: 0,
+        expenseCount: 0,
+      };
+    }
+
+    const { memberships, expenses, ...groupWithoutRelations } = group;
+    const modifiedGroup = {
+      ...groupWithoutRelations,
+      membershipCount: memberships?.length ?? 0,
+      expenseCount: expenses?.length ?? 0,
+    };
+    return modifiedGroup;
+  }
 
   async findOne(id: number): Promise<Group | null | undefined> {
     return await this.groupRepository.findOne(id);
@@ -53,12 +82,16 @@ export class GroupService {
     const creator = await this.validateCreator(createGroupDto.creatorId);
     const group = await this.createGroup(createGroupDto.name, creator);
 
-    if (group) { 
+    if (group) {
       creator.total_groups_created++;
       await this.userService.update(creator.id, creator);
     }
 
-    await this.addParticipantsToGroup(group, creator, createGroupDto.participants);
+    await this.addParticipantsToGroup(
+      group,
+      creator,
+      createGroupDto.participants,
+    );
     return group;
   }
 
@@ -77,7 +110,11 @@ export class GroupService {
     return await this.create(groupDto, creator);
   }
 
-  private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
+  private async addParticipantsToGroup(
+    group: Group,
+    creator: User,
+    participantIds: string[],
+  ): Promise<void> {
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
       if (user) {
@@ -94,24 +131,38 @@ export class GroupService {
       }
     }
 
-    await this.groupMembershipService.create({
-      status: 'active',
-      userId: creator.id,
-      groupId: group.id,
-      role: GroupRole.ADMIN,
-    }, creator, group);
+    await this.groupMembershipService.create(
+      {
+        status: 'active',
+        userId: creator.id,
+        groupId: group.id,
+        role: GroupRole.ADMIN,
+      },
+      creator,
+      group,
+    );
   }
 
   async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
-    return await this.groupRepository.findGroupsCreatedByUser(userId)
+    return await this.groupRepository.findGroupsCreatedByUser(userId);
   }
 
   async softDelete(id: number): Promise<Group | undefined> {
-    const group = await this.groupRepository.findOne(id);
+    const group = await this.groupRepositoryDefault.findOne({ where: { id } });
     if (!group) {
       return undefined; // O lanza una NotFoundException aquí
     }
     group.active = false;
-    return await this.groupRepository.saveSoftDeleted(group); // 👈 Llama a un método en el repositorio
+    await this.groupRepositoryDefault.save(group);
+    return group;
+  }
+  async softActivate(id: number): Promise<Group | undefined> {
+    const group = await this.groupRepositoryDefault.findOne({ where: { id } });
+    if (!group) {
+      return undefined; // O lanza una NotFoundException aquí
+    }
+    group.active = true;
+    await this.groupRepositoryDefault.save(group);
+    return group;
   }
 }

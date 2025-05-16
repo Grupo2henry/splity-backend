@@ -1,4 +1,5 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Controller,
   Get,
@@ -14,6 +15,8 @@ import {
   UseGuards,
   Req,
   Query,
+  HttpException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
@@ -37,6 +40,10 @@ import {
   ApiOkResponse,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Role } from 'src/auth/enums/role.enum';
+// import { UpdateMembersDto } from '../dto/update-member.dto';
 
 @ApiBearerAuth()
 @Controller()
@@ -89,8 +96,9 @@ export class GroupMembershipController {
       membership,
     };
   }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('AdminMembershipsUser/:userId')
-  @Auth(AuthType.None)
   async getGroups(
     @Param('userId') userId: string,
     @Query() query: GetGroupsDto,
@@ -227,5 +235,38 @@ export class GroupMembershipController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.groupMembershipService.remove(id);
+  }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('MembershipsOfGroup/:id')
+  async getUsersByAdmin(
+    @Param('id') id: string, // Usa ParseIntPipe para convertir a número
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit: number = 6,
+  ) {
+    console.log('estas en admin membership');
+    try {
+      return await this.groupMembershipService.findMembersByGroupPaginated(
+        +id,
+        page,
+        limit,
+      );
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  @Auth(AuthType.None)
+  @Put('groups/:groupId/members/:userId/status')
+  @ApiOperation({ summary: 'Alternar estado active de un miembro' })
+  async toggleMemberStatus(
+    @Param('userId') userId: string,
+    @Param('groupId', ParseIntPipe) groupId: number,
+  ) {
+    const response = await this.groupMembershipService.toggleMembershipStatus(
+      userId,
+      groupId,
+    );
+    console.log(response);
+    return response;
   }
 }

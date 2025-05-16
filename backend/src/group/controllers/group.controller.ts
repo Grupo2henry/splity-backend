@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 // src/group/controller/group.controller.ts
 import {
   Controller,
@@ -13,7 +12,8 @@ import {
   Patch,
   Delete,
   Req,
-  NotFoundException
+  NotFoundException,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -22,8 +22,7 @@ import {
   ApiTags,
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
-
-  } from '@nestjs/swagger';
+} from '@nestjs/swagger';
 import { GroupService } from '../services/group.service';
 import { GroupMembershipService } from '../services/group-membership.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
@@ -34,6 +33,9 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RequestWithUser } from 'src/types/request-with-user';
 import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
 import { GroupResponseDto } from '../dto/group-response.dto';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Role } from 'src/auth/enums/role.enum';
 
 @ApiBearerAuth()
 @Controller()
@@ -44,35 +46,44 @@ export class GroupController {
     private readonly groupMembershipService: GroupMembershipService,
     private readonly userService: UserService,
   ) {}
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('DetailsOfGroup/:id')
+  async detailsOfGroup(@Param('id') id: string) {
+    const group = await this.groupService.findOneAdmin(+id);
+    return group;
+  }
 
-  
   @Post('groups')
   @ApiOperation({
-      summary: 'Crea un grupo/evento nuevo con un listado de participantes',
-    })
-    @ApiOkResponse({
-      description: 'Grupo creado nuevamente',
-      schema: {
-        example: {
-          creatorId: "d8a7382c-bb90-4e83-8882-c7486c9b279d",
-          name: "Nuevo Grupo de Amigos",
-          participants: [
-            "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
-            "14e8bb7f-a2c1-4f03-b244-635f970547ce",
-            "40586790-bca4-4e0b-b88b-2f104594337c"
-          ]
-        },
+    summary: 'Crea un grupo/evento nuevo con un listado de participantes',
+  })
+  @ApiOkResponse({
+    description: 'Grupo creado nuevamente',
+    schema: {
+      example: {
+        creatorId: 'd8a7382c-bb90-4e83-8882-c7486c9b279d',
+        name: 'Nuevo Grupo de Amigos',
+        participants: [
+          '9c144b66-9dc9-4df1-ba78-f3b44b1a982d',
+          '14e8bb7f-a2c1-4f03-b244-635f970547ce',
+          '40586790-bca4-4e0b-b88b-2f104594337c',
+        ],
       },
-    })
-    @UseGuards(AccessTokenGuard)
-    async create(@Body() createGroupDto: CreateGroupDto, @Req() request: RequestWithUser): Promise<Group> {
-       console.log("Estoy en membership, pase el Guard.")
-          const user = request[REQUEST_USER_KEY];
-          if (!user) {
-            throw new Error('User not found in request.');
-          }
-      return await this.groupService.createGroupWithParticipants(createGroupDto);
+    },
+  })
+  @UseGuards(AccessTokenGuard)
+  async create(
+    @Body() createGroupDto: CreateGroupDto,
+    @Req() request: RequestWithUser,
+  ): Promise<Group> {
+    console.log('Estoy en membership, pase el Guard.');
+    const user = request[REQUEST_USER_KEY];
+    if (!user) {
+      throw new Error('User not found in request.');
     }
+    return await this.groupService.createGroupWithParticipants(createGroupDto);
+  }
 
   @Get('groups')
   @ApiOperation({
@@ -82,13 +93,13 @@ export class GroupController {
     description: 'Grupos registrados',
     schema: {
       example: {
-        creatorId: "d8a7382c-bb90-4e83-8882-c7486c9b279d",
-        name: "Nuevo Grupo de Amigos",
+        creatorId: 'd8a7382c-bb90-4e83-8882-c7486c9b279d',
+        name: 'Nuevo Grupo de Amigos',
         participants: [
-          "9c144b66-9dc9-4df1-ba78-f3b44b1a982d",
-          "14e8bb7f-a2c1-4f03-b244-635f970547ce",
-          "40586790-bca4-4e0b-b88b-2f104594337c"
-        ]
+          '9c144b66-9dc9-4df1-ba78-f3b44b1a982d',
+          '14e8bb7f-a2c1-4f03-b244-635f970547ce',
+          '40586790-bca4-4e0b-b88b-2f104594337c',
+        ],
       },
     },
   })
@@ -113,13 +124,17 @@ export class GroupController {
     description: 'Listado de grupos creados por el usuario',
     type: [GroupResponseDto],
   })
-  async findCreatedGroups(@Req() request: RequestWithUser): Promise<GroupResponseDto[]> {
+  async findCreatedGroups(
+    @Req() request: RequestWithUser,
+  ): Promise<GroupResponseDto[]> {
     const user = request[REQUEST_USER_KEY];
     if (!user) {
       throw new Error('User not found in request.');
     }
-    const createdGroups = await this.groupService.findGroupsCreatedByUser(user.id);
-    return createdGroups.map(group => new GroupResponseDto(group));
+    const createdGroups = await this.groupService.findGroupsCreatedByUser(
+      user.id,
+    );
+    return createdGroups.map((group) => new GroupResponseDto(group));
   }
 
   @Patch('groups/id/:id/update')
@@ -132,8 +147,9 @@ export class GroupController {
   ) {
     return this.groupService.update(id, updateGroupDto);
   }
-
-  @Patch('groups/id/:id/deactivate') // Endpoint que denota un borrado lógico
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Put('group-deactivate/:id') // Endpoint que denota un borrado lógico
   @ApiOperation({
     summary: 'Realiza un borrado lógico del grupo según su ID',
     description: 'Modifica la propiedad "active" del grupo a false.',
@@ -142,7 +158,9 @@ export class GroupController {
     description: 'Grupo desactivado exitosamente',
     type: GroupResponseDto,
   })
-  @ApiNotFoundResponse({ description: 'No se encontró el grupo con el ID proporcionado' })
+  @ApiNotFoundResponse({
+    description: 'No se encontró el grupo con el ID proporcionado',
+  })
   @ApiUnauthorizedResponse({ description: 'Usuario no autorizado' }) // Puedes personalizar esto según tu lógica de autorización
   @HttpCode(HttpStatus.OK) // Indica que la operación fue exitosa (aunque no se esté "creando" nada)
   async softDeleteGroup(
@@ -152,7 +170,20 @@ export class GroupController {
     if (!updatedGroup) {
       throw new NotFoundException(`No se encontró el grupo con el ID: ${id}`);
     }
-    return new GroupResponseDto(updatedGroup);
+    console.log(updatedGroup);
+    return updatedGroup;
+  }
+  @Put('group-activate/:id')
+  @HttpCode(HttpStatus.OK)
+  async softActivateGroup(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupResponseDto> {
+    const updatedGroup = await this.groupService.softActivate(id);
+    if (!updatedGroup) {
+      throw new NotFoundException(`No se encontró el grupo con el ID: ${id}`);
+    }
+    console.log(updatedGroup);
+    return updatedGroup;
   }
 
   //Solo debería acceder super admin, agregar Guard.
