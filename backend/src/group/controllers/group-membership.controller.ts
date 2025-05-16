@@ -21,20 +21,21 @@ import {
   import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
   import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
   import { GroupResponseDto } from '../dto/group-response.dto';
+  import { UsersMembershipsDto } from '../dto/user-membership.dto';
   import { UserService } from '../../user/user.service';
   import { GroupService } from '../services/group.service';
-import { AccessTokenGuard } from '../../auth/guards/access-token.guard';
-import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
-import { RequestWithUser } from '../../types/request-with-user';
-import { GroupRole } from '../enums/group-role.enum';
-import { 
-  ApiBearerAuth, 
-  ApiOperation, 
-  ApiTags,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiQuery
- } from '@nestjs/swagger';
+  import { AccessTokenGuard } from '../../auth/guards/access-token.guard';
+  import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
+  import { RequestWithUser } from '../../types/request-with-user';
+  import { GroupRole } from '../enums/group-role.enum';
+  import { 
+    ApiBearerAuth, 
+    ApiOperation, 
+    ApiTags,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiQuery
+  } from '@nestjs/swagger';
 
 @ApiBearerAuth()
   @Controller()
@@ -96,6 +97,16 @@ import {
     console.log("Estoy en group/membership/:id")
     return this.groupMembershipService.findOne(id);
   }
+
+  @Get('users/me/memberships')
+  async getMembershipsByUser(@Param('userId') userId: string): Promise<UsersMembershipsDto[]> {
+    if(!userId){
+      throw new Error('User not found in request.');
+    }
+    return await this.groupMembershipService.getUserMemberships(userId);
+  }
+
+  
   
   @Get('users/me/groups/all')
   @ApiOperation({

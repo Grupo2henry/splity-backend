@@ -7,6 +7,8 @@ import { User } from '../../user/entities/user.entity';
 import { Group } from '../entities/group.entity';
 import { GroupRole } from '../enums/group-role.enum';
 import { GroupMembership } from '../entities/group-membership.entity';
+import { GroupMemberResponseDto } from '../dto/group-member-response.dto';
+import { UsersMembershipsDto } from '../dto/user-membership.dto';
 
 @Injectable()
 export class GroupMembershipService {
@@ -48,12 +50,42 @@ export class GroupMembershipService {
     return this.groupMembershipRepository.findByUserAndGroup(userId, groupId);
   }
 
-  async findMembersByGroup(groupId: number) {
-    return this.groupMembershipRepository.findMembersByGroup(groupId);
+  async findMembersByGroup(groupId: number): Promise<GroupMemberResponseDto[]> {
+    const memberships = await this.groupMembershipRepository.findMembersByGroup(groupId);
+    return memberships.map((membership) => ({
+    id: membership.id,
+    role: membership.role,
+    status: membership.status,
+    active: membership.active,
+    joined_at: membership.joined_at,
+    user: {
+      id: membership.user.id,
+      name: membership.user.name,
+      email: membership.user.email,
+      active: membership.user.active,
+    },
+  }));
   }
 
   async findGroupsByUser(userId: string) {
     return this.groupMembershipRepository.findGroupsByUser(userId);
+  }
+
+  async getUserMemberships(userId: string): Promise<UsersMembershipsDto[]> {
+    const memberships = await this.findGroupsByUser(userId);
+    return memberships.map((membership) => ({
+      id: membership.id,
+      active: membership.active,
+      joined_at: membership.joined_at,
+      status: membership.status,
+      role: membership.role,
+      group: {
+        id: membership.group.id,
+        name: membership.group.name,
+        active: membership.group.active,
+        emoji: membership.group.emoji, // Asegúrate de que esta propiedad exista
+      },
+    }));
   }
 
   async findGroupsByUserAndRole(userId: string, role: string): Promise<GroupMembership[]> {
