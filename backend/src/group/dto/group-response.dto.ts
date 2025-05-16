@@ -12,6 +12,9 @@ export class GroupResponseDto {
   @ApiProperty({ example: 'Viaje a Córdoba' })
   name: string;
 
+  @ApiProperty({ example: '✨' }) // Ejemplo de un emoji
+  emoji?: string;
+
   @ApiProperty({ example: true })
   active: boolean;
 
@@ -39,6 +42,7 @@ export class GroupResponseDto {
   constructor(group: Group) {
     this.id = group.id;
     this.name = group.name;
+    this.emoji = group.emoji; // Asignamos el emoji desde la entidad
     this.active = group.active;
     this.created_by = new UserResponseDto(group.created_by);
     this.created_at = group.created_at;

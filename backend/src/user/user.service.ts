@@ -17,6 +17,7 @@ import { GoogleUser } from './interfaces/google-user.interface';
 import { MailsService } from 'src/mails/mails.service';
 import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
+import { FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -46,6 +47,7 @@ export class UserService {
     return await this.userRepository.findUsersByEmail(email);
   }
 
+<<<<<<< HEAD
   async findOne(id: string): Promise<User> {
     const user = await this.userRepository.findOne(id);
     if (!user) {
@@ -64,7 +66,15 @@ export class UserService {
     const { memberships, ...rest } = gUser;
     const user = { ...rest, quantity };
     return user;
+=======
+  async findOne(id: string, options?: FindOneOptions<User>): Promise<User> {
+  const user = await this.userRepository.findOne(id, options);
+  if (!user) {
+    throw new NotFoundException(`User with id ${id} not found`);
+>>>>>>> develop
   }
+  return user;
+}
 
   async findOneByEmail(email: string): Promise<User | null | undefined> {
     return await this.userRepository.findUserByEmail(email);
@@ -139,6 +149,7 @@ export class UserService {
       });
     }
   }
+<<<<<<< HEAD
 
   public async getUsersAdmin(page: number, limit: number, search?: string) {
     const take = Number(limit);
@@ -155,5 +166,16 @@ export class UserService {
       page: Number(page),
       lastPage: Math.ceil(total / take),
     };
+=======
+  async calculateIsPremium(userId: string): Promise<boolean> {
+    const user = await this.findOne(userId, { relations: ['subscriptions'] });
+
+    if (!user || !user.subscriptions) return false;
+
+    const now = new Date();
+    return user.subscriptions.some(
+      (sub) => sub.active && (!sub.ends_at || new Date(sub.ends_at) > now),
+    );
+>>>>>>> develop
   }
 }

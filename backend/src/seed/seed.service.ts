@@ -22,7 +22,7 @@ import { expenseSplitsSeed } from './data/expense-splits.seed'; // Asegúrate de
 import { paymentsSeed } from './data/payments.seed';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Group } from '../group/entities/group.entity';
-import { CreateGroupDto as CreateGroupServiceDto } from '../group/dto/create-group.dto'; // Alias para evitar conflicto
+import { CreateGroupDto } from '../group/dto/create-group.dto';
 import { CreateGroupMembershipDto } from '../group/dto/create-group-membership.dto';
 import { CreateExpenseDto } from '../expenses/dto/create-expense.dto';
 import { CreatePaymentDto } from '../payment/dto/create-payment.dto';
@@ -76,12 +76,14 @@ export class SeedService implements OnApplicationBootstrap {
           `Usuario no encontrado para el grupo: ${groupSeed.name}`,
         );
       }
-      const createdGroup = await this.groupService.create(
+
+      const createdGroup = await this.groupService.createGroupWithParticipants(
         {
           name: groupSeed.name,
-          creatorId: createdBy.id,
-        } as CreateGroupServiceDto, // Usa CreateGroupServiceDto
-        createdBy,
+          participants: [],
+          emoji: undefined,
+        } as CreateGroupDto, // Asigna las propiedades necesarias del DTO
+        createdBy.id,
       );
       createdGroups.push(createdGroup);
     }
@@ -143,6 +145,7 @@ export class SeedService implements OnApplicationBootstrap {
         date: expenseDate,
         imgUrl: expenseSeed.imgUrl, // Si no existe en expenseSeed, será undefined
       } as CreateExpenseDto);
+
       createdExpenses.push(created);
     }
     console.log('[SeedService] Gastos cargados.');

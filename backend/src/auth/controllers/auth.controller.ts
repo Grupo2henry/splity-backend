@@ -85,11 +85,12 @@ export class AuthController {
       if (!userPayload) {
         return { message: 'Usuario no autenticado' };
       }
-      const user = await this.userService.findUserGroups(userPayload.id);
+      const user = await this.userService.findOne(userPayload.id);
       if (!user) {
         return { message: 'Usuario no encontrado' };
       }
-      return { user };
+      console.log("Este devuelve auth/me: ", user);
+      return user ;
     } catch (error) {
       console.error('Error obteniendo el usuario:', error);
       return { message: 'Error interno del servidor' };

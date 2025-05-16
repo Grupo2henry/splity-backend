@@ -27,13 +27,11 @@ export const dbConfig: TypeOrmModuleOptions = {
   // port: Number(process.env.DB_PORT),
   // username: process.env.DB_USERNAME,
   // password: process.env.DB_PASSWORD,
-
-  //////
   autoLoadEntities: true,
   dropSchema: dropSchemaDB, //Poner en true llegado el caso
   synchronize: false,
   logging: false,
-  ssl: false, // ponelo en true para prod con SSL
+  ssl: false,
   entities: ['dist/**/*.entity.{ts,js}'],
   migrations: ['dist/migrations/*.{ts,js}'],
 };

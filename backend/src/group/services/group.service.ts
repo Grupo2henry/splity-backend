@@ -56,18 +56,6 @@ export class GroupService {
     return await this.groupRepository.findAll();
   }
 
-  async findByUserid() {
-    //
-  }
-
-  async create(
-    createGroupDto: CreateGroupDto,
-    createdBy: User,
-  ): Promise<Group> {
-    // 👈 Define el tipo de createdBy como User
-    return await this.groupRepository.create(createGroupDto, createdBy);
-  }
-
   async update(id: number, updateGroupDto: UpdateGroupDto) {
     return this.groupRepository.update(id, updateGroupDto);
   }
@@ -78,9 +66,10 @@ export class GroupService {
 
   async createGroupWithParticipants(
     createGroupDto: CreateGroupDto,
+    creatorId: string,
   ): Promise<Group> {
-    const creator = await this.validateCreator(createGroupDto.creatorId);
-    const group = await this.createGroup(createGroupDto.name, creator);
+    const creator = await this.validateCreator(creatorId);
+    const group = await this.groupRepository.create(createGroupDto, creator); // Creamos el grupo directamente aquí
 
     if (group) {
       creator.total_groups_created++;
@@ -107,14 +96,11 @@ export class GroupService {
 
   private async createGroup(name: string, creator: User): Promise<Group> {
     const groupDto: CreateGroupDto = { name } as CreateGroupDto;
-    return await this.create(groupDto, creator);
+    return await this.groupRepository.create(groupDto, creator);
   }
 
-  private async addParticipantsToGroup(
-    group: Group,
-    creator: User,
-    participantIds: string[],
-  ): Promise<void> {
+
+  private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
       if (user) {
@@ -150,9 +136,10 @@ export class GroupService {
   async softDelete(id: number): Promise<Group | undefined> {
     const group = await this.groupRepositoryDefault.findOne({ where: { id } });
     if (!group) {
-      return undefined; // O lanza una NotFoundException aquí
+      return undefined;
     }
     group.active = false;
+<<<<<<< HEAD
     await this.groupRepositoryDefault.save(group);
     return group;
   }
@@ -164,5 +151,12 @@ export class GroupService {
     group.active = true;
     await this.groupRepositoryDefault.save(group);
     return group;
+=======
+    return await this.groupRepository.saveSoftDeleted(group);
+>>>>>>> develop
+  }
+
+  async countActiveGroupsCreatedByUser(userId: string): Promise<number> {
+    return await this.groupRepository.countActiveGroupsCreatedByUser(userId);
   }
 }

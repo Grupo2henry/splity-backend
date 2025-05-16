@@ -36,6 +36,9 @@ import { GroupResponseDto } from '../dto/group-response.dto';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/auth/enums/role.enum';
+import { GroupLimit } from '../decorators/group-limit.decorator';
+import { GroupLimitGuard } from '../guards/group-limit.guard';
+import { IsGroupMemberGuard } from '../guards/is-group-member.guard';
 
 @ApiBearerAuth()
 @Controller()
@@ -59,7 +62,7 @@ export class GroupController {
     summary: 'Crea un grupo/evento nuevo con un listado de participantes',
   })
   @ApiOkResponse({
-    description: 'Grupo creado nuevamente',
+    description: 'Grupo creado exitosamente',
     schema: {
       example: {
         creatorId: 'd8a7382c-bb90-4e83-8882-c7486c9b279d',
@@ -69,20 +72,27 @@ export class GroupController {
           '14e8bb7f-a2c1-4f03-b244-635f970547ce',
           '40586790-bca4-4e0b-b88b-2f104594337c',
         ],
+        emoji: '🎉',
       },
     },
   })
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(AccessTokenGuard, GroupLimitGuard)
+  @GroupLimit(3)
   async create(
     @Body() createGroupDto: CreateGroupDto,
     @Req() request: RequestWithUser,
   ): Promise<Group> {
-    console.log('Estoy en membership, pase el Guard.');
+    console.log('Estoy en group, pasé los Guards.');
     const user = request[REQUEST_USER_KEY];
+
     if (!user) {
-      throw new Error('User not found in request.');
+      throw new UnauthorizedException('User not found in request.');
     }
-    return await this.groupService.createGroupWithParticipants(createGroupDto);
+
+    return await this.groupService.createGroupWithParticipants(
+      createGroupDto,
+      user.id,
+    );
   }
 
   @Get('groups')
@@ -106,8 +116,9 @@ export class GroupController {
   async findAll() {
     return this.groupService.findAll();
   }
-
+  //Agregar Guard aquí para rechazar petición si el user no está en el grupo
   @Get('groups/id/:id')
+  @UseGuards(AccessTokenGuard, IsGroupMemberGuard)
   @ApiOperation({
     summary: 'Devuelve el grupo segun la id',
   })
@@ -138,6 +149,7 @@ export class GroupController {
   }
 
   @Patch('groups/id/:id/update')
+  @UseGuards(AccessTokenGuard, IsGroupMemberGuard)
   @ApiOperation({
     summary: 'Actualiza el grupo segun la id',
   })

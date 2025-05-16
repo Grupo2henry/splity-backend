@@ -73,4 +73,13 @@ export class GroupRepository {
   async saveSoftDeleted(group: Group): Promise<Group> {
     return await this.groupRepository.save(group);
   }
+
+  async countActiveGroupsCreatedByUser(userId: string): Promise<number> {
+  return await this.groupRepository.count({
+    where: {
+      created_by: { id: userId },
+      active: true,
+    },
+  });
+}
 }
