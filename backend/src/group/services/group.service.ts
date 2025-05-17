@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+// src/group/services/group.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { GroupRepository } from '../repositories/group.repository';
 import { CreateGroupDto } from '../dto/create-group.dto';
@@ -7,7 +8,7 @@ import { Group } from '../entities/group.entity';
 import { UserService } from '../../user/user.service';
 import { GroupMembershipService } from './group-membership.service';
 import { GroupRole } from '../enums/group-role.enum';
-import { User } from '../../user/entities/user.entity'; // 👈 Importa la entidad User
+import { User } from '../../user/entities/user.entity';
 import { MailsService } from 'src/mails/mails.service';
 
 @Injectable()
@@ -40,14 +41,19 @@ export class GroupService {
     creatorId: string,
   ): Promise<Group> {
     const creator = await this.validateCreator(creatorId);
-    const group = await this.groupRepository.create(createGroupDto, creator); // Creamos el grupo directamente aquí
+    const group = await this.groupRepository.create(createGroupDto, creator);
 
     if (group) {
       creator.total_groups_created++;
       await this.userService.update(creator.id, creator);
     }
 
-    await this.addParticipantsToGroup(group, creator, createGroupDto.participants);
+    // Filtrar al creador para no agregarlo dos veces
+    const filteredParticipants = createGroupDto.participants.filter(
+      (id) => id !== creator.id,
+    );
+
+    await this.addParticipantsToGroup(group, creator, filteredParticipants);
     return group;
   }
 
@@ -62,6 +68,7 @@ export class GroupService {
   }
 
   private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
+    // Crear membresías para los participantes (excluyendo al creador)
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
       if (user) {
@@ -78,16 +85,21 @@ export class GroupService {
       }
     }
 
-    await this.groupMembershipService.create({
-      status: 'active',
-      userId: creator.id,
-      groupId: group.id,
-      role: GroupRole.ADMIN,
-    }, creator, group);
+    // Crear la membresía del creador como ADMIN
+    await this.groupMembershipService.create(
+      {
+        status: 'active',
+        userId: creator.id,
+        groupId: group.id,
+        role: GroupRole.ADMIN,
+      },
+      creator,
+      group,
+    );
   }
 
   async findGroupsCreatedByUser(userId: string): Promise<Group[]> {
-    return await this.groupRepository.findGroupsCreatedByUser(userId)
+    return await this.groupRepository.findGroupsCreatedByUser(userId);
   }
 
   async softDelete(id: number): Promise<Group | undefined> {
