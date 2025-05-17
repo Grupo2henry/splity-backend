@@ -99,11 +99,17 @@ import {
   }
 
   @Get('users/me/memberships')
-  async getMembershipsByUser(@Param('userId') userId: string): Promise<UsersMembershipsDto[]> {
-    if(!userId){
+  @UseGuards(AccessTokenGuard)
+  async getMembershipsByUser(
+    @Param('userId') userId: string, 
+    @Req() request: RequestWithUser
+  ): Promise<UsersMembershipsDto[]> {
+    const user = request[REQUEST_USER_KEY];
+    if(!user){
       throw new Error('User not found in request.');
     }
-    return await this.groupMembershipService.getUserMemberships(userId);
+    console.log("Estoy en el users/me/memberships");
+    return await this.groupMembershipService.getUserMemberships(user.id);
   }
 
   @Get('users/me/memberships/group/:groupId')

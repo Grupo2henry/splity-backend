@@ -72,20 +72,26 @@ export class GroupMembershipService {
   }
 
   async getUserMemberships(userId: string): Promise<UsersMembershipsDto[]> {
-    const memberships = await this.findGroupsByUser(userId);
-    return memberships.map((membership) => ({
-      id: membership.id,
-      active: membership.active,
-      joined_at: membership.joined_at,
-      status: membership.status,
-      role: membership.role,
-      group: {
-        id: membership.group.id,
-        name: membership.group.name,
-        active: membership.group.active,
-        emoji: membership.group.emoji, // Asegúrate de que esta propiedad exista
-      },
-    }));
+    const memberships: GroupMembership[] = await this.findGroupsByUser(userId);
+    console.log("Estoy en el getUserMemberships, este es el user id: ", userId);
+    console.log("Membersias: ", memberships); // Loguea la entidad cruda si quieres verla
+
+    // Mapea las entidades GroupMembership a UsersMembershipsDto
+    return memberships.map((membership: GroupMembership) => {
+      return {
+        id: membership.id,
+        active: membership.active,
+        joined_at: membership.joined_at,
+        status: membership.status,
+        role: membership.role,
+        group: {
+          id: membership.group.id,
+          name: membership.group.name,
+          active: membership.group.active,
+          emoji: membership.group.emoji ?? undefined, // Usa nullish coalescing para manejar undefined
+        },
+      };
+    });
   }
 
   async getUserMembershipInGroup(userId: string, groupId: number): Promise<UserMembershipWithGroupDetailsDto> {
