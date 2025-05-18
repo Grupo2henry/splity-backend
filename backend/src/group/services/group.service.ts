@@ -29,8 +29,56 @@ export class GroupService {
     return await this.groupRepository.findAll();
   }
 
-  async update(id: number, updateGroupDto: UpdateGroupDto) {
-    return this.groupRepository.update(id, updateGroupDto);
+  async update(id: number, updateGroupDto: UpdateGroupDto): Promise<Group> {
+    const group = await this.groupRepository.findOne(id);
+    if (!group) {
+      throw new NotFoundException(`Grupo con ID ${id} no encontrado`);
+    }
+
+    // Actualizar los campos básicos del grupo
+    await this.groupRepository.update(id, {
+      name: updateGroupDto.name,
+      emoji: updateGroupDto.emoji,
+      locationName: updateGroupDto.locationName,
+      latitude: updateGroupDto.latitude,
+      longitude: updateGroupDto.longitude,
+      active: updateGroupDto.active,
+    });
+
+    if (updateGroupDto.participants) {
+      await this.syncParticipants(group, updateGroupDto.participants);
+    }
+
+    return this.groupRepository.findOne(id) as Promise<Group>; // Refetch para obtener la relación actualizada
+  }
+
+  private async syncParticipants(group: Group, newParticipantIds: string[]): Promise<void> {
+    const currentMemberships = await this.groupMembershipService.findMembersByGroup(group.id);
+    const currentParticipantIds = currentMemberships.map(membership => membership.user.id);
+
+    const participantsToAdd = newParticipantIds.filter(id => !currentParticipantIds.includes(id));
+    const participantsToRemove = currentParticipantIds.filter(id => !newParticipantIds.includes(id));
+
+    // Agregar nuevos participantes
+    for (const userId of participantsToAdd) {
+      const user = await this.userService.findOne(userId);
+      if (user) {
+        await this.groupMembershipService.create({
+          status: 'active',
+          userId: user.id,
+          groupId: group.id,
+          role: GroupRole.GUEST, // Por defecto, los nuevos participantes son invitados
+        }, user, group);
+      }
+    }
+
+    // Desactivar participantes removidos
+    for (const userIdToRemove of participantsToRemove) {
+      const membershipToRemove = currentMemberships.find(membership => membership.user.id === userIdToRemove);
+      if (membershipToRemove) {
+        await this.groupMembershipService.deactivate(membershipToRemove.id);
+      }
+    }
   }
 
   async remove(id: number) {
@@ -54,7 +102,7 @@ export class GroupService {
       (id) => id !== creator.id,
     );
 
-    await this.addParticipantsToGroup(group, creator, filteredParticipants);
+    await this.addParticipantsToGroupOnCreation(group, creator, filteredParticipants);
     return group;
   }
 
@@ -68,7 +116,7 @@ export class GroupService {
     return creator;
   }
 
-  private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
+  private async addParticipantsToGroupOnCreation(group: Group, creator: User, participantIds: string[]): Promise<void> {
     // Crear membresías para los participantes (excluyendo al creador)
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
