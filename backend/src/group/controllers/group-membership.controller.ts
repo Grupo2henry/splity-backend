@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable prettier/prettier */
 import {
   Controller,
@@ -279,5 +280,18 @@ export class GroupMembershipController {
     @Query() query: GetGroupsDto,
   ) {
     return this.groupMembershipService.getGroups(userId, query);
+  }
+  @Put('groups/:groupId/members/:userId/status')
+  @ApiOperation({ summary: 'Alternar estado active de un miembro' })
+  async toggleMemberStatus(
+    @Param('userId') userId: string,
+    @Param('groupId', ParseIntPipe) groupId: number,
+  ) {
+    const response = await this.groupMembershipService.toggleMembershipStatus(
+      userId,
+      groupId,
+    );
+    console.log(response);
+    return response;
   }
 }
