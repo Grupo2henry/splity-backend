@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
@@ -14,16 +15,21 @@ import { GoogleUser } from './interfaces/google-user.interface';
 import { MailsService } from 'src/mails/mails.service';
 import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
-import { FindOneOptions } from 'typeorm';
+import { FindOneOptions, ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
+    @InjectRepository(User)
+    private readonly typeOrmUserRepository: Repository<User>,
     private readonly userRepository: UserRepository,
     private readonly mailService: MailsService,
   ) {}
 
-  async createUserWithHashedPassword(credentials: CreateUserDto): Promise<User> {
+  async createUserWithHashedPassword(
+    credentials: CreateUserDto,
+  ): Promise<User> {
     const hashedPassword = await bcrypt.hash(credentials.password, 10);
     const newUser = this.userRepository['userRepository'].create({
       ...credentials,
@@ -37,16 +43,16 @@ export class UserService {
   }
 
   async findUsersByEmail(email: string): Promise<User[]> {
-    return await this.userRepository.findUsersByEmail(email)
+    return await this.userRepository.findUsersByEmail(email);
   }
 
   async findOne(id: string, options?: FindOneOptions<User>): Promise<User> {
-  const user = await this.userRepository.findOne(id, options);
-  if (!user) {
-    throw new NotFoundException(`User with id ${id} not found`);
+    const user = await this.userRepository.findOne(id, options);
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
   }
-  return user;
-}
 
   async findOneByEmail(email: string): Promise<User | null | undefined> {
     return await this.userRepository.findUserByEmail(email);
@@ -102,7 +108,7 @@ export class UserService {
 
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
-      console.log("Este es el google user: ", googleUser)
+      console.log('Este es el google user: ', googleUser);
       const user = await this.userRepository.createGoogleUser(googleUser);
       await this.mailService.sendUserConfirmation({
         name: googleUser.name,
@@ -114,6 +120,31 @@ export class UserService {
       throw new ConflictException(error, {
         description: 'Could not create a new user',
       });
+    }
+  }
+
+  public async getUsersAdmin(page: number, limit: number, search?: string) {
+    // Validar que page y limit sean números positivos
+    const pageNumber = Math.max(1, page); // Asegura que page sea al menos 1
+    const take = Math.max(1, limit); // Asegura que limit sea al menos 1
+    const skip = (pageNumber - 1) * take;
+
+    try {
+      const [data, total] = await this.typeOrmUserRepository.findAndCount({
+        where: search ? { name: ILike(`%${search}%`) } : {},
+        skip,
+        take,
+        order: { created_at: 'DESC' },
+      });
+
+      return {
+        data,
+        total,
+        page: pageNumber,
+        lastPage: Math.ceil(total / take),
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener usuarios: ${error.message}`);
     }
   }
   async calculateIsPremium(userId: string): Promise<boolean> {

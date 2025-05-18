@@ -10,7 +10,9 @@ import {
   Put,
   Req,
   UseGuards,
-  Query
+  Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -28,13 +30,50 @@ import {
 import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { User } from './entities/user.entity';
+import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
 
 @Controller('users')
 @ApiBearerAuth()
 @ApiTags('Users')
 export class UsuariosController {
   constructor(private readonly userService: UserService) {}
-
+  @AuthenticationGuard()
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('usersAdmin')
+  @ApiOperation({
+    summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de usuarios',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+            name: 'Juan Pérez',
+            email: 'juan.perez@example.com',
+            createdAt: '2024-04-27T12:00:00.000Z',
+          },
+        ],
+        total: 1,
+        page: 1,
+        lastPage: 1,
+      },
+    },
+  })
+  async getUsersByadmin(
+    @Query('page') page = 1,
+    @Query('limit') limit = 8,
+    @Query('search') search = '',
+  ): Promise<{ data: User[]; total: number; page: number; lastPage: number }> {
+    try {
+      return await this.userService.getUsersAdmin(page, limit, search);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
   //@Roles(Role.Admin)  inyecta rol a la metadata
@@ -62,7 +101,7 @@ export class UsuariosController {
     isArray: true,
   })
   findUsersByEmail(@Query('q') email: string) {
-    console.log("Estoy en getUserByEmail")
+    console.log('Estoy en getUserByEmail');
     return this.userService.findUsersByEmail(email);
   }
 
