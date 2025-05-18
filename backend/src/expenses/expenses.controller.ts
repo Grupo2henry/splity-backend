@@ -2,18 +2,19 @@
 import { 
   Controller, 
   Get, 
-  Post, 
-  Put, 
+  Post,  
   Delete,
   Param, 
   Body, 
   HttpStatus,
-  Patch
+  Patch,
+  UseGuards
 } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { Expense } from './entities/expense.entity';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @Controller()
 @ApiTags('Expenses')
@@ -114,7 +115,7 @@ export class ExpensesController {
     return this.expensesService.createExpense(Number(groupId), createExpenseDto);
   }
 
-  @Put('/expenses/:id')
+  @Patch('/expenses/:id')
   @ApiOperation({
     summary: 'Update expense',
     description: 'Updates an existing expense'
