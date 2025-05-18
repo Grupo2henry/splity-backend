@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -31,14 +30,12 @@ import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { User } from './entities/user.entity';
-import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
 
 @Controller('users')
 @ApiBearerAuth()
 @ApiTags('Users')
 export class UsuariosController {
   constructor(private readonly userService: UserService) {}
-  @AuthenticationGuard()
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('usersAdmin')
@@ -71,6 +68,7 @@ export class UsuariosController {
     try {
       return await this.userService.getUsersAdmin(page, limit, search);
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
