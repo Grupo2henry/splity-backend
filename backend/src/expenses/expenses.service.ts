@@ -20,8 +20,10 @@ export class ExpensesService {
     private readonly groupService: GroupService,
   ) {}
 
-  async findAll(): Promise<Expense[]>{
-    return this.expenseRepository.find()
+  async findAll(): Promise<Expense[]> {
+    return this.expenseRepository.find({
+      relations: ['paid_by'], // 👈 Cargar la relación paid_by
+    });
   }
 
   async getExpenses(groupId: string): Promise<Expense[]> {
@@ -30,11 +32,15 @@ export class ExpensesService {
         group: { id: Number(groupId) },
         active: true,
       },
+      relations: ['paid_by'], // 👈 Cargar la relación paid_by
     });
   }
 
   async getExpense(id: string): Promise<Expense> {
-    const expense = await this.expenseRepository.findOne({ where: { id: Number(id) } });
+    const expense = await this.expenseRepository.findOne({
+      where: { id: Number(id) },
+      relations: ['paid_by', 'splits', 'splits.user'], // También cargamos splits si los usas en algún otro lado
+    });
     if (!expense) {
       throw new NotFoundException(`Expense with id ${id} not found`);
     }
@@ -43,7 +49,7 @@ export class ExpensesService {
 
   // Nuevo método para buscar un gasto por su descripción exacta
   async getExpenseByDescription(description: string): Promise<Expense> {
-    const expense = await this.expenseRepository.findOne({ where: { description } });
+    const expense = await this.expenseRepository.findOne({ where: { description }, relations: ['paid_by'] });
     if (!expense) {
       throw new NotFoundException(`Expense with description "${description}" not found`);
     }

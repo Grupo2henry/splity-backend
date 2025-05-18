@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Payment } from '../payment/entities/payment.entity';
@@ -8,11 +8,13 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { Subscription } from './entities/subscription.entity';
 import { Repository } from 'typeorm';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class SubscriptionService {
   constructor(
     private readonly subscriptionRepository: SubscriptionRepository,
+    private readonly userService: UserService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Payment)
@@ -20,8 +22,20 @@ export class SubscriptionService {
   ) {}
 
   async create(dto: CreateSubscriptionDto): Promise<Subscription> {
-    const user = await this.userRepository.findOneBy({ id: dto.userId });
+    const user = await this.userRepository.findOne({
+      where: { id: dto.userId },
+      relations: ['subscriptions'],
+    });
+
     if (!user) throw new NotFoundException('User not found');
+
+    const hasActive = user.subscriptions?.some(
+      (sub) => sub.active && (!sub.ends_at || new Date(sub.ends_at) > new Date()),
+    );
+
+    if (hasActive) {
+      throw new ConflictException('User already has an active subscription');
+    }
 
     let payment: Payment | null = null;
     if (dto.paymentId) {
@@ -38,7 +52,12 @@ export class SubscriptionService {
       payment: payment ?? undefined,
     });
 
-    return await this.subscriptionRepository.save(subscription);
+    const savedSubscription = await this.subscriptionRepository.save(subscription);
+
+    // Marcar al usuario como premium
+    await this.userService.update(user.id, { is_premium: true });
+
+    return savedSubscription;
   }
 
   async findAll(): Promise<Subscription[]> {
