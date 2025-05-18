@@ -172,7 +172,7 @@ export class GroupController {
   })
   @ApiUnauthorizedResponse({ description: 'Usuario no autorizado' }) // Puedes personalizar esto según tu lógica de autorización
   @HttpCode(HttpStatus.OK) // Indica que la operación fue exitosa (aunque no se esté "creando" nada)
-  async softDeleteGroup(
+  async DeleteGroup(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<GroupResponseDto> {
     const updatedGroup = await this.groupService.softDelete(id);
@@ -231,5 +231,43 @@ export class GroupController {
     );
     console.log(response);
     return response;
+  }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Put('group-deactivate/:id') // Endpoint que denota un borrado lógico
+  @ApiOperation({
+    summary: 'Realiza un borrado lógico del grupo según su ID',
+    description: 'Modifica la propiedad "active" del grupo a false.',
+  })
+  @ApiOkResponse({
+    description: 'Grupo desactivado exitosamente',
+    type: GroupResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'No se encontró el grupo con el ID proporcionado',
+  })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autorizado' }) // Puedes personalizar esto según tu lógica de autorización
+  @HttpCode(HttpStatus.OK) // Indica que la operación fue exitosa (aunque no se esté "creando" nada)
+  async softDeleteGroup(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupResponseDto> {
+    const updatedGroup = await this.groupService.softDelete(id);
+    if (!updatedGroup) {
+      throw new NotFoundException(`No se encontró el grupo con el ID: ${id}`);
+    }
+    console.log(updatedGroup);
+    return updatedGroup;
+  }
+  @Put('group-activate/:id')
+  @HttpCode(HttpStatus.OK)
+  async activateGroup(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GroupResponseDto> {
+    const updatedGroup = await this.groupService.softActivate(id);
+    if (!updatedGroup) {
+      throw new NotFoundException(`No se encontró el grupo con el ID: ${id}`);
+    }
+    console.log(updatedGroup);
+    return updatedGroup;
   }
 }

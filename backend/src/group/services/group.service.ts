@@ -116,7 +116,15 @@ export class GroupService {
       return undefined;
     }
     group.active = false;
-    return await this.groupRepository.saveSoftDeleted(group);
+    return await this.groupRepositoryDefault.save(group);
+  }
+  async softActivate(id: number): Promise<Group | undefined> {
+    const group = await this.groupRepository.findOne(id);
+    if (!group) {
+      return undefined;
+    }
+    group.active = true;
+    return await this.groupRepositoryDefault.save(group);
   }
 
   async countActiveGroupsCreatedByUser(userId: string): Promise<number> {
