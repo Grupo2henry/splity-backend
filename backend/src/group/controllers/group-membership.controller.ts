@@ -1,78 +1,94 @@
 /* eslint-disable prettier/prettier */
 import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Put,
-    Patch,
-    Param,
-    Delete,
-    ParseIntPipe,
-    HttpStatus,
-    HttpCode,
-    NotFoundException,
-    UseGuards,
-    Req,
-    Query
-  } from '@nestjs/common';
-  import { GroupMembershipService } from '../services/group-membership.service';
-  import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
-  import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
-  import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
-  import { GroupResponseDto } from '../dto/group-response.dto';
-  import { UserMembershipWithGroupDetailsDto, UsersMembershipsDto } from '../dto/user-membership.dto';
-  import { UserService } from '../../user/user.service';
-  import { GroupService } from '../services/group.service';
-  import { AccessTokenGuard } from '../../auth/guards/access-token.guard';
-  import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
-  import { RequestWithUser } from '../../types/request-with-user';
-  import { GroupRole } from '../enums/group-role.enum';
-  import { 
-    ApiBearerAuth, 
-    ApiOperation, 
-    ApiTags,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiQuery
-  } from '@nestjs/swagger';
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  HttpStatus,
+  HttpCode,
+  NotFoundException,
+  UseGuards,
+  Req,
+  Query,
+} from '@nestjs/common';
+import { GroupMembershipService } from '../services/group-membership.service';
+import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
+import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
+import { GroupMembershipResponseDto } from '../dto/group-membership-response.dto';
+import { GroupResponseDto } from '../dto/group-response.dto';
+import {
+  UserMembershipWithGroupDetailsDto,
+  UsersMembershipsDto,
+} from '../dto/user-membership.dto';
+import { UserService } from '../../user/user.service';
+import { GroupService } from '../services/group.service';
+import { AccessTokenGuard } from '../../auth/guards/access-token.guard';
+import { REQUEST_USER_KEY } from '../../auth/constants/auth.constants';
+import { RequestWithUser } from '../../types/request-with-user';
+import { GroupRole } from '../enums/group-role.enum';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/auth/enums/role.enum';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { GetGroupsDto } from '../dto/get-groups.dto';
 
 @ApiBearerAuth()
-  @Controller()
-  @ApiTags('GroupsMemberships')
-  export class GroupMembershipController {
-    constructor(
-        private readonly groupMembershipService: GroupMembershipService,
-        private readonly userService: UserService,
-        private readonly groupService: GroupService,
-    ) {}
-  
+@Controller()
+@ApiTags('GroupsMemberships')
+export class GroupMembershipController {
+  constructor(
+    private readonly groupMembershipService: GroupMembershipService,
+    private readonly userService: UserService,
+    private readonly groupService: GroupService,
+  ) {}
+
   @Post('groups/memberships')
   @ApiOperation({
     summary: 'Registra una membersia de un usuario registrado a un grupo',
   })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGroupMembershipDto: CreateGroupMembershipDto) {
-    const user = await this.userService.findOne(createGroupMembershipDto.userId);
+    const user = await this.userService.findOne(
+      createGroupMembershipDto.userId,
+    );
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    const group = await this.groupService.findOne(createGroupMembershipDto.groupId);
+    const group = await this.groupService.findOne(
+      createGroupMembershipDto.groupId,
+    );
     if (!group) {
       throw new NotFoundException('Grupo no encontrado');
     }
 
-    const existingMembership = await this.groupMembershipService.findByUserAndGroup(
-      createGroupMembershipDto.userId,
-      createGroupMembershipDto.groupId,
-    );
+    const existingMembership =
+      await this.groupMembershipService.findByUserAndGroup(
+        createGroupMembershipDto.userId,
+        createGroupMembershipDto.groupId,
+      );
 
     if (existingMembership) {
       throw new Error('El usuario ya es miembro del grupo.');
     }
 
-    const membership = await this.groupMembershipService.create(createGroupMembershipDto, user, group);
+    const membership = await this.groupMembershipService.create(
+      createGroupMembershipDto,
+      user,
+      group,
+    );
 
     return {
       message: 'Membresía creada exitosamente',
@@ -85,7 +101,7 @@ import {
     summary: 'Devuelve todas las membresias de grupos registradas',
   })
   async findAll() {
-    console.log("Estoy en group/membership")
+    console.log('Estoy en group/membership');
     return this.groupMembershipService.findAll();
   }
 
@@ -94,21 +110,21 @@ import {
     summary: 'Devuelve la membresias de grupos segun id del parametro',
   })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    console.log("Estoy en group/membership/:id")
+    console.log('Estoy en group/membership/:id');
     return this.groupMembershipService.findOne(id);
   }
 
   @Get('users/me/memberships')
   @UseGuards(AccessTokenGuard)
   async getMembershipsByUser(
-    @Param('userId') userId: string, 
-    @Req() request: RequestWithUser
+    @Param('userId') userId: string,
+    @Req() request: RequestWithUser,
   ): Promise<UsersMembershipsDto[]> {
     const user = request[REQUEST_USER_KEY];
-    if(!user){
+    if (!user) {
       throw new Error('User not found in request.');
     }
-    console.log("Estoy en el users/me/memberships");
+    console.log('Estoy en el users/me/memberships');
     return await this.groupMembershipService.getUserMemberships(user.id);
   }
 
@@ -117,23 +133,27 @@ import {
   async getMembershipByUserAndGroup(
     @Req() request: RequestWithUser,
     @Param('groupId') groupId: number,
-    ): Promise<UserMembershipWithGroupDetailsDto> {
-      const user = request[REQUEST_USER_KEY];
+  ): Promise<UserMembershipWithGroupDetailsDto> {
+    const user = request[REQUEST_USER_KEY];
 
-      if (!user.id) {
-        throw new Error('User not found in request.');
-      }
+    if (!user.id) {
+      throw new Error('User not found in request.');
+    }
 
-    return await this.groupMembershipService.getUserMembershipInGroup(user.id, groupId);
+    return await this.groupMembershipService.getUserMembershipInGroup(
+      user.id,
+      groupId,
+    );
   }
-  
+
   @Get('users/me/groups/all')
   @ApiOperation({
-    summary: 'Devuelve todos los grupos a los que pertenezca el usuario logueado',
+    summary:
+      'Devuelve todos los grupos a los que pertenezca el usuario logueado',
   })
   @UseGuards(AccessTokenGuard)
   async findGroupsByUser(@Req() request: RequestWithUser) {
-    console.log("Estoy en membership, pase el Guard.")
+    console.log('Estoy en membership, pase el Guard.');
     const user = request[REQUEST_USER_KEY];
     if (!user) {
       throw new Error('User not found in request.');
@@ -141,10 +161,10 @@ import {
     return this.groupMembershipService.findGroupsByUser(user.id);
   }
 
-
   @Get('users/me/groups/')
   @ApiOperation({
-    summary: 'Devuelve los grupos del usuario logueado filtrados por su rol (query parameter)',
+    summary:
+      'Devuelve los grupos del usuario logueado filtrados por su rol (query parameter)',
   })
   @ApiQuery({
     name: 'role',
@@ -166,12 +186,22 @@ import {
       throw new Error('User not found in request.');
     }
     if (role) {
-      const memberships = await this.groupMembershipService.findGroupsByUserAndRole(user.id, role);
-      return memberships.map(membership => new GroupResponseDto(membership.group));
+      const memberships =
+        await this.groupMembershipService.findGroupsByUserAndRole(
+          user.id,
+          role,
+        );
+      return memberships.map(
+        (membership) => new GroupResponseDto(membership.group),
+      );
     } else {
       // Si no se proporciona el rol, podrías devolver todos los grupos del usuario
-      const memberships = await this.groupMembershipService.findGroupsByUser(user.id);
-      return memberships.map(membership => new GroupResponseDto(membership.group));
+      const memberships = await this.groupMembershipService.findGroupsByUser(
+        user.id,
+      );
+      return memberships.map(
+        (membership) => new GroupResponseDto(membership.group),
+      );
     }
   }
 
@@ -185,7 +215,8 @@ import {
 
   @Get('groups/:groupId/members/:userId')
   @ApiOperation({
-    summary: 'Devuelve un miembro de un grupos segun id del grupo y del usuario en el parametro',
+    summary:
+      'Devuelve un miembro de un grupos segun id del grupo y del usuario en el parametro',
   })
   async findByUserAndGroup(
     @Param('userId') userId: string,
@@ -193,7 +224,7 @@ import {
   ) {
     return this.groupMembershipService.findByUserAndGroup(userId, groupId);
   }
-  
+
   @Put('groups/memberships/id/:id')
   @ApiOperation({
     summary: 'Actualiza la membresias de grupos segun id del parametro',
@@ -214,14 +245,19 @@ import {
     description: 'Membresía de grupo desactivada exitosamente',
     type: GroupMembershipResponseDto,
   })
-  @ApiNotFoundResponse({ description: 'No se encontró la membresía con el ID proporcionado' })
+  @ApiNotFoundResponse({
+    description: 'No se encontró la membresía con el ID proporcionado',
+  })
   @HttpCode(HttpStatus.OK)
   async deactivateMembership(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<GroupMembershipResponseDto> {
-    const deactivatedMembership = await this.groupMembershipService.deactivate(id);
+    const deactivatedMembership =
+      await this.groupMembershipService.deactivate(id);
     if (!deactivatedMembership) {
-      throw new NotFoundException(`No se encontró la membresía con el ID: ${id}`);
+      throw new NotFoundException(
+        `No se encontró la membresía con el ID: ${id}`,
+      );
     }
     return new GroupMembershipResponseDto(deactivatedMembership);
   }
@@ -235,4 +271,13 @@ import {
     await this.groupMembershipService.remove(id);
   }
 
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('AdminMembershipsUser/:userId')
+  async getGroups(
+    @Param('userId') userId: string,
+    @Query() query: GetGroupsDto,
+  ) {
+    return this.groupMembershipService.getGroups(userId, query);
+  }
 }
