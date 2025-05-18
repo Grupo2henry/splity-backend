@@ -10,10 +10,14 @@ import { GroupMembershipService } from './group-membership.service';
 import { GroupRole } from '../enums/group-role.enum';
 import { User } from '../../user/entities/user.entity';
 import { MailsService } from 'src/mails/mails.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class GroupService {
   constructor(
+    @InjectRepository(Group)
+    private readonly groupRepositoryDefault: Repository<Group>,
     private readonly groupRepository: GroupRepository,
     private readonly userService: UserService,
     private readonly groupMembershipService: GroupMembershipService,
@@ -67,7 +71,11 @@ export class GroupService {
     return creator;
   }
 
-  private async addParticipantsToGroup(group: Group, creator: User, participantIds: string[]): Promise<void> {
+  private async addParticipantsToGroup(
+    group: Group,
+    creator: User,
+    participantIds: string[],
+  ): Promise<void> {
     // Crear membresías para los participantes (excluyendo al creador)
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
@@ -113,5 +121,27 @@ export class GroupService {
 
   async countActiveGroupsCreatedByUser(userId: string): Promise<number> {
     return await this.groupRepository.countActiveGroupsCreatedByUser(userId);
+  }
+  async findOneAdmin(id: number) {
+    const group = await this.groupRepositoryDefault.findOne({
+      where: { id },
+      relations: ['memberships', 'expenses', 'created_by'], // Carga las relaciones necesarias
+    });
+
+    if (!group) {
+      return {
+        group: null,
+        membershipCount: 0,
+        expenseCount: 0,
+      };
+    }
+
+    const { memberships, expenses, ...groupWithoutRelations } = group;
+    const modifiedGroup = {
+      ...groupWithoutRelations,
+      membershipCount: memberships?.length ?? 0,
+      expenseCount: expenses?.length ?? 0,
+    };
+    return modifiedGroup;
   }
 }
