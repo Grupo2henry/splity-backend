@@ -37,16 +37,16 @@ export class UserService {
   }
 
   async findUsersByEmail(email: string): Promise<User[]> {
-    return await this.userRepository.findUsersByEmail(email)
+    return await this.userRepository.findUsersByEmail(email);
   }
 
   async findOne(id: string, options?: FindOneOptions<User>): Promise<User> {
-  const user = await this.userRepository.findOne(id, options);
-  if (!user) {
-    throw new NotFoundException(`User with id ${id} not found`);
+    const user = await this.userRepository.findOne(id, options);
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
   }
-  return user;
-}
 
   async findOneByEmail(email: string): Promise<User | null | undefined> {
     return await this.userRepository.findUserByEmail(email);
@@ -125,5 +125,26 @@ export class UserService {
     return user.subscriptions.some(
       (sub) => sub.active && (!sub.ends_at || new Date(sub.ends_at) > now),
     );
+  }
+
+  async getUsersAdmin(page: number = 1, limit: number = 5): Promise<{ data: User[]; total: number; page: number; limit: number; lastPage: number }> {
+    const skip = (page - 1) * limit;
+    const [users, total] = await this.userRepository['userRepository'].findAndCount({
+      skip,
+      take: limit,
+      order: {
+        name: 'ASC', // Orden alfabético por nombre (A a la Z)
+      },
+    });
+
+    const lastPage = Math.ceil(total / limit);
+
+    return {
+      data: users,
+      total,
+      page,
+      limit,
+      lastPage,
+    };
   }
 }

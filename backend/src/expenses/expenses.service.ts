@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Expense } from './entities/expense.entity';
@@ -15,6 +16,7 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepository: Repository<Expense>,
     private readonly userService: UserService,
+    @Inject(forwardRef(() => GroupService))
     private readonly groupService: GroupService,
   ) {}
 
@@ -23,7 +25,12 @@ export class ExpensesService {
   }
 
   async getExpenses(groupId: string): Promise<Expense[]> {
-    return this.expenseRepository.find({ where: { group: { id: Number(groupId) } } });
+    return this.expenseRepository.find({
+      where: {
+        group: { id: Number(groupId) },
+        active: true,
+      },
+    });
   }
 
   async getExpense(id: string): Promise<Expense> {
@@ -106,5 +113,11 @@ export class ExpensesService {
     if (result.affected === 0) {
       throw new NotFoundException(`Expense with id ${id} not found`);
     }
+  }
+
+  async toggleActiveStatus(id: string): Promise<Expense> {
+    const expense = await this.getExpense(id);
+    expense.active = !expense.active;
+    return this.expenseRepository.save(expense);
   }
 }

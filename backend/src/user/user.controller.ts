@@ -10,7 +10,9 @@ import {
   Put,
   Req,
   UseGuards,
-  Query
+  Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -28,6 +30,7 @@ import {
 import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 @ApiBearerAuth()
@@ -149,5 +152,60 @@ export class UsuariosController {
   ) {
     const result = await this.userService.modifiedUser(id, user);
     return result;
+  }
+
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('admin/all')
+  @ApiOperation({
+    summary: 'Obtiene todos los usuarios con paginación (máximo 5 por página) y orden alfabético por nombre.',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de usuarios para administradores.',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'uuid-1',
+            name: 'Ana Gómez',
+            email: 'ana.gomez@example.com',
+            created_at: '2025-05-17T10:00:00.000Z',
+            active: true,
+            is_admin: false,
+            profile_picture_url: null,
+            quantity: 2,
+            google_id: null,
+          },
+          {
+            id: 'uuid-2',
+            name: 'Carlos López',
+            email: 'carlos.lopez@example.com',
+            created_at: '2025-05-17T10:30:00.000Z',
+            active: true,
+            is_admin: false,
+            profile_picture_url: null,
+            quantity: 5,
+            google_id: null,
+          },
+          // ... (hasta 5 usuarios)
+        ],
+        total: 25, // Ejemplo del total de usuarios
+        page: 1,
+        limit: 5,
+        lastPage: 5, // total / limit redondeado hacia arriba
+      },
+    },
+  })
+  async getUsersByAdmin(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '5',
+  ): Promise<{ data: User[]; total: number; page: number; limit: number; lastPage: number }> {
+    try {
+      const pageNumber = parseInt(page, 10);
+      const limitNumber = parseInt(limit, 10);
+      return await this.userService.getUsersAdmin(pageNumber, limitNumber);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

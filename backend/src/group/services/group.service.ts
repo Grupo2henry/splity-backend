@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // src/group/services/group.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { GroupRepository } from '../repositories/group.repository';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
@@ -16,6 +16,7 @@ export class GroupService {
   constructor(
     private readonly groupRepository: GroupRepository,
     private readonly userService: UserService,
+    @Inject(forwardRef(() => GroupMembershipService)) // 👈 Usar forwardRef aquí
     private readonly groupMembershipService: GroupMembershipService,
     private readonly mailService: MailsService,
   ) {}
@@ -107,6 +108,13 @@ export class GroupService {
     if (!group) {
       return undefined;
     }
+
+    // Desactivar las membresías del grupo antes de desactivar el grupo
+    const memberships = await this.groupMembershipService.findMembersByGroup(id);
+    for (const membership of memberships) {
+      await this.groupMembershipService.deactivate(membership.id);
+    }
+
     group.active = false;
     return await this.groupRepository.saveSoftDeleted(group);
   }
