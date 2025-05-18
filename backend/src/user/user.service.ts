@@ -163,4 +163,15 @@ export class UserService {
     const updatedUser = await this.typeOrmUserRepository.save(user);
     return new UserResponseDto(updatedUser);
   }
+  async deleteProfilePicture(userId: string): Promise<void> {
+    const user = await this.typeOrmUserRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
+    }
+
+    user.profile_picture_url = '';
+    await this.userRepository.save(user);
+  }
 }

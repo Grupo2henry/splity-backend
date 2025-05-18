@@ -12,6 +12,7 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -232,4 +233,8 @@ export class UsuariosController {
     return result;
   }
   ///////
+  @Delete(':id/profile-picture')
+  async deleteProfilePicture(@Param('id') userId: string): Promise<void> {
+    await this.userService.deleteProfilePicture(userId);
+  }
 }
