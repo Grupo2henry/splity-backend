@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable prettier/prettier */
 // src/group/controller/group.controller.ts
 import {
@@ -14,6 +16,10 @@ import {
   Delete,
   Req,
   NotFoundException,
+  DefaultValuePipe,
+  Query,
+  Put,
+  HttpException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -39,6 +45,8 @@ import { IsGroupMemberGuard } from '../guards/is-group-member.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/auth/enums/role.enum';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @ApiBearerAuth()
 @Controller()
@@ -189,5 +197,39 @@ export class GroupController {
   async detailsOfGroup(@Param('id') id: string) {
     const group = await this.groupService.findOneAdmin(+id);
     return group;
+  }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('MembershipsOfGroup/:id')
+  async getUsersByAdmin(
+    @Param('id') id: string, // Usa ParseIntPipe para convertir a número
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit: number = 6,
+  ) {
+    console.log('estas en admin membership');
+    try {
+      return await this.groupMembershipService.findMembersByGroupPaginated(
+        +id,
+        page,
+        limit,
+      );
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  @Auth(AuthType.None)
+  @Put('groups/:groupId/members/:userId/status')
+  @ApiOperation({ summary: 'Alternar estado active de un miembro' })
+  async toggleMemberStatus(
+    @Param('userId') userId: string,
+    @Param('groupId', ParseIntPipe) groupId: number,
+  ) {
+    const response = await this.groupMembershipService.toggleMembershipStatus(
+      userId,
+      groupId,
+    );
+    console.log(response);
+    return response;
   }
 }

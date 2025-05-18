@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { GroupMembershipRepository } from '../repositories/group-membership.repository';
 import { CreateGroupMembershipDto } from '../dto/create-group-membership.dto';
 import { UpdateGroupMembershipDto } from '../dto/update-group-membership.dto';
@@ -234,5 +238,65 @@ export class GroupMembershipService {
     } catch (error) {
       throw new BadRequestException('Error fetching groups: ' + error.message);
     }
+  }
+  async toggleMembershipStatus(userId: string, groupId: number) {
+    return this.groupMembershipRepositoryDefault.manager.transaction(
+      async (manager) => {
+        const result = await manager
+          .createQueryBuilder(GroupMembership, 'membership')
+          .update(GroupMembership)
+          .set({ active: () => 'NOT active' })
+          .where('userId = :userId AND groupId = :groupId', { userId, groupId }) // Usa userId y groupId
+          .returning(['id', 'active'])
+          .execute();
+
+        if (result.affected === 0) {
+          console.log(
+            `No se encontró membresía para userId: ${userId}, groupId: ${groupId}`,
+          );
+          throw new NotFoundException(
+            `Membresía no encontrada para userId ${userId} y groupId ${groupId}`,
+          );
+        }
+
+        const updated = result.raw[0];
+        return {
+          success: true,
+          newStatus: updated.active,
+          membershipId: updated.id,
+        };
+      },
+    );
+  }
+  public async findMembersByGroupPaginated(
+    groupId: number,
+    page: number,
+    limit: number,
+  ) {
+    const take = Number(limit);
+    const skip = (Number(page) - 1) * take;
+
+    const [memberships, total] =
+      await this.groupMembershipRepositoryDefault.findAndCount({
+        where: { group: { id: groupId } },
+        relations: ['user'],
+        skip,
+        take,
+        order: { user: { name: 'DESC' } }, // Orden descendente por nombre de usuario
+      });
+
+    const data = memberships.map((membership) => ({
+      id: membership.user.id,
+      name: membership.user.name,
+      email: membership.user.email,
+      active: membership.active,
+    }));
+
+    return {
+      data,
+      total,
+      page: Number(page),
+      lastPage: Math.ceil(total / take),
+    };
   }
 }
