@@ -67,13 +67,6 @@ export class UserService {
     return userWithoutPassword;
   }
 
-  async desactivateUser(id: string) {
-    const user = await this.findOne(id);
-    user.active = false;
-    const updatedUser = await this.userRepository.save(user);
-    return new UserResponseDto(updatedUser);
-  }
-
   async modifiedUser(
     id: string,
     user: UpdateUserDto,
@@ -156,5 +149,18 @@ export class UserService {
     return user.subscriptions.some(
       (sub) => sub.active && (!sub.ends_at || new Date(sub.ends_at) > now),
     );
+  }
+  async desactivateUser(id: string) {
+    const user = await this.findOne(id);
+    user.active = false;
+    const updatedUser = await this.typeOrmUserRepository.save(user);
+    return new UserResponseDto(updatedUser);
+  }
+
+  async activateUser(id: string) {
+    const user = await this.findOne(id);
+    user.active = true;
+    const updatedUser = await this.typeOrmUserRepository.save(user);
+    return new UserResponseDto(updatedUser);
   }
 }

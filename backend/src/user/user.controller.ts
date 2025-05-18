@@ -187,4 +187,49 @@ export class UsuariosController {
     const result = await this.userService.modifiedUser(id, user);
     return result;
   }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Put('desactivate-admin/:id')
+  @ApiOperation({
+    summary: 'Cambia is active del usuario a false',
+  })
+  @ApiOkResponse({
+    description: 'Usuario desactivado exitosamente',
+    schema: {
+      example: {
+        id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+        name: 'Juan Pérez',
+        email: 'juan.perez@example.com',
+        created_at: '2024-04-27T12:00:00.000Z',
+        active: false,
+      },
+    },
+  })
+  async desactivateUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
+    const result = await this.userService.desactivateUser(id);
+    return result;
+  }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Put('activate-admin/:id')
+  @ApiOperation({
+    summary: 'Cambia is active del usuario a false',
+  })
+  @ApiOkResponse({
+    description: 'Usuario activado exitosamente',
+    schema: {
+      example: {
+        id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+        name: 'Juan Pérez',
+        email: 'juan.perez@example.com',
+        created_at: '2024-04-27T12:00:00.000Z',
+        active: true,
+      },
+    },
+  })
+  async activateUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
+    const result = await this.userService.activateUser(id);
+    return result;
+  }
+  ///////
 }
