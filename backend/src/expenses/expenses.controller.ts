@@ -8,13 +8,11 @@ import {
   Body, 
   HttpStatus,
   Patch,
-  UseGuards
 } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { Expense } from './entities/expense.entity';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @Controller()
 @ApiTags('Expenses')
@@ -170,6 +168,7 @@ export class ExpensesController {
   async deleteExpense(@Param('id') id: string): Promise<void> {
     return this.expensesService.deleteExpense(id);
   }
+  
   @Patch('/expenses/:id/toggle-active')
   @ApiOperation({
     summary: 'Toggle expense active status',
