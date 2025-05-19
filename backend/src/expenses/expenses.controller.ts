@@ -25,6 +25,8 @@ import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { GetExpensesDto } from './dto/get-expense.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller()
 @ApiTags('Expenses')
@@ -191,5 +193,25 @@ export class ExpensesController {
     @Query() query: GetExpensesDto,
   ) {
     return this.expensesService.getExpensesOfGroup(groupId, query);
+  }
+  @Auth(AuthType.None)
+  @Get('adminExpensesGeneral')
+  async getExpensesGeneralAdmin(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('active') active?: string,
+  ) {
+    const activeFilter = active ? active === 'true' : undefined;
+    return this.expensesService.findExpensesGeneral({
+      page,
+      limit,
+      search,
+      startDate,
+      endDate,
+      active: activeFilter,
+    });
   }
 }
