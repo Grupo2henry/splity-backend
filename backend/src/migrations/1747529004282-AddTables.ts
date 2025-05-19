@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddTablesInDB1747439247864 implements MigrationInterface {
-    name = 'AddTablesInDB1747439247864'
+export class AddTables1747529004282 implements MigrationInterface {
+    name = 'AddTables1747529004282'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "group" ADD "emoji" character varying`);

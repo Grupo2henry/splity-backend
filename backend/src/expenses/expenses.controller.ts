@@ -1,9 +1,30 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  HttpStatus,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
-import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { Expense } from './entities/expense.entity';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/auth/enums/role.enum';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { GetExpensesDto } from './dto/get-expense.dto';
 
 @Controller()
 @ApiTags('Expenses')
@@ -13,12 +34,12 @@ export class ExpensesController {
   @Get('expenses')
   @ApiOperation({
     summary: 'Get all expenses',
-    description: 'Retrieves a list of all expenses with their related data'
+    description: 'Retrieves a list of all expenses with their related data',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of expenses retrieved successfully',
-    type: [Expense]
+    type: [Expense],
   })
   async findAll(): Promise<Expense[]> {
     return this.expensesService.findAll();
@@ -27,21 +48,21 @@ export class ExpensesController {
   @Get('/groups/:groupId/expenses')
   @ApiOperation({
     summary: 'Get group expenses',
-    description: 'Retrieves all expenses for a specific group'
+    description: 'Retrieves all expenses for a specific group',
   })
   @ApiParam({
     name: 'groupId',
     description: 'The ID of the group',
-    type: 'string'
+    type: 'string',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Group expenses retrieved successfully',
-    type: [Expense]
+    type: [Expense],
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Group not found'
+    description: 'Group not found',
   })
   async getExpenses(@Param('groupId') groupId: string): Promise<Expense[]> {
     return this.expensesService.getExpenses(groupId);
@@ -50,21 +71,21 @@ export class ExpensesController {
   @Get('/expenses/:id')
   @ApiOperation({
     summary: 'Get expense by ID',
-    description: 'Retrieves a specific expense by its ID'
+    description: 'Retrieves a specific expense by its ID',
   })
   @ApiParam({
     name: 'id',
     description: 'The ID of the expense',
-    type: 'string'
+    type: 'string',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Expense retrieved successfully',
-    type: Expense
+    type: Expense,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Expense not found'
+    description: 'Expense not found',
   })
   async getExpense(@Param('id') id: string): Promise<Expense> {
     return this.expensesService.getExpense(id);
@@ -73,67 +94,70 @@ export class ExpensesController {
   @Post('/groups/:groupId/expenses')
   @ApiOperation({
     summary: 'Create new expense',
-    description: 'Creates a new expense for a specific group'
+    description: 'Creates a new expense for a specific group',
   })
   @ApiParam({
     name: 'groupId',
     description: 'The ID of the group',
-    type: 'string'
+    type: 'string',
   })
   @ApiBody({
     type: CreateExpenseDto,
-    description: 'The expense data'
+    description: 'The expense data',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Expense created successfully',
-    type: Expense
+    type: Expense,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid expense data'
+    description: 'Invalid expense data',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Group not found'
+    description: 'Group not found',
   })
   async createExpense(
     @Param('groupId') groupId: string,
-    @Body() createExpenseDto: CreateExpenseDto
+    @Body() createExpenseDto: CreateExpenseDto,
   ): Promise<Expense> {
-    return this.expensesService.createExpense(Number(groupId), createExpenseDto);
+    return this.expensesService.createExpense(
+      Number(groupId),
+      createExpenseDto,
+    );
   }
 
-  @Put('/expenses/:id')
+  @Patch('/expenses/:id')
   @ApiOperation({
     summary: 'Update expense',
-    description: 'Updates an existing expense'
+    description: 'Updates an existing expense',
   })
   @ApiParam({
     name: 'id',
     description: 'The ID of the expense to update',
-    type: 'string'
+    type: 'string',
   })
   @ApiBody({
     type: CreateExpenseDto,
-    description: 'The updated expense data'
+    description: 'The updated expense data',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Expense updated successfully',
-    type: Expense
+    type: Expense,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid expense data'
+    description: 'Invalid expense data',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Expense not found'
+    description: 'Expense not found',
   })
   async updateExpense(
     @Param('id') id: string,
-    @Body() updateData: Partial<CreateExpenseDto>
+    @Body() updateData: Partial<CreateExpenseDto>,
   ): Promise<Expense> {
     return this.expensesService.updateExpense(id, updateData);
   }
@@ -141,22 +165,55 @@ export class ExpensesController {
   @Delete('/expenses/:id') //Debería solo poder ser eliminado por super admin
   @ApiOperation({
     summary: 'Delete expense',
-    description: 'Deletes an existing expense'
+    description: 'Deletes an existing expense',
   })
   @ApiParam({
     name: 'id',
     description: 'The ID of the expense to delete',
-    type: 'string'
+    type: 'string',
   })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
-    description: 'Expense deleted successfully'
+    description: 'Expense deleted successfully',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Expense not found'
+    description: 'Expense not found',
   })
   async deleteExpense(@Param('id') id: string): Promise<void> {
     return this.expensesService.deleteExpense(id);
+  }
+  
+  @Patch('/expenses/:id/toggle-active')
+  @ApiOperation({
+    summary: 'Toggle expense active status',
+    description: 'Modifies the active status of an expense (true to false, false to true)'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the expense to toggle',
+    type: 'string'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Expense active status updated successfully',
+    type: Expense,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Expense not found',
+  })
+  async toggleActiveStatusExpense(@Param('id') id: string): Promise<Expense> {
+    return this.expensesService.toggleActiveStatus(id);
+  }
+
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('ExpensesOfGroup/:groupId')
+  async getExpensesOfGroup(
+    @Param('groupId') groupId: string,
+    @Query() query: GetExpensesDto,
+  ) {
+    return this.expensesService.getExpensesOfGroup(groupId, query);
   }
 }

@@ -10,12 +10,12 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env.development') });
 console.log('DB_USERNAME cargado:', process.env.DB_USERNAME);
 let dropSchemaDB = false;
 
-if(process.env.DROP_SCHEMA === 'false'){
+if (process.env.DROP_SCHEMA === 'false') {
   dropSchemaDB = false;
-}else if(process.env.DROP_SCHEMA === 'true'){
+} else if (process.env.DROP_SCHEMA === 'true') {
   dropSchemaDB = true;
-  }else{
-    dropSchemaDB = true;
+} else {
+  dropSchemaDB = true;
 }
 
 export const dbConfig: TypeOrmModuleOptions = {
@@ -29,7 +29,7 @@ export const dbConfig: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   dropSchema: dropSchemaDB,
   synchronize: false,
-  logging: false,
+  logging: true,
   ssl: false,
   entities: ['dist/**/*.entity.{ts,js}'],
   migrations: ['dist/migrations/*.{ts,js}'],

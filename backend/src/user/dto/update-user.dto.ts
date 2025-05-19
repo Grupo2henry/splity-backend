@@ -5,6 +5,7 @@ import {
   IsString,
   IsUrl,
   MinLength,
+  IsBoolean
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -32,4 +33,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   googleId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  is_premium?: boolean; // Agregado el campo is_premium
 }

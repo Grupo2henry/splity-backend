@@ -1,4 +1,7 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { GroupService } from '../group/services/group.service';
@@ -33,7 +36,8 @@ export class SeedService implements OnApplicationBootstrap {
     private readonly groupService: GroupService,
     private readonly groupMembershipService: GroupMembershipService,
     private readonly expensesService: ExpensesService,
-    @InjectRepository(ExpenseSplit) private readonly expenseSplitRepository: Repository<ExpenseSplit>, // Inyecta el repositorio directamente
+    @InjectRepository(ExpenseSplit)
+    private readonly expenseSplitRepository: Repository<ExpenseSplit>, // Inyecta el repositorio directamente
     private readonly paymentService: PaymentService,
     private readonly subscriptionService: SubscriptionService,
   ) {}
@@ -44,6 +48,7 @@ export class SeedService implements OnApplicationBootstrap {
       return;
     }
     console.log('[SeedService] Ejecutando onModuleInit...');
+
     const users = await this.userService.findAll();
     if (users.length > 0) {
       console.log('[SeedService] Datos ya cargados. Ignorando precarga.');
@@ -54,19 +59,30 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 1. Usuarios
     const createdUsers: User[] = await Promise.all(
-      usersSeed.map(async (user) => this.userService.createUserWithHashedPassword(user as CreateUserDto)), // Usa createUserWithHashedPassword
+      usersSeed.map(async (user) =>
+        this.userService.createUserWithHashedPassword(user as CreateUserDto),
+      ), // Usa createUserWithHashedPassword
     );
     console.log('[SeedService] Usuarios cargados.');
 
     // 2. Grupos
     const createdGroups: Group[] = [];
     for (const groupSeed of groupsSeed) {
-      const createdBy = createdUsers.find((u) => u.email === groupSeed.created_by.email);
+      const createdBy = createdUsers.find(
+        (u) => u.email === groupSeed.created_by.email,
+      );
       if (!createdBy) {
-        throw new Error(`Usuario no encontrado para el grupo: ${groupSeed.name}`);
+        throw new Error(
+          `Usuario no encontrado para el grupo: ${groupSeed.name}`,
+        );
       }
+
       const createdGroup = await this.groupService.createGroupWithParticipants(
-        { name: groupSeed.name, participants: [], emoji: undefined } as CreateGroupDto, // Asigna las propiedades necesarias del DTO
+        {
+          name: groupSeed.name,
+          participants: [],
+          emoji: undefined,
+        } as CreateGroupDto, // Asigna las propiedades necesarias del DTO
         createdBy.id,
       );
       createdGroups.push(createdGroup);
@@ -75,8 +91,12 @@ export class SeedService implements OnApplicationBootstrap {
 
     // 3. Membresías
     for (const membershipSeed of groupMembershipsSeed) {
-      const user = createdUsers.find((u) => u.email === membershipSeed.user.email);
-      const group = createdGroups.find((g) => g.name === membershipSeed.group.name);
+      const user = createdUsers.find(
+        (u) => u.email === membershipSeed.user.email,
+      );
+      const group = createdGroups.find(
+        (g) => g.name === membershipSeed.group.name,
+      );
       if (!user || !group) {
         throw new Error(`Usuario o grupo no encontrado para la membresía`);
       }
@@ -96,27 +116,36 @@ export class SeedService implements OnApplicationBootstrap {
     // 4. Gastos
     const createdExpenses: Expense[] = [];
     for (const expenseSeed of expensesSeed) {
-      const group = createdGroups.find((g) => g.name === expenseSeed.group.name);
-      const paidBy = createdUsers.find((u) => u.email === expenseSeed.paid_by.email);
-      if (!group || !paidBy) {
-        throw new Error(`Grupo o usuario pagador no encontrado para el gasto: ${expenseSeed.description}`);
-      }
-
-      const expenseDate = typeof expenseSeed.date === 'string' ? expenseSeed.date : new Date().toISOString();
-      if (!expenseSeed.date) {
-        console.warn(`[SeedService] La fecha del gasto "${expenseSeed.description}" no está definida. Se usará la fecha actual.`);
-      }
-
-      const created = await this.expensesService.createExpense(
-        group.id,
-        {
-          description: expenseSeed.description,
-          amount: expenseSeed.amount,
-          paid_by: paidBy.id,
-          date: expenseDate,
-          imgUrl: expenseSeed.imgUrl, // Si no existe en expenseSeed, será undefined
-        } as CreateExpenseDto,
+      const group = createdGroups.find(
+        (g) => g.name === expenseSeed.group.name,
       );
+      const paidBy = createdUsers.find(
+        (u) => u.email === expenseSeed.paid_by.email,
+      );
+      if (!group || !paidBy) {
+        throw new Error(
+          `Grupo o usuario pagador no encontrado para el gasto: ${expenseSeed.description}`,
+        );
+      }
+
+      const expenseDate =
+        typeof expenseSeed.date === 'string'
+          ? expenseSeed.date
+          : new Date().toISOString();
+      if (!expenseSeed.date) {
+        console.warn(
+          `[SeedService] La fecha del gasto "${expenseSeed.description}" no está definida. Se usará la fecha actual.`,
+        );
+      }
+
+      const created = await this.expensesService.createExpense(group.id, {
+        description: expenseSeed.description,
+        amount: expenseSeed.amount,
+        paid_by: paidBy.id,
+        date: expenseDate,
+        imgUrl: expenseSeed.imgUrl, // Si no existe en expenseSeed, será undefined
+      } as CreateExpenseDto);
+
       createdExpenses.push(created);
     }
     console.log('[SeedService] Gastos cargados.');
@@ -124,7 +153,9 @@ export class SeedService implements OnApplicationBootstrap {
     // 5. Divisiones (Manejo directo con el repositorio)
     if (this.expenseSplitRepository && expenseSplitsSeed) {
       for (const splitSeed of expenseSplitsSeed) {
-        const expense = await this.expensesService.getExpenseByDescription(splitSeed.expense.description); // Asume que tienes un ID en el seed
+        const expense = await this.expensesService.getExpenseByDescription(
+          splitSeed.expense.description,
+        ); // Asume que tienes un ID en el seed
         const user = createdUsers.find((u) => u.email === splitSeed.user.email);
         if (!expense || !user) {
           throw new Error(`Gasto o usuario no encontrado para la división`);
@@ -142,7 +173,9 @@ export class SeedService implements OnApplicationBootstrap {
     for (const paymentSeed of paymentsSeed) {
       const user = createdUsers.find((u) => u.email === paymentSeed.user.email);
       if (!user) {
-        throw new Error(`Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`);
+        throw new Error(
+          `Usuario no encontrado para el pago con email: ${paymentSeed.user.email}`,
+        );
       }
       await this.paymentService.create({
         userId: user.id,

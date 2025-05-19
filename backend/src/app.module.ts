@@ -18,6 +18,9 @@ import { LiquidationsModule } from './liquidations/liquidations.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { BalanceModule } from './balance/balance.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthenticationGuard } from './auth/guards/authentication.guard';
+import { AccessTokenGuard } from './auth/guards/access-token.guard';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,16 +36,16 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     ExpensesModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
-    SeedModule,
-    GroupModule,
-    SubscriptionModule,
-    ExpensesModule,
     LiquidationsModule,
     BalanceModule,
     CloudinaryModule,
     SeedModule, // Puedes dejar SeedModule al final
   ],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: AuthenticationGuard },
+    AccessTokenGuard,
+  ],
   controllers: [AppController],
 })
 export class AppModule {}
