@@ -1,27 +1,15 @@
 /* eslint-disable prettier/prettier */
-<<<<<<< HEAD
-import { 
-  Controller, 
-  Get, 
-  Post,  
-  Delete,
-  Param, 
-  Body, 
-  HttpStatus,
-  Patch,
-=======
 import {
   Controller,
   Get,
   Post,
-  Put,
+  Patch,
   Delete,
   Param,
   Body,
   HttpStatus,
   UseGuards,
   Query,
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
 } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
@@ -195,7 +183,6 @@ export class ExpensesController {
   async deleteExpense(@Param('id') id: string): Promise<void> {
     return this.expensesService.deleteExpense(id);
   }
-<<<<<<< HEAD
   
   @Patch('/expenses/:id/toggle-active')
   @ApiOperation({
@@ -219,8 +206,7 @@ export class ExpensesController {
   async toggleActiveStatusExpense(@Param('id') id: string): Promise<Expense> {
     return this.expensesService.toggleActiveStatus(id);
   }
-}
-=======
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('ExpensesOfGroup/:groupId')
@@ -231,4 +217,3 @@ export class ExpensesController {
     return this.expensesService.getExpensesOfGroup(groupId, query);
   }
 }
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99

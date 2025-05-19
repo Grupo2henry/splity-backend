@@ -1,17 +1,15 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
-<<<<<<< HEAD
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
-=======
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef
 } from '@nestjs/common';
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Between,
@@ -40,36 +38,25 @@ export class ExpensesService {
   ) {}
 
   async findAll(): Promise<Expense[]> {
-<<<<<<< HEAD
     return this.expenseRepository.find({
       relations: ['paid_by'], // 👈 Cargar la relación paid_by
     });
-=======
-    return this.expenseRepository.find();
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
   }
 
   async getExpenses(groupId: string): Promise<Expense[]> {
     return this.expenseRepository.find({
-<<<<<<< HEAD
       where: {
         group: { id: Number(groupId) },
         active: true,
       },
       relations: ['paid_by'], // 👈 Cargar la relación paid_by
-=======
-      where: { group: { id: Number(groupId) } },
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
     });
   }
 
   async getExpense(id: string): Promise<Expense> {
     const expense = await this.expenseRepository.findOne({
       where: { id: Number(id) },
-<<<<<<< HEAD
       relations: ['paid_by', 'splits', 'splits.user'], // También cargamos splits si los usas en algún otro lado
-=======
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
     });
     if (!expense) {
       throw new NotFoundException(`Expense with id ${id} not found`);
@@ -79,13 +66,7 @@ export class ExpensesService {
 
   // Nuevo método para buscar un gasto por su descripción exacta
   async getExpenseByDescription(description: string): Promise<Expense> {
-<<<<<<< HEAD
     const expense = await this.expenseRepository.findOne({ where: { description }, relations: ['paid_by'] });
-=======
-    const expense = await this.expenseRepository.findOne({
-      where: { description },
-    });
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
     if (!expense) {
       throw new NotFoundException(
         `Expense with description "${description}" not found`,
@@ -174,15 +155,13 @@ export class ExpensesService {
       throw new NotFoundException(`Expense with id ${id} not found`);
     }
   }
-<<<<<<< HEAD
 
   async toggleActiveStatus(id: string): Promise<Expense> {
     const expense = await this.getExpense(id);
     expense.active = !expense.active;
     return this.expenseRepository.save(expense);
   }
-}
-=======
+
   async getExpensesOfGroup(groupId: string, query: GetExpensesDto) {
     const { page = 1, limit = 6, search = '', startDate, endDate } = query;
     if (startDate && isNaN(new Date(startDate).getTime())) {
@@ -247,4 +226,3 @@ export class ExpensesService {
     }
   }
 }
->>>>>>> 19498cb95e10b68f471db38cbe8c9620d7abcd99
