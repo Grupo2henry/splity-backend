@@ -21,6 +21,7 @@ export class BalanceController {
     summary: 'Devuelve un listado esta de balance por usuario del grupo y pagos recomendados',
   })
   async getEqualDivisionByGroup(@Param('groupId') groupId: number){
+    console.log("Estoy en groups/:groupId/equal-division; este es el groupId: ", groupId);
     return this.balanceService.calculateEqualDivision(groupId);
   }
 }

@@ -44,5 +44,4 @@ export class Group {
 
   @OneToMany(() => Expense, (expense) => expense.group)
   expenses: Expense[];
-
 }

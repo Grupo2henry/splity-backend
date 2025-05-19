@@ -13,7 +13,7 @@ import { GroupModule } from '../group/group.module';
   imports: [
     TypeOrmModule.forFeature([Expense, ExpenseSplit]),
     UserModule,
-    GroupModule,
+    forwardRef(() => GroupModule), // ✅
     forwardRef(() => BalanceModule),
   ],
   controllers: [ExpensesController],
