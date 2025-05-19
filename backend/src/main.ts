@@ -27,12 +27,7 @@ async function bootstrap() {
         'https://9728-181-4-211-243.ngrok-free.app',
         'https://real-years-draw.loca.lt',
       ], // Reemplaza con la URL del cliente en produccion*/
-      origin: (
-        origin: string | undefined,
-        callback: (err: Error | null, allow?: boolean) => void
-        ) => {
-          callback(null, true);
-      },
+      origin: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
 
       allowedHeaders: 'Content-Type, Authorization',

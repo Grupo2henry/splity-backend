@@ -10,10 +10,14 @@ import { GroupMembershipService } from './group-membership.service';
 import { GroupRole } from '../enums/group-role.enum';
 import { User } from '../../user/entities/user.entity';
 import { MailsService } from 'src/mails/mails.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class GroupService {
   constructor(
+    @InjectRepository(Group)
+    private readonly groupRepositoryDefault: Repository<Group>,
     private readonly groupRepository: GroupRepository,
     private readonly userService: UserService,
     @Inject(forwardRef(() => GroupMembershipService)) // 👈 Usar forwardRef aquí
@@ -164,10 +168,40 @@ export class GroupService {
     }
 
     group.active = false;
-    return await this.groupRepository.saveSoftDeleted(group);
+    return await this.groupRepositoryDefault.save(group);
+  }
+  async softActivate(id: number): Promise<Group | undefined> {
+    const group = await this.groupRepository.findOne(id);
+    if (!group) {
+      return undefined;
+    }
+    group.active = true;
+    return await this.groupRepositoryDefault.save(group);
   }
 
   async countActiveGroupsCreatedByUser(userId: string): Promise<number> {
     return await this.groupRepository.countActiveGroupsCreatedByUser(userId);
+  }
+  async findOneAdmin(id: number) {
+    const group = await this.groupRepositoryDefault.findOne({
+      where: { id },
+      relations: ['memberships', 'expenses', 'created_by'], // Carga las relaciones necesarias
+    });
+
+    if (!group) {
+      return {
+        group: null,
+        membershipCount: 0,
+        expenseCount: 0,
+      };
+    }
+
+    const { memberships, expenses, ...groupWithoutRelations } = group;
+    const modifiedGroup = {
+      ...groupWithoutRelations,
+      membershipCount: memberships?.length ?? 0,
+      expenseCount: expenses?.length ?? 0,
+    };
+    return modifiedGroup;
   }
 }

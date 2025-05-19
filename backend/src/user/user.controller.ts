@@ -13,6 +13,7 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -37,7 +38,42 @@ import { User } from './entities/user.entity';
 @ApiTags('Users')
 export class UsuariosController {
   constructor(private readonly userService: UserService) {}
-
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('usersAdmin')
+  @ApiOperation({
+    summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de usuarios',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+            name: 'Juan Pérez',
+            email: 'juan.perez@example.com',
+            createdAt: '2024-04-27T12:00:00.000Z',
+          },
+        ],
+        total: 1,
+        page: 1,
+        lastPage: 1,
+      },
+    },
+  })
+  async getUsersByadmin(
+    @Query('page') page = 1,
+    @Query('limit') limit = 8,
+    @Query('search') search = '',
+  ): Promise<{ data: User[]; total: number; page: number; lastPage: number }> {
+    try {
+      return await this.userService.getUsersAdmin(page, limit, search);
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
   //@Roles(Role.Admin)  inyecta rol a la metadata
@@ -65,7 +101,7 @@ export class UsuariosController {
     isArray: true,
   })
   findUsersByEmail(@Query('q') email: string) {
-    console.log("Estoy en getUserByEmail")
+    console.log('Estoy en getUserByEmail');
     return this.userService.findUsersByEmail(email);
   }
 
@@ -153,59 +189,53 @@ export class UsuariosController {
     const result = await this.userService.modifiedUser(id, user);
     return result;
   }
-
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
-  @Get('admin/all')
+  @Put('desactivate-admin/:id')
   @ApiOperation({
-    summary: 'Obtiene todos los usuarios con paginación (máximo 5 por página) y orden alfabético por nombre.',
+    summary: 'Cambia is active del usuario a false',
   })
   @ApiOkResponse({
-    description: 'Listado paginado de usuarios para administradores.',
+    description: 'Usuario desactivado exitosamente',
     schema: {
       example: {
-        data: [
-          {
-            id: 'uuid-1',
-            name: 'Ana Gómez',
-            email: 'ana.gomez@example.com',
-            created_at: '2025-05-17T10:00:00.000Z',
-            active: true,
-            is_admin: false,
-            profile_picture_url: null,
-            quantity: 2,
-            google_id: null,
-          },
-          {
-            id: 'uuid-2',
-            name: 'Carlos López',
-            email: 'carlos.lopez@example.com',
-            created_at: '2025-05-17T10:30:00.000Z',
-            active: true,
-            is_admin: false,
-            profile_picture_url: null,
-            quantity: 5,
-            google_id: null,
-          },
-          // ... (hasta 5 usuarios)
-        ],
-        total: 25, // Ejemplo del total de usuarios
-        page: 1,
-        limit: 5,
-        lastPage: 5, // total / limit redondeado hacia arriba
+        id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+        name: 'Juan Pérez',
+        email: 'juan.perez@example.com',
+        created_at: '2024-04-27T12:00:00.000Z',
+        active: false,
       },
     },
   })
-  async getUsersByAdmin(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '5',
-  ): Promise<{ data: User[]; total: number; page: number; limit: number; lastPage: number }> {
-    try {
-      const pageNumber = parseInt(page, 10);
-      const limitNumber = parseInt(limit, 10);
-      return await this.userService.getUsersAdmin(pageNumber, limitNumber);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async desactivateUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
+    const result = await this.userService.desactivateUser(id);
+    return result;
+  }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Put('activate-admin/:id')
+  @ApiOperation({
+    summary: 'Cambia is active del usuario a false',
+  })
+  @ApiOkResponse({
+    description: 'Usuario activado exitosamente',
+    schema: {
+      example: {
+        id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+        name: 'Juan Pérez',
+        email: 'juan.perez@example.com',
+        created_at: '2024-04-27T12:00:00.000Z',
+        active: true,
+      },
+    },
+  })
+  async activateUsersAdmin(@Param('id', UUIDValidationPipe) id: string) {
+    const result = await this.userService.activateUser(id);
+    return result;
+  }
+  ///////
+  @Delete(':id/profile-picture')
+  async deleteProfilePicture(@Param('id') userId: string): Promise<void> {
+    await this.userService.deleteProfilePicture(userId);
   }
 }

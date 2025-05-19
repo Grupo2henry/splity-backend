@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConflictException,
@@ -14,16 +16,21 @@ import { GoogleUser } from './interfaces/google-user.interface';
 import { MailsService } from 'src/mails/mails.service';
 import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
-import { FindOneOptions } from 'typeorm';
+import { FindOneOptions, ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
+    @InjectRepository(User)
+    private readonly typeOrmUserRepository: Repository<User>,
     private readonly userRepository: UserRepository,
     private readonly mailService: MailsService,
   ) {}
 
-  async createUserWithHashedPassword(credentials: CreateUserDto): Promise<User> {
+  async createUserWithHashedPassword(
+    credentials: CreateUserDto,
+  ): Promise<User> {
     const hashedPassword = await bcrypt.hash(credentials.password, 10);
     const newUser = this.userRepository['userRepository'].create({
       ...credentials,
@@ -61,13 +68,6 @@ export class UserService {
     return userWithoutPassword;
   }
 
-  async desactivateUser(id: string) {
-    const user = await this.findOne(id);
-    user.active = false;
-    const updatedUser = await this.userRepository.save(user);
-    return new UserResponseDto(updatedUser);
-  }
-
   async modifiedUser(
     id: string,
     user: UpdateUserDto,
@@ -84,7 +84,7 @@ export class UserService {
       return result;
     } catch (error) {
       throw new ConflictException(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+         
         'Error al actualizar el usuario: ' + error.message,
       );
     }
@@ -102,7 +102,7 @@ export class UserService {
 
   public async createGoogleUser(googleUser: GoogleUser) {
     try {
-      console.log("Este es el google user: ", googleUser)
+      console.log('Este es el google user: ', googleUser);
       const user = await this.userRepository.createGoogleUser(googleUser);
       await this.mailService.sendUserConfirmation({
         name: googleUser.name,
@@ -116,6 +116,31 @@ export class UserService {
       });
     }
   }
+
+  public async getUsersAdmin(page: number, limit: number, search?: string) {
+    // Validar que page y limit sean números positivos
+    const pageNumber = Math.max(1, page); // Asegura que page sea al menos 1
+    const take = Math.max(1, limit); // Asegura que limit sea al menos 1
+    const skip = (pageNumber - 1) * take;
+
+    try {
+      const [data, total] = await this.typeOrmUserRepository.findAndCount({
+        where: search ? { name: ILike(`%${search}%`) } : {},
+        skip,
+        take,
+        order: { created_at: 'DESC' },
+      });
+
+      return {
+        data,
+        total,
+        page: pageNumber,
+        lastPage: Math.ceil(total / take),
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener usuarios: ${error.message}`);
+    }
+  }
   async calculateIsPremium(userId: string): Promise<boolean> {
     const user = await this.findOne(userId, { relations: ['subscriptions'] });
 
@@ -126,25 +151,28 @@ export class UserService {
       (sub) => sub.active && (!sub.ends_at || new Date(sub.ends_at) > now),
     );
   }
+  async desactivateUser(id: string) {
+    const user = await this.findOne(id);
+    user.active = false;
+    const updatedUser = await this.typeOrmUserRepository.save(user);
+    return new UserResponseDto(updatedUser);
+  }
 
-  async getUsersAdmin(page: number = 1, limit: number = 5): Promise<{ data: User[]; total: number; page: number; limit: number; lastPage: number }> {
-    const skip = (page - 1) * limit;
-    const [users, total] = await this.userRepository['userRepository'].findAndCount({
-      skip,
-      take: limit,
-      order: {
-        name: 'ASC', // Orden alfabético por nombre (A a la Z)
-      },
+  async activateUser(id: string) {
+    const user = await this.findOne(id);
+    user.active = true;
+    const updatedUser = await this.typeOrmUserRepository.save(user);
+    return new UserResponseDto(updatedUser);
+  }
+  async deleteProfilePicture(userId: string): Promise<void> {
+    const user = await this.typeOrmUserRepository.findOne({
+      where: { id: userId },
     });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
+    }
 
-    const lastPage = Math.ceil(total / limit);
-
-    return {
-      data: users,
-      total,
-      page,
-      limit,
-      lastPage,
-    };
+    user.profile_picture_url = '';
+    await this.userRepository.save(user);
   }
 }
