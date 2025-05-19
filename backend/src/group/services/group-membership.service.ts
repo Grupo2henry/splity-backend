@@ -1,9 +1,12 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
 import {
+  Injectable, 
+  Inject, 
+  forwardRef,
   BadRequestException,
-  Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { GroupMembershipRepository } from '../repositories/group-membership.repository';
@@ -27,6 +30,7 @@ import {
   Repository,
 } from 'typeorm';
 import { GetGroupsDto } from '../dto/get-groups.dto';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class GroupMembershipService {
@@ -34,6 +38,8 @@ export class GroupMembershipService {
     @InjectRepository(GroupMembership)
     private readonly groupMembershipRepositoryDefault: Repository<GroupMembership>,
     private readonly groupMembershipRepository: GroupMembershipRepository,
+    @Inject(forwardRef(() => ExpensesService))
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async findOne(id: number) {
@@ -80,33 +86,34 @@ export class GroupMembershipService {
   }
 
   async findMembersByGroup(groupId: number): Promise<GroupMemberResponseDto[]> {
-    const memberships =
-      await this.groupMembershipRepository.findMembersByGroup(groupId);
-    return memberships.map((membership) => ({
-      id: membership.id,
-      role: membership.role,
-      status: membership.status,
-      active: membership.active,
-      joined_at: membership.joined_at,
-      user: {
-        id: membership.user.id,
-        name: membership.user.name,
-        email: membership.user.email,
-        active: membership.user.active,
-      },
-    }));
+    const memberships = await this.groupMembershipRepository.findMembersByGroup(groupId);
+    return memberships
+      .filter((membership) => membership.active === true)
+      .map((membership) => ({
+        id: membership.id,
+        role: membership.role,
+        status: membership.status,
+        active: membership.active,
+        joined_at: membership.joined_at,
+        user: {
+          id: membership.user.id,
+          name: membership.user.name,
+          email: membership.user.email,
+          active: membership.user.active,
+        },
+      }));
   }
 
-  async findGroupsByUser(userId: string) {
-    return this.groupMembershipRepository.findGroupsByUser(userId);
+  async findGroupsByUser(userId: string): Promise<GroupMembership[]> { // 👈 Modificar el tipo de retorno
+    const memberships = await this.groupMembershipRepository.findGroupsByUser(userId);
+    return memberships.filter((membership) => membership.active === true); // Filtrar aquí
   }
 
   async getUserMemberships(userId: string): Promise<UsersMembershipsDto[]> {
-    const memberships: GroupMembership[] = await this.findGroupsByUser(userId);
-    console.log('Estoy en el getUserMemberships, este es el user id: ', userId);
-    console.log('Membersias: ', memberships); // Loguea la entidad cruda si quieres verla
+    const memberships: GroupMembership[] = await this.findGroupsByUser(userId); // Usar el método modificado
+    console.log("Estoy en el getUserMemberships, este es el user id: ", userId);
+    console.log("Membersias: ", memberships);
 
-    // Mapea las entidades GroupMembership a UsersMembershipsDto
     return memberships.map((membership: GroupMembership) => {
       return {
         id: membership.id,
@@ -118,7 +125,7 @@ export class GroupMembershipService {
           id: membership.group.id,
           name: membership.group.name,
           active: membership.group.active,
-          emoji: membership.group.emoji ?? undefined, // Usa nullish coalescing para manejar undefined
+          emoji: membership.group.emoji ?? undefined,
         },
       };
     });
@@ -157,23 +164,26 @@ export class GroupMembershipService {
     };
   }
 
-  async findGroupsByUserAndRole(
-    userId: string,
-    role: string,
-  ): Promise<GroupMembership[]> {
-    return await this.groupMembershipRepository.findGroupsByUserAndRole(
-      userId,
-      role,
-    );
+  async findGroupsByUserAndRole(userId: string, role: string): Promise<GroupMembership[]> {
+    const memberships = await this.groupMembershipRepository.findGroupsByUserAndRole(userId, role);
+    return memberships.filter((membership) => membership.active === true);
   }
 
   async deactivate(id: number): Promise<GroupMembership | undefined> {
     const membership = await this.findOne(id);
     if (!membership) {
-      return undefined; // O lanza una NotFoundException aquí
+      return undefined;
     }
     membership.active = false;
-    return await this.groupMembershipRepository.saveDeactivated(membership); // 👈 Llama a un método en el repositorio
+
+    const userId = membership.user.id;
+    const expensesToDeactivate = await this.expensesService.findAll();
+    for (const expense of expensesToDeactivate) {
+      if (expense.paid_by?.id === userId) {
+        await this.expensesService.toggleActiveStatus(String(expense.id));
+      }
+    }
+    return await this.groupMembershipRepository.saveDeactivated(membership);
   }
   async getGroups(userId: string, query: GetGroupsDto) {
     const { page = 1, limit = 6, search = '', startDate, endDate } = query;

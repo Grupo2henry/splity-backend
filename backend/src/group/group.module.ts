@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Module} from '@nestjs/common';
+import { Module, forwardRef} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GroupController } from './controllers/group.controller';
 import { GroupMembershipController } from './controllers/group-membership.controller';
@@ -14,17 +14,16 @@ import { AuthModule } from '../auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from 'src/config/jwt.config';
+import { ExpensesModule } from 'src/expenses/expenses.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Group,
-      GroupMembership
-    ]),
-  UserModule,
-  AuthModule,
-  JwtModule,
-  ConfigModule.forFeature(jwtConfig)
+    TypeOrmModule.forFeature([Group, GroupMembership]),
+    UserModule,
+    AuthModule,
+    JwtModule,
+    ConfigModule.forFeature(jwtConfig),
+    forwardRef(() => ExpensesModule), // ✅
   ],
   controllers: [
     GroupController,

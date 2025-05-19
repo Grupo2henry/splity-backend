@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -83,7 +84,7 @@ export class UserService {
       return result;
     } catch (error) {
       throw new ConflictException(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+         
         'Error al actualizar el usuario: ' + error.message,
       );
     }

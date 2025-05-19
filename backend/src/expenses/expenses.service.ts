@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -5,6 +6,8 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -29,22 +32,30 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepository: Repository<Expense>,
     private readonly userService: UserService,
+    @Inject(forwardRef(() => GroupService))
     private readonly groupService: GroupService,
   ) {}
 
   async findAll(): Promise<Expense[]> {
-    return this.expenseRepository.find();
+    return this.expenseRepository.find({
+      relations: ['paid_by'], // 👈 Cargar la relación paid_by
+    });
   }
 
   async getExpenses(groupId: string): Promise<Expense[]> {
     return this.expenseRepository.find({
-      where: { group: { id: Number(groupId) } },
+      where: {
+        group: { id: Number(groupId) },
+        active: true,
+      },
+      relations: ['paid_by'], // 👈 Cargar la relación paid_by
     });
   }
 
   async getExpense(id: string): Promise<Expense> {
     const expense = await this.expenseRepository.findOne({
       where: { id: Number(id) },
+      relations: ['paid_by', 'splits', 'splits.user'], // También cargamos splits si los usas en algún otro lado
     });
     if (!expense) {
       throw new NotFoundException(`Expense with id ${id} not found`);
@@ -54,9 +65,7 @@ export class ExpensesService {
 
   // Nuevo método para buscar un gasto por su descripción exacta
   async getExpenseByDescription(description: string): Promise<Expense> {
-    const expense = await this.expenseRepository.findOne({
-      where: { description },
-    });
+    const expense = await this.expenseRepository.findOne({ where: { description }, relations: ['paid_by'] });
     if (!expense) {
       throw new NotFoundException(
         `Expense with description "${description}" not found`,
@@ -145,6 +154,13 @@ export class ExpensesService {
       throw new NotFoundException(`Expense with id ${id} not found`);
     }
   }
+
+  async toggleActiveStatus(id: string): Promise<Expense> {
+    const expense = await this.getExpense(id);
+    expense.active = !expense.active;
+    return this.expenseRepository.save(expense);
+  }
+
   async getExpensesOfGroup(groupId: string, query: GetExpensesDto) {
     const { page = 1, limit = 6, search = '', startDate, endDate } = query;
     if (startDate && isNaN(new Date(startDate).getTime())) {

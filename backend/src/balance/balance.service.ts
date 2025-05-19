@@ -10,6 +10,7 @@ import { GroupMembershipService } from '../group/services/group-membership.servi
 import { UserService } from '../user/user.service';
 import { ExpenseSplit } from '../expenses/entities/expense-split.entity';
 import { GroupMemberUserDto } from '../group/dto/group-member-response.dto';
+import { ExpensesService } from '../expenses/expenses.service';
 
 @Injectable()
 export class BalanceService {
@@ -22,6 +23,7 @@ export class BalanceService {
     private readonly groupMembershipService: GroupMembershipService,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async calculateBalancesForGroup(groupId: number): Promise<
@@ -31,10 +33,7 @@ export class BalanceService {
       amount: number;
     }[]
   > {
-    const expenses = await this.expenseRepository.find({
-      where: { group: { id: groupId }, active: true },
-      relations: ['paid_by', 'splits', 'splits.user'],
-    });
+    const expenses = await this.expensesService.getExpenses(String(groupId));
     const groupMemberships = await this.groupMembershipService.findMembersByGroup(
       groupId,
     );
@@ -46,14 +45,17 @@ export class BalanceService {
 
     // Calcular contribuciones y deudas por cada gasto
     for (const expense of expenses) {
-      const numberOfParticipants = expense.splits.filter((split) => split.active).length;
+      const activeSplits = expense.splits.filter((split) => split.active);
+      const numberOfParticipants = activeSplits.length;
+      if (numberOfParticipants === 0) continue; // Skip if no active participants
+
       const share = expense.amount / numberOfParticipants;
       const paidBy = expense.paid_by.id;
 
       userBalances[paidBy] += expense.amount; // El que paga adelanta el dinero
 
-      for (const split of expense.splits) {
-        if (split.active && split.user.id !== paidBy) {
+      for (const split of activeSplits) {
+        if (split.user.id !== paidBy) {
           userBalances[split.user.id] -= share; // Los participantes deben su parte
         }
       }
@@ -110,43 +112,41 @@ export class BalanceService {
       amount: number;
     }[];
   }> {
-    const expenses = await this.expenseRepository.find({
-      where: { group: { id: groupId }, active: true },
-      relations: ['paid_by'],
-    });
+    const expenses = await this.expensesService.getExpenses(String(groupId));
 
     const groupMemberships = await this.groupMembershipService.findMembersByGroup(groupId);
-    // Directly use the user property from GroupMemberResponseDto which is of type GroupMemberUserDto
     const usersInGroup = groupMemberships.map((m) => m.user);
     const numberOfMembers = usersInGroup.length;
 
     const userBalances: { [userId: string]: number } = {};
-    // Create a map using the GroupMemberUserDto
     const usersMap: Map<string, GroupMemberUserDto> = new Map(usersInGroup.map((u) => [u.id, u]));
 
-    // Inicializar en 0
     usersInGroup.forEach((user) => {
       userBalances[user.id] = 0;
     });
 
-    // Calcular cuánto pagó cada uno y cuánto debería haber pagado
     for (const expense of expenses) {
       const share = expense.amount / numberOfMembers;
-      const payerId = expense.paid_by.id;
-      userBalances[payerId] += expense.amount;
-      for (const user of usersInGroup) {
-        userBalances[user.id] -= share;
+      // 👇 Seguridad adicional para verificar si expense.paid_by existe
+      if (expense.paid_by && expense.paid_by.id) {
+        const payerId = expense.paid_by.id;
+        userBalances[payerId] += expense.amount;
+        for (const user of usersInGroup) {
+          userBalances[user.id] -= share;
+        }
+      } else {
+        // Si no hay paid_by, ignorar este gasto
+        console.warn(`Expense with ID ${expense.id} has no 'paid_by' information. Ignoring expense.`);
+        continue; // Saltar a la siguiente iteración del bucle
       }
     }
 
-    // Convertir a array para procesar liquidaciones
     const balanceByUser = usersInGroup.map((user) => ({
       userId: user.id,
       name: user.name,
       balance: parseFloat(userBalances[user.id].toFixed(2)),
     }));
 
-    // Separar acreedores y deudores
     const creditors = balanceByUser
       .filter((u) => u.balance > 0)
       .map((u) => ({ ...u }))
@@ -181,15 +181,13 @@ export class BalanceService {
           amount: parseFloat(amount.toFixed(2)),
         });
 
-        // Actualizar saldos
         debtor.balance += amount;
         creditor.balance -= amount;
       }
 
-      // Avanzar en listas si uno ya liquidó su parte
       if (Math.abs(debtor.balance) < 0.01) i++;
       if (creditor.balance < 0.01) j++;
-      console.log(balanceByUser)
+      console.log(balanceByUser);
     }
 
     return {

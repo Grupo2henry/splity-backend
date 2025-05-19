@@ -3,7 +3,7 @@ import {
   Controller,
   Get,
   Post,
-  Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -130,7 +130,7 @@ export class ExpensesController {
     );
   }
 
-  @Put('/expenses/:id')
+  @Patch('/expenses/:id')
   @ApiOperation({
     summary: 'Update expense',
     description: 'Updates an existing expense',
@@ -185,6 +185,30 @@ export class ExpensesController {
   async deleteExpense(@Param('id') id: string): Promise<void> {
     return this.expensesService.deleteExpense(id);
   }
+  
+  @Patch('/expenses/:id/toggle-active')
+  @ApiOperation({
+    summary: 'Toggle expense active status',
+    description: 'Modifies the active status of an expense (true to false, false to true)'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the expense to toggle',
+    type: 'string'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Expense active status updated successfully',
+    type: Expense,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Expense not found',
+  })
+  async toggleActiveStatusExpense(@Param('id') id: string): Promise<Expense> {
+    return this.expensesService.toggleActiveStatus(id);
+  }
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('ExpensesOfGroup/:groupId')
