@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
@@ -222,6 +221,94 @@ export class ExpensesService {
     } catch (error) {
       throw new BadRequestException(
         'Error fetching expenses: ' + error.message,
+      );
+    }
+  }
+  async findExpensesGeneral(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    active?: boolean;
+  }) {
+    const {
+      page = 1,
+      limit = 8,
+      search = '',
+      startDate,
+      endDate,
+      active,
+    } = params;
+
+    // Validar fechas
+    if (startDate && isNaN(new Date(startDate).getTime())) {
+      throw new BadRequestException('Formato de startDate inválido');
+    }
+    if (endDate && isNaN(new Date(endDate).getTime())) {
+      throw new BadRequestException('Formato de endDate inválido');
+    }
+
+    // Construir condiciones de búsqueda
+    const where: any = {};
+
+    if (search) {
+      where.description = ILike(`%${search}%`);
+    }
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.created_at = Between(start, end);
+    } else if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      where.created_at = MoreThanOrEqual(start);
+    } else if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.created_at = LessThanOrEqual(end);
+    }
+
+    if (active !== undefined) {
+      where.group = { active };
+    }
+    try {
+      const [expenses, total] = await this.expenseRepository.findAndCount({
+        select: {
+          id: true,
+          description: true,
+          active: true,
+          amount: true,
+          created_at: true,
+          date: true,
+          imgUrl: true,
+          group: {
+            id: true,
+            name: true,
+            active: true,
+          },
+          paid_by: { name: true },
+        },
+        where,
+        relations: ['group', 'paid_by'],
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { created_at: 'DESC' },
+      });
+
+      return {
+        data: expenses,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        total,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Error al obtener gastos: ${error.message}`,
       );
     }
   }

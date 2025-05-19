@@ -270,4 +270,25 @@ export class GroupController {
     console.log(updatedGroup);
     return updatedGroup;
   }
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('adminGroupsGeneral')
+  async getGroupsGeneralAdmin(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('active') active?: string,
+  ) {
+    const activeFilter = active ? active === 'true' : undefined;
+    return this.groupService.findGroupsGeneral({
+      page,
+      limit,
+      search,
+      startDate,
+      endDate,
+      active: activeFilter,
+    });
+  }
 }

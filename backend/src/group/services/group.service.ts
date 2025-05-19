@@ -1,6 +1,14 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // src/group/services/group.service.ts
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { GroupRepository } from '../repositories/group.repository';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { UpdateGroupDto } from '../dto/update-group.dto';
@@ -11,7 +19,13 @@ import { GroupRole } from '../enums/group-role.enum';
 import { User } from '../../user/entities/user.entity';
 import { MailsService } from 'src/mails/mails.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  Between,
+  ILike,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 
 @Injectable()
 export class GroupService {
@@ -56,29 +70,45 @@ export class GroupService {
     return this.groupRepository.findOne(id) as Promise<Group>; // Refetch para obtener la relación actualizada
   }
 
-  private async syncParticipants(group: Group, newParticipantIds: string[]): Promise<void> {
-    const currentMemberships = await this.groupMembershipService.findMembersByGroup(group.id);
-    const currentParticipantIds = currentMemberships.map(membership => membership.user.id);
+  private async syncParticipants(
+    group: Group,
+    newParticipantIds: string[],
+  ): Promise<void> {
+    const currentMemberships =
+      await this.groupMembershipService.findMembersByGroup(group.id);
+    const currentParticipantIds = currentMemberships.map(
+      (membership) => membership.user.id,
+    );
 
-    const participantsToAdd = newParticipantIds.filter(id => !currentParticipantIds.includes(id));
-    const participantsToRemove = currentParticipantIds.filter(id => !newParticipantIds.includes(id));
+    const participantsToAdd = newParticipantIds.filter(
+      (id) => !currentParticipantIds.includes(id),
+    );
+    const participantsToRemove = currentParticipantIds.filter(
+      (id) => !newParticipantIds.includes(id),
+    );
 
     // Agregar nuevos participantes
     for (const userId of participantsToAdd) {
       const user = await this.userService.findOne(userId);
       if (user) {
-        await this.groupMembershipService.create({
-          status: 'active',
-          userId: user.id,
-          groupId: group.id,
-          role: GroupRole.GUEST, // Por defecto, los nuevos participantes son invitados
-        }, user, group);
+        await this.groupMembershipService.create(
+          {
+            status: 'active',
+            userId: user.id,
+            groupId: group.id,
+            role: GroupRole.GUEST, // Por defecto, los nuevos participantes son invitados
+          },
+          user,
+          group,
+        );
       }
     }
 
     // Desactivar participantes removidos
     for (const userIdToRemove of participantsToRemove) {
-      const membershipToRemove = currentMemberships.find(membership => membership.user.id === userIdToRemove);
+      const membershipToRemove = currentMemberships.find(
+        (membership) => membership.user.id === userIdToRemove,
+      );
       if (membershipToRemove) {
         await this.groupMembershipService.deactivate(membershipToRemove.id);
       }
@@ -106,7 +136,11 @@ export class GroupService {
       (id) => id !== creator.id,
     );
 
-    await this.addParticipantsToGroupOnCreation(group, creator, filteredParticipants);
+    await this.addParticipantsToGroupOnCreation(
+      group,
+      creator,
+      filteredParticipants,
+    );
     return group;
   }
 
@@ -120,7 +154,11 @@ export class GroupService {
     return creator;
   }
 
-  private async addParticipantsToGroupOnCreation(group: Group, creator: User, participantIds: string[]): Promise<void> {
+  private async addParticipantsToGroupOnCreation(
+    group: Group,
+    creator: User,
+    participantIds: string[],
+  ): Promise<void> {
     // Crear membresías para los participantes (excluyendo al creador)
     for (const userId of participantIds) {
       const user = await this.userService.findOne(userId);
@@ -162,7 +200,8 @@ export class GroupService {
     }
 
     // Desactivar las membresías del grupo antes de desactivar el grupo
-    const memberships = await this.groupMembershipService.findMembersByGroup(id);
+    const memberships =
+      await this.groupMembershipService.findMembersByGroup(id);
     for (const membership of memberships) {
       await this.groupMembershipService.deactivate(membership.id);
     }
@@ -203,5 +242,73 @@ export class GroupService {
       expenseCount: expenses?.length ?? 0,
     };
     return modifiedGroup;
+  }
+  async findGroupsGeneral(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    active?: boolean;
+  }) {
+    const {
+      page = 1,
+      limit = 8,
+      search = '',
+      startDate,
+      endDate,
+      active,
+    } = params;
+
+    if (startDate && isNaN(new Date(startDate).getTime())) {
+      throw new BadRequestException('Invalid startDate format');
+    }
+    if (endDate && isNaN(new Date(endDate).getTime())) {
+      throw new BadRequestException('Invalid endDate format');
+    }
+
+    const where: any = {};
+    if (search) {
+      where.name = ILike(`%${search}%`);
+    }
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.created_at = Between(start, end);
+    } else if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      where.created_at = MoreThanOrEqual(start);
+    } else if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.created_at = LessThanOrEqual(end);
+    }
+    if (active !== undefined) {
+      where.active = active; // Agregar filtro por active
+    }
+
+    try {
+      const groups = await this.groupRepositoryDefault.find({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      const total = await this.groupRepositoryDefault.count({
+        where,
+      });
+      console.log('total de grupos', total);
+      console.log('grupos', groups);
+      return {
+        data: groups,
+        page,
+        lastPage: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      throw new BadRequestException('Error fetching groups: ' + error.message);
+    }
   }
 }
