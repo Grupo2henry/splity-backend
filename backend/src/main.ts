@@ -19,15 +19,13 @@ async function bootstrap() {
     );
 
     app.enableCors({
-      /*origin: [
-        'http://172.22.240.1:3000/',
+      origin: [
         'http://localhost:5173',
+        'http://127.0.0.1:5173',
         'http://localhost:3000',
-        'http://172.22.240.1:3000',
-        'https://9728-181-4-211-243.ngrok-free.app',
-        'https://real-years-draw.loca.lt',
-      ], // Reemplaza con la URL del cliente en produccion*/
-      origin: true,
+        'http://127.0.0.1:3000',
+        process.env.CLIENT_URL,
+      ],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
 
       allowedHeaders: 'Content-Type, Authorization',

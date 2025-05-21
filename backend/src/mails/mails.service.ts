@@ -68,4 +68,27 @@ export class MailsService {
         return false;
       });
   }
+
+  async sendPasswordRecoveryEmail(user: EmailUser) {
+  console.log('Enviando email de recuperación...');
+  const clientUrl = this.configService.get<string>('CLIENT_URL');
+    try {
+      const result = await this.mailerService.sendMail({
+        to: user.email,
+        subject: 'Recuperación de contraseña - Splity',
+        template: './password-recovery',
+        context: {
+          name: user.name,
+          email: user.email,
+          url: `${clientUrl}/reset-password`, 
+        },
+      });
+
+      console.log('Email de recuperación enviado:', result);
+      return true;
+    } catch (error) {
+      console.error('Error al enviar email de recuperación:', error);
+      return false;
+    }
+  }
 }

@@ -9,12 +9,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from 'src/config/jwt.config';
 import { UserRepository } from './user.repository';
+import { MailsModule } from 'src/mails/mails.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     forwardRef(() => AuthModule),
       JwtModule,
-      ConfigModule.forFeature(jwtConfig)
+      ConfigModule.forFeature(jwtConfig),
+      MailsModule
   ],
   controllers: [UsuariosController],
   providers: [UserService, UserRepository],
