@@ -29,7 +29,7 @@ export const dbConfig: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   dropSchema: dropSchemaDB,
   synchronize: false,
-  logging: true,
+  logging: false,
   ssl: false,
   entities: ['dist/**/*.entity.{ts,js}'],
   migrations: ['dist/migrations/*.{ts,js}'],

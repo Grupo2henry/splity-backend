@@ -1,14 +1,15 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
   Inject,
-  forwardRef
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -66,7 +67,10 @@ export class ExpensesService {
 
   // Nuevo método para buscar un gasto por su descripción exacta
   async getExpenseByDescription(description: string): Promise<Expense> {
-    const expense = await this.expenseRepository.findOne({ where: { description }, relations: ['paid_by'] });
+    const expense = await this.expenseRepository.findOne({
+      where: { description },
+      relations: ['paid_by'],
+    });
     if (!expense) {
       throw new NotFoundException(
         `Expense with description "${description}" not found`,
@@ -163,20 +167,36 @@ export class ExpensesService {
   }
 
   async getExpensesOfGroup(groupId: string, query: GetExpensesDto) {
-    const { page = 1, limit = 6, search = '', startDate, endDate } = query;
+    const {
+      page = 1,
+      limit = 6,
+      search = '',
+      startDate,
+      endDate,
+      sinceAmount,
+      untilAmount,
+    } = query;
     if (startDate && isNaN(new Date(startDate).getTime())) {
       throw new BadRequestException('Invalid startDate format');
     }
     if (endDate && isNaN(new Date(endDate).getTime())) {
       throw new BadRequestException('Invalid endDate format');
     }
+
     const where: any = {
       group: { id: groupId },
-      active: true,
+      // active: true,
     };
 
     if (search) {
       where.description = ILike(`%${search}%`);
+    }
+    if (sinceAmount !== undefined && untilAmount !== undefined) {
+      where.amount = Between(sinceAmount, untilAmount);
+    } else if (sinceAmount !== undefined) {
+      where.amount = MoreThanOrEqual(sinceAmount);
+    } else if (untilAmount !== undefined) {
+      where.amount = LessThanOrEqual(untilAmount);
     }
 
     if (startDate && endDate) {
@@ -211,6 +231,7 @@ export class ExpensesService {
         id: expense.id,
         name: expense.description,
         createdAt: format(new Date(expense.created_at), 'dd/MM/yyyy HH:mm'),
+        active: expense.active,
         amount: expense.amount,
         paid_by: expense.paid_by,
       }));
@@ -222,6 +243,106 @@ export class ExpensesService {
     } catch (error) {
       throw new BadRequestException(
         'Error fetching expenses: ' + error.message,
+      );
+    }
+  }
+  async findExpensesGeneral(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    sinceAmount?: number;
+    untilAmount?: number;
+    active?: boolean;
+  }) {
+    const {
+      page = 1,
+      limit = 8,
+      search = '',
+      startDate,
+      endDate,
+      sinceAmount,
+      untilAmount,
+      active,
+    } = params;
+
+    // Validar fechas
+    if (startDate && isNaN(new Date(startDate).getTime())) {
+      throw new BadRequestException('Formato de startDate inválido');
+    }
+    if (endDate && isNaN(new Date(endDate).getTime())) {
+      throw new BadRequestException('Formato de endDate inválido');
+    }
+
+    // Construir condiciones de búsqueda
+    const where: any = {};
+
+    if (search) {
+      where.description = ILike(`%${search}%`);
+    }
+
+    if (sinceAmount !== undefined && untilAmount !== undefined) {
+      where.amount = Between(sinceAmount, untilAmount);
+    } else if (sinceAmount !== undefined) {
+      where.amount = MoreThanOrEqual(sinceAmount);
+    } else if (untilAmount !== undefined) {
+      where.amount = LessThanOrEqual(untilAmount);
+    }
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.created_at = Between(start, end);
+    } else if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      where.created_at = MoreThanOrEqual(start);
+    } else if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.created_at = LessThanOrEqual(end);
+    }
+
+    if (active !== undefined) {
+      where.group = { active };
+    }
+    try {
+      const [expenses, total] = await this.expenseRepository.findAndCount({
+        select: {
+          id: true,
+          description: true,
+          active: true,
+          amount: true,
+          created_at: true,
+          date: true,
+          imgUrl: true,
+          group: {
+            id: true,
+            name: true,
+            active: true,
+          },
+          paid_by: { name: true },
+        },
+        where,
+        relations: ['group', 'paid_by'],
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { created_at: 'DESC' },
+      });
+
+      return {
+        data: expenses,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        total,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Error al obtener gastos: ${error.message}`,
       );
     }
   }

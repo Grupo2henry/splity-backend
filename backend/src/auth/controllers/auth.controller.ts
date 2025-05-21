@@ -16,7 +16,7 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
 import { LoginUserDto } from '../../user/dto/signin-user.dto';
 import { Auth } from '../decorators/auth.decorator';
@@ -65,10 +65,10 @@ export class AuthController {
     },
   })
   async signIn(@Body() loginUserDto: LoginUserDto) {
-    console.log("Estoy en POST auth/login");
+    console.log('Estoy en POST auth/login');
     const { email, password } = loginUserDto;
     const { token } = await this.authService.signUser(email, password);
-    console.log("Token obtenido del servicio: ", token)
+    // console.log("Token obtenido del servicio: ", token)
     return { access_token: token };
   }
 
@@ -89,8 +89,8 @@ export class AuthController {
       if (!user) {
         return { message: 'Usuario no encontrado' };
       }
-      console.log("Este devuelve auth/me: ", user);
-      return user ;
+      // console.log("Este devuelve auth/me: ", user);
+      return user;
     } catch (error) {
       console.error('Error obteniendo el usuario:', error);
       return { message: 'Error interno del servidor' };
