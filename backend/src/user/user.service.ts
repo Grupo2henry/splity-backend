@@ -175,4 +175,26 @@ export class UserService {
     user.profile_picture_url = '';
     await this.userRepository.save(user);
   }
+
+  async updatePassword(id: string, newPassword: string): Promise<Omit<User, 'password'>> {
+    const user = await this.findOne(id);
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    try {
+      const updatedUser = await this.userRepository.save(user);
+
+      if (!updatedUser) {
+        throw new InternalServerErrorException('No se pudo guardar la nueva contraseña del usuario.');
+      }
+
+      const { password: _, ...result } = updatedUser;
+      return result;
+    } catch (error) {
+
+      throw new InternalServerErrorException('Error al actualizar la contraseña del usuario: ' + error.message);
+    }
+  }
 }

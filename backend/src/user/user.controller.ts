@@ -14,30 +14,44 @@ import {
   HttpException,
   HttpStatus,
   Delete,
+  Post
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
+import { MailsService } from 'src/mails/mails.service';
 import { Roles } from '../auth/decorators/role.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { UUIDValidationPipe } from '../pipes/uuid.validation';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiNotFoundResponse
 } from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { User } from './entities/user.entity';
 
+export interface EmailUser {
+  name: string;
+  email: string;
+}
+
 @Controller('users')
 @ApiBearerAuth()
 @ApiTags('Users')
 export class UsuariosController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly mailsService: MailsService
+  ) {}
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('usersAdmin')
@@ -105,7 +119,63 @@ export class UsuariosController {
     return this.userService.findUsersByEmail(email);
   }
 
-  @Put('delete') //Se recomienda utilizar Patch
+  @Post('forgot-password')
+  @ApiOperation({
+    summary: 'Solicita un email de recuperación de contraseña',
+  })
+  //@ApiBody({ type: ForgotPasswordRequestDto }) // Define un DTO para el email
+  async forgotPassword(@Body('email') email: string) { 
+    const user = await this.userService.findOneByEmail(email);
+
+    if (user) {
+      await this.mailsService.sendPasswordRecoveryEmail({
+        name: user.name,
+        email: user.email,
+      });
+    }
+
+    return {
+      message: 'Si el email está registrado, se enviará un correo con instrucciones.',
+    };
+  }
+
+  @Put('reset-password')
+  @ApiOperation({
+    summary: 'Permite al usuario resetear su contraseña',
+    description: 'Restablece la contraseña de un usuario. Requiere el email, la nueva contraseña y su confirmación. **ADVERTENCIA: Sin un token de un solo uso, este endpoint es susceptible a abusos si un atacante conoce el email del usuario.**'
+  })
+  @ApiOkResponse({
+    description: 'Contraseña restablecida exitosamente.',
+    schema: {
+      example: {
+        message: 'Contraseña restablecida exitosamente.',
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Las contraseñas no coinciden o el email es inválido.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Usuario no encontrado o enlace inválido.',
+  })
+  @ApiBody({ type: ResetPasswordDto }) // ¡Aquí usas el DTO!
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    const user = await this.userService.findOneByEmail(resetPasswordDto.email);
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado o enlace inválido.');
+    }
+
+    if (resetPasswordDto.newPassword !== resetPasswordDto.confirmNewPassword) {
+      throw new HttpException('Las contraseñas no coinciden', HttpStatus.BAD_REQUEST);
+    }
+
+    await this.userService.updatePassword(user.id, resetPasswordDto.newPassword);
+
+    return { message: 'Contraseña restablecida exitosamente.' };
+  }
+
+  @Put('delete')
   @ApiOperation({
     summary: 'Cambia is active del propio usuario a false',
   })
@@ -136,8 +206,8 @@ export class UsuariosController {
     }
   }
 
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Roles(Role.Admin)
+  @UseGuards(RolesGuard)
   @Put('admin/:id')
   @ApiOperation({
     summary: 'Cambia is active del usuario a false',
@@ -211,8 +281,8 @@ export class UsuariosController {
     const result = await this.userService.desactivateUser(id);
     return result;
   }
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Roles(Role.Admin)
+  @UseGuards(RolesGuard)
   @Put('activate-admin/:id')
   @ApiOperation({
     summary: 'Cambia is active del usuario a false',
@@ -233,7 +303,7 @@ export class UsuariosController {
     const result = await this.userService.activateUser(id);
     return result;
   }
-  ///////
+
   @Delete(':id/profile-picture')
   async deleteProfilePicture(@Param('id') userId: string): Promise<void> {
     await this.userService.deleteProfilePicture(userId);
