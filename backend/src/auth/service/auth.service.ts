@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Injectable,
   UnauthorizedException,
-  InternalServerErrorException
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateUserDto } from '../../user/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -16,17 +16,18 @@ import { GenerateTokensProvider } from './generate-token.service';
 @Injectable()
 export class AuthService {
   constructor(
-
     private readonly userService: UserService,
     private readonly emailService: MailsService,
-    private readonly generateTokensProvider: GenerateTokensProvider
+    private readonly generateTokensProvider: GenerateTokensProvider,
   ) {}
 
   async signUpUser(credentials: CreateUserDto) {
     if (credentials.password !== credentials.confirm_password) {
       throw new BadRequestException('Las contraseñas no coinciden');
     }
-    const thereIsUser = await this.userService.findOneByEmail(credentials.email);
+    const thereIsUser = await this.userService.findOneByEmail(
+      credentials.email,
+    );
 
     if (thereIsUser) {
       throw new HttpException(
@@ -35,21 +36,27 @@ export class AuthService {
       );
     }
 
-    const savedUser = await this.userService.createUserWithHashedPassword(credentials);
-    
+    const savedUser =
+      await this.userService.createUserWithHashedPassword(credentials);
+
     const { name, email } = savedUser;
     try {
       await this.emailService.sendUserConfirmation({ name, email });
       console.log(`[AuthService] Correo de confirmación enviado a: ${email}`);
     } catch (error) {
-      console.error(`[AuthService] Error al enviar el correo de confirmación a: ${email}`, error);
-      throw new InternalServerErrorException('Error al enviar el correo de confirmación.');
+      console.error(
+        `[AuthService] Error al enviar el correo de confirmación a: ${email}`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Error al enviar el correo de confirmación.',
+      );
     }
     return savedUser;
   }
 
   async signUser(email: string, password: string) {
-    const user = await this.userService.findOneByEmail(email)
+    const user = await this.userService.findOneByEmail(email);
     if (!user) {
       throw new HttpException('No matches found', 404);
     }
@@ -67,11 +74,11 @@ export class AuthService {
     if (!user.active) {
       throw new UnauthorizedException('User is not active');
     }
-    console.log("Pase verificaciones primarias. Pronto a generar token.");
+    // console.log("Pase verificaciones primarias. Pronto a generar token.");
 
     const token = await this.generateTokensProvider.generateToken(user); // 👈 Usa el servicio para generar el token
 
-    console.log("Este es el token: ", token);
+    console.log('Este es el token: ', token);
     return { token };
   }
 }
