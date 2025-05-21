@@ -120,6 +120,7 @@ export class UsuariosController {
   }
 
   @Post('forgot-password')
+  @Auth(AuthType.None)
   @ApiOperation({
     summary: 'Solicita un email de recuperación de contraseña',
   })
@@ -140,6 +141,7 @@ export class UsuariosController {
   }
 
   @Put('reset-password')
+  @Auth(AuthType.None)
   @ApiOperation({
     summary: 'Permite al usuario resetear su contraseña',
     description: 'Restablece la contraseña de un usuario. Requiere el email, la nueva contraseña y su confirmación. **ADVERTENCIA: Sin un token de un solo uso, este endpoint es susceptible a abusos si un atacante conoce el email del usuario.**'
