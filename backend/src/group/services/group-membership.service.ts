@@ -3,8 +3,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
 import {
-  Injectable, 
-  Inject, 
+  Injectable,
+  Inject,
   forwardRef,
   BadRequestException,
   NotFoundException,
@@ -86,7 +86,8 @@ export class GroupMembershipService {
   }
 
   async findMembersByGroup(groupId: number): Promise<GroupMemberResponseDto[]> {
-    const memberships = await this.groupMembershipRepository.findMembersByGroup(groupId);
+    const memberships =
+      await this.groupMembershipRepository.findMembersByGroup(groupId);
     return memberships
       .filter((membership) => membership.active === true)
       .map((membership) => ({
@@ -104,15 +105,17 @@ export class GroupMembershipService {
       }));
   }
 
-  async findGroupsByUser(userId: string): Promise<GroupMembership[]> { // 👈 Modificar el tipo de retorno
-    const memberships = await this.groupMembershipRepository.findGroupsByUser(userId);
+  async findGroupsByUser(userId: string): Promise<GroupMembership[]> {
+    // 👈 Modificar el tipo de retorno
+    const memberships =
+      await this.groupMembershipRepository.findGroupsByUser(userId);
     return memberships.filter((membership) => membership.active === true); // Filtrar aquí
   }
 
   async getUserMemberships(userId: string): Promise<UsersMembershipsDto[]> {
     const memberships: GroupMembership[] = await this.findGroupsByUser(userId); // Usar el método modificado
-    console.log("Estoy en el getUserMemberships, este es el user id: ", userId);
-    console.log("Membersias: ", memberships);
+    console.log('Estoy en el getUserMemberships, este es el user id: ', userId);
+    // console.log("Membersias: ", memberships);
 
     return memberships.map((membership: GroupMembership) => {
       return {
@@ -164,8 +167,15 @@ export class GroupMembershipService {
     };
   }
 
-  async findGroupsByUserAndRole(userId: string, role: string): Promise<GroupMembership[]> {
-    const memberships = await this.groupMembershipRepository.findGroupsByUserAndRole(userId, role);
+  async findGroupsByUserAndRole(
+    userId: string,
+    role: string,
+  ): Promise<GroupMembership[]> {
+    const memberships =
+      await this.groupMembershipRepository.findGroupsByUserAndRole(
+        userId,
+        role,
+      );
     return memberships.filter((membership) => membership.active === true);
   }
 

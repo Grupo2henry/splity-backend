@@ -8,7 +8,7 @@ import {
   Param,
   Body,
   HttpStatus,
-  UseGuards,
+  // UseGuards,
   Query,
 } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
@@ -21,9 +21,9 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { Expense } from './entities/expense.entity';
-import { Roles } from 'src/auth/decorators/role.decorator';
-import { Role } from 'src/auth/enums/role.enum';
-import { RolesGuard } from 'src/auth/guards/role.guard';
+// import { Roles } from 'src/auth/decorators/role.decorator';
+// import { Role } from 'src/auth/enums/role.enum';
+// import { RolesGuard } from 'src/auth/guards/role.guard';
 import { GetExpensesDto } from './dto/get-expense.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
@@ -185,16 +185,17 @@ export class ExpensesController {
   async deleteExpense(@Param('id') id: string): Promise<void> {
     return this.expensesService.deleteExpense(id);
   }
-  
+
   @Patch('/expenses/:id/toggle-active')
   @ApiOperation({
     summary: 'Toggle expense active status',
-    description: 'Modifies the active status of an expense (true to false, false to true)'
+    description:
+      'Modifies the active status of an expense (true to false, false to true)',
   })
   @ApiParam({
     name: 'id',
     description: 'The ID of the expense to toggle',
-    type: 'string'
+    type: 'string',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -208,15 +209,21 @@ export class ExpensesController {
   async toggleActiveStatusExpense(@Param('id') id: string): Promise<Expense> {
     return this.expensesService.toggleActiveStatus(id);
   }
-
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Auth(AuthType.None)
+  // @Roles(Role.Admin) // inyecta rol a la metadata
+  // @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('ExpensesOfGroup/:groupId')
   async getExpensesOfGroup(
     @Param('groupId') groupId: string,
     @Query() query: GetExpensesDto,
   ) {
-    return this.expensesService.getExpensesOfGroup(groupId, query);
+    console.log(query);
+    const gastos = await this.expensesService.getExpensesOfGroup(
+      groupId,
+      query,
+    );
+    console.log(gastos);
+    return gastos;
   }
   @Auth(AuthType.None)
   @Get('adminExpensesGeneral')
@@ -226,15 +233,21 @@ export class ExpensesController {
     @Query('search') search?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('sinceAmount') sinceAmount?: string,
+    @Query('untilAmount') untilAmount?: string,
     @Query('active') active?: string,
   ) {
     const activeFilter = active ? active === 'true' : undefined;
+    const parsedSinceAmount = sinceAmount ? parseFloat(sinceAmount) : undefined;
+    const parsedUntilAmount = untilAmount ? parseFloat(untilAmount) : undefined;
     return this.expensesService.findExpensesGeneral({
       page,
       limit,
       search,
       startDate,
       endDate,
+      sinceAmount: parsedSinceAmount,
+      untilAmount: parsedUntilAmount,
       active: activeFilter,
     });
   }

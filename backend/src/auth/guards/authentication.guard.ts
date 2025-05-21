@@ -39,13 +39,13 @@ export class AuthenticationGuard implements CanActivate {
     ) ?? [AuthenticationGuard.defaultAuthType]; // asigna el default sino encuentra, public
 
     // Show what are authTypes (comentario corregido)
-    console.log(authTypes);
+    // console.log(authTypes);
     console.log('AuthTypes detected:', authTypes);
 
     const guards = authTypes.map((type) => this.authTypeGuardMap[type]).flat();
     // flat genera un único array (comentario corregido)
     // printeGuards => Show that the user can pass an array in users controller as well
-    console.log(guards);
+    // console.log(guards);
 
     // Declare the default error (comentario corregido)
     let error = new UnauthorizedException();

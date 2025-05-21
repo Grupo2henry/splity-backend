@@ -9,7 +9,7 @@ import {
   Injectable,
   NotFoundException,
   Inject,
-  forwardRef
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -67,7 +67,10 @@ export class ExpensesService {
 
   // Nuevo método para buscar un gasto por su descripción exacta
   async getExpenseByDescription(description: string): Promise<Expense> {
-    const expense = await this.expenseRepository.findOne({ where: { description }, relations: ['paid_by'] });
+    const expense = await this.expenseRepository.findOne({
+      where: { description },
+      relations: ['paid_by'],
+    });
     if (!expense) {
       throw new NotFoundException(
         `Expense with description "${description}" not found`,
@@ -164,20 +167,36 @@ export class ExpensesService {
   }
 
   async getExpensesOfGroup(groupId: string, query: GetExpensesDto) {
-    const { page = 1, limit = 6, search = '', startDate, endDate } = query;
+    const {
+      page = 1,
+      limit = 6,
+      search = '',
+      startDate,
+      endDate,
+      sinceAmount,
+      untilAmount,
+    } = query;
     if (startDate && isNaN(new Date(startDate).getTime())) {
       throw new BadRequestException('Invalid startDate format');
     }
     if (endDate && isNaN(new Date(endDate).getTime())) {
       throw new BadRequestException('Invalid endDate format');
     }
+
     const where: any = {
       group: { id: groupId },
-      active: true,
+      // active: true,
     };
 
     if (search) {
       where.description = ILike(`%${search}%`);
+    }
+    if (sinceAmount !== undefined && untilAmount !== undefined) {
+      where.amount = Between(sinceAmount, untilAmount);
+    } else if (sinceAmount !== undefined) {
+      where.amount = MoreThanOrEqual(sinceAmount);
+    } else if (untilAmount !== undefined) {
+      where.amount = LessThanOrEqual(untilAmount);
     }
 
     if (startDate && endDate) {
@@ -212,6 +231,7 @@ export class ExpensesService {
         id: expense.id,
         name: expense.description,
         createdAt: format(new Date(expense.created_at), 'dd/MM/yyyy HH:mm'),
+        active: expense.active,
         amount: expense.amount,
         paid_by: expense.paid_by,
       }));
@@ -232,6 +252,8 @@ export class ExpensesService {
     search?: string;
     startDate?: string;
     endDate?: string;
+    sinceAmount?: number;
+    untilAmount?: number;
     active?: boolean;
   }) {
     const {
@@ -240,6 +262,8 @@ export class ExpensesService {
       search = '',
       startDate,
       endDate,
+      sinceAmount,
+      untilAmount,
       active,
     } = params;
 
@@ -256,6 +280,14 @@ export class ExpensesService {
 
     if (search) {
       where.description = ILike(`%${search}%`);
+    }
+
+    if (sinceAmount !== undefined && untilAmount !== undefined) {
+      where.amount = Between(sinceAmount, untilAmount);
+    } else if (sinceAmount !== undefined) {
+      where.amount = MoreThanOrEqual(sinceAmount);
+    } else if (untilAmount !== undefined) {
+      where.amount = LessThanOrEqual(untilAmount);
     }
 
     if (startDate && endDate) {

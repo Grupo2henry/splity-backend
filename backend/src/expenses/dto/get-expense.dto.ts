@@ -1,10 +1,10 @@
-/* eslint-disable prettier/prettier */
 import {
   IsString,
   IsOptional,
   IsInt,
   Min,
   IsDateString,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -32,4 +32,16 @@ export class GetExpensesDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  sinceAmount?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  untilAmount?: number;
 }
