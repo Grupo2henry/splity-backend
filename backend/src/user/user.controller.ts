@@ -38,7 +38,8 @@ import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { User } from './entities/user.entity';
-
+import { Auth } from '../auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 export interface EmailUser {
   name: string;
   email: string;
