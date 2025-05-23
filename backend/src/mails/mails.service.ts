@@ -71,6 +71,7 @@ export class MailsService {
 
   async sendPasswordRecoveryEmail(user: EmailUser) {
   console.log('Enviando email de recuperación...');
+  console.log(this.configService.get<string>('CLIENT_URL'));
   const clientUrl = this.configService.get<string>('CLIENT_URL');
     try {
       const result = await this.mailerService.sendMail({
@@ -80,7 +81,7 @@ export class MailsService {
         context: {
           name: user.name,
           email: user.email,
-          url: `${clientUrl}/reset-password`, 
+          url: `${clientUrl}/ResetPassword`, 
         },
       });
 

@@ -77,7 +77,7 @@ export class GroupController {
     },
   })
   @UseGuards(AccessTokenGuard, GroupLimitGuard) // ✅ orden correcto y guard apilado
-  @GroupLimit(3)
+  @GroupLimit(4)
   async create(
     @Body() createGroupDto: CreateGroupDto,
     @Req() request: RequestWithUser,
