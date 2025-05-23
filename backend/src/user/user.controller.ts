@@ -255,8 +255,33 @@ export class UsuariosController {
     description: 'Usuario sin relaciones',
     type: UserResponseDto,
   })
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('usersAdmin')
+  @ApiOperation({
+    summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de usuarios',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+            name: 'Juan Pérez',
+            email: 'juan.perez@example.com',
+            createdAt: '2024-04-27T12:00:00.000Z',
+          },
+        ],
+        total: 1,
+        page: 1,
+        lastPage: 1,
+      },
+    },
+  })
   async getUserById(@Param('id', UUIDValidationPipe) id: string) {
     const userFound = await this.userService.findOne(id);
+    console.log(userFound);
     if (!userFound) {
       throw new NotFoundException('Usuario no encontrado');
     }

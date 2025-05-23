@@ -274,6 +274,12 @@ export class GroupMembershipController {
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('AdminMembershipsUser/:userId')
+  @ApiOperation({
+    summary:
+      'Obtiene todos grupos de usuario, por admin por id relacionado con membresía',
+    description:
+      'Obtiene todos los grupos en los que está el usuario aplicando filtro de paginación y fecha.',
+  })
   async getGroups(
     @Param('userId') userId: string,
     @Query() query: GetGroupsDto,
