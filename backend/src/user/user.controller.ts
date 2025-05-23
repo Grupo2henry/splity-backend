@@ -53,6 +53,8 @@ export class UsuariosController {
     private readonly userService: UserService,
     private readonly mailsService: MailsService,
   ) {}
+
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('usersAdmin')
@@ -97,6 +99,8 @@ export class UsuariosController {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+
   // @SetMetadata('authType', 'None')
   //el decorador auth setea la metadata de auth para que el guardia global haga esta ruta publica
   //@Roles(Role.Admin)  inyecta rol a la metadata
@@ -247,6 +251,9 @@ export class UsuariosController {
     const result = await this.userService.desactivateUser(id);
     return result;
   }
+
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get(':id')
   @ApiOperation({
     summary: 'Obtiene usuario por id',
@@ -255,33 +262,9 @@ export class UsuariosController {
     description: 'Usuario sin relaciones',
     type: UserResponseDto,
   })
-  @Roles(Role.Admin) // inyecta rol a la metadata
-  @UseGuards(RolesGuard) // comprueba el rol requerido
-  @Get('usersAdmin')
-  @ApiOperation({
-    summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',
-  })
-  @ApiOkResponse({
-    description: 'Listado paginado de usuarios',
-    schema: {
-      example: {
-        data: [
-          {
-            id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
-            name: 'Juan Pérez',
-            email: 'juan.perez@example.com',
-            createdAt: '2024-04-27T12:00:00.000Z',
-          },
-        ],
-        total: 1,
-        page: 1,
-        lastPage: 1,
-      },
-    },
-  })
   async getUserById(@Param('id', UUIDValidationPipe) id: string) {
+    console.log('userAdmin');
     const userFound = await this.userService.findOne(id);
-    console.log(userFound);
     if (!userFound) {
       throw new NotFoundException('Usuario no encontrado');
     }
@@ -303,6 +286,8 @@ export class UsuariosController {
     const result = await this.userService.modifiedUser(id, user);
     return result;
   }
+
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('desactivate-admin/:id')
@@ -325,6 +310,8 @@ export class UsuariosController {
     const result = await this.userService.desactivateUser(id);
     return result;
   }
+
+
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
   @Put('activate-admin/:id')
@@ -347,8 +334,13 @@ export class UsuariosController {
     const result = await this.userService.activateUser(id);
     return result;
   }
-
+  
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Delete(':id/profile-picture')
+  @ApiOperation({
+    summary: 'Elimina foto del usuario',
+  })
   async deleteProfilePicture(@Param('id') userId: string): Promise<void> {
     await this.userService.deleteProfilePicture(userId);
   }
