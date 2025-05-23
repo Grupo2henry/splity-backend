@@ -14,7 +14,7 @@ import {
   HttpException,
   HttpStatus,
   Delete,
-  Post
+  Post,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -32,7 +32,7 @@ import {
   ApiTags,
   ApiBadRequestResponse,
   ApiBody,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
@@ -51,7 +51,7 @@ export interface EmailUser {
 export class UsuariosController {
   constructor(
     private readonly userService: UserService,
-    private readonly mailsService: MailsService
+    private readonly mailsService: MailsService,
   ) {}
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
@@ -81,9 +81,17 @@ export class UsuariosController {
     @Query('page') page = 1,
     @Query('limit') limit = 8,
     @Query('search') search = '',
+    @Query('active') active?: string,
   ): Promise<{ data: User[]; total: number; page: number; lastPage: number }> {
     try {
-      return await this.userService.getUsersAdmin(page, limit, search);
+      const activeFilter =
+        active === 'true' ? true : active === 'false' ? false : undefined;
+      return await this.userService.getUsersAdmin(
+        page,
+        limit,
+        search,
+        activeFilter,
+      );
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -126,7 +134,7 @@ export class UsuariosController {
     summary: 'Solicita un email de recuperación de contraseña',
   })
   //@ApiBody({ type: ForgotPasswordRequestDto }) // Define un DTO para el email
-  async forgotPassword(@Body('email') email: string) { 
+  async forgotPassword(@Body('email') email: string) {
     const user = await this.userService.findOneByEmail(email);
 
     if (user) {
@@ -137,7 +145,8 @@ export class UsuariosController {
     }
 
     return {
-      message: 'Si el email está registrado, se enviará un correo con instrucciones.',
+      message:
+        'Si el email está registrado, se enviará un correo con instrucciones.',
     };
   }
 
@@ -145,7 +154,8 @@ export class UsuariosController {
   @Auth(AuthType.None)
   @ApiOperation({
     summary: 'Permite al usuario resetear su contraseña',
-    description: 'Restablece la contraseña de un usuario. Requiere el email, la nueva contraseña y su confirmación. **ADVERTENCIA: Sin un token de un solo uso, este endpoint es susceptible a abusos si un atacante conoce el email del usuario.**'
+    description:
+      'Restablece la contraseña de un usuario. Requiere el email, la nueva contraseña y su confirmación. **ADVERTENCIA: Sin un token de un solo uso, este endpoint es susceptible a abusos si un atacante conoce el email del usuario.**',
   })
   @ApiOkResponse({
     description: 'Contraseña restablecida exitosamente.',
@@ -170,10 +180,16 @@ export class UsuariosController {
     }
 
     if (resetPasswordDto.newPassword !== resetPasswordDto.confirmNewPassword) {
-      throw new HttpException('Las contraseñas no coinciden', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Las contraseñas no coinciden',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    await this.userService.updatePassword(user.id, resetPasswordDto.newPassword);
+    await this.userService.updatePassword(
+      user.id,
+      resetPasswordDto.newPassword,
+    );
 
     return { message: 'Contraseña restablecida exitosamente.' };
   }
@@ -239,8 +255,33 @@ export class UsuariosController {
     description: 'Usuario sin relaciones',
     type: UserResponseDto,
   })
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
+  @Get('usersAdmin')
+  @ApiOperation({
+    summary: 'Obtiene todos los usuarios con paginación y búsqueda por nombre',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de usuarios',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'b3b0c750-b2aa-47a7-bf07-d2c7f2cfb8f5',
+            name: 'Juan Pérez',
+            email: 'juan.perez@example.com',
+            createdAt: '2024-04-27T12:00:00.000Z',
+          },
+        ],
+        total: 1,
+        page: 1,
+        lastPage: 1,
+      },
+    },
+  })
   async getUserById(@Param('id', UUIDValidationPipe) id: string) {
     const userFound = await this.userService.findOne(id);
+    console.log(userFound);
     if (!userFound) {
       throw new NotFoundException('Usuario no encontrado');
     }

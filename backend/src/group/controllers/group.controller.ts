@@ -45,8 +45,6 @@ import { IsGroupMemberGuard } from '../guards/is-group-member.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/auth/enums/role.enum';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @ApiBearerAuth()
 @Controller()
@@ -194,13 +192,24 @@ export class GroupController {
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('DetailsOfGroup/:id')
+  @ApiOperation({
+    summary: 'Obtiene los detalles del grupo, por id',
+    description:
+      'Obtiene detalles del grupo, los participantes, gastos, y estado',
+  })
   async detailsOfGroup(@Param('id') id: string) {
     const group = await this.groupService.findOneAdmin(+id);
     return group;
   }
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('MembershipsOfGroup/:id')
+  @ApiOperation({
+    summary: 'Obtiene los usuarios del grupo, por id de grupo, solo por admin',
+    description:
+      'Obtiene todos los grupos en los que está el usuario aplicando filtro de paginación y fecha.',
+  })
   async getUsersByAdmin(
     @Param('id') id: string, // Usa ParseIntPipe para convertir a número
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -218,7 +227,9 @@ export class GroupController {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  @Auth(AuthType.None)
+
+  @Roles(Role.Admin) // inyecta rol a la metadata
+  @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('groups/:groupId/members/:userId/status')
   @ApiOperation({ summary: 'Alternar estado active de un miembro' })
   async toggleMemberStatus(
@@ -232,6 +243,7 @@ export class GroupController {
     console.log(response);
     return response;
   }
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Put('group-deactivate/:id') // Endpoint que denota un borrado lógico
@@ -259,6 +271,10 @@ export class GroupController {
     return updatedGroup;
   }
   @Put('group-activate/:id')
+  @ApiOperation({
+    summary: 'Activa un grupo encontrandolo por su ID',
+    description: 'Modifica la propiedad "active" del grupo a true.',
+  })
   @HttpCode(HttpStatus.OK)
   async activateGroup(
     @Param('id', ParseIntPipe) id: number,
@@ -270,9 +286,15 @@ export class GroupController {
     console.log(updatedGroup);
     return updatedGroup;
   }
+
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
   @Get('adminGroupsGeneral')
+  @ApiOperation({
+    summary: 'Obtiene los grupos en general, por admin',
+    description:
+      'Obtiene grupos aplicando filtro de paginación, fecha y estado de actividad.',
+  })
   async getGroupsGeneralAdmin(
     @Query('page') page: number,
     @Query('limit') limit: number,
