@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
@@ -84,7 +85,6 @@ export class UserService {
       return result;
     } catch (error) {
       throw new ConflictException(
-         
         'Error al actualizar el usuario: ' + error.message,
       );
     }
@@ -117,15 +117,28 @@ export class UserService {
     }
   }
 
-  public async getUsersAdmin(page: number, limit: number, search?: string) {
+  public async getUsersAdmin(
+    page: number,
+    limit: number,
+    search?: string,
+    active?: boolean,
+  ) {
     // Validar que page y limit sean números positivos
     const pageNumber = Math.max(1, page); // Asegura que page sea al menos 1
     const take = Math.max(1, limit); // Asegura que limit sea al menos 1
     const skip = (pageNumber - 1) * take;
-
     try {
+      // Construir las condiciones del where
+      const where: any = {};
+      if (search) {
+        where.name = ILike(`%${search}%`);
+      }
+      if (active !== undefined) {
+        where.active = active; // Filtrar por el campo active
+      }
+
       const [data, total] = await this.typeOrmUserRepository.findAndCount({
-        where: search ? { name: ILike(`%${search}%`) } : {},
+        where,
         skip,
         take,
         order: { created_at: 'DESC' },
@@ -176,7 +189,10 @@ export class UserService {
     await this.userRepository.save(user);
   }
 
-  async updatePassword(id: string, newPassword: string): Promise<Omit<User, 'password'>> {
+  async updatePassword(
+    id: string,
+    newPassword: string,
+  ): Promise<Omit<User, 'password'>> {
     const user = await this.findOne(id);
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -187,14 +203,17 @@ export class UserService {
       const updatedUser = await this.userRepository.save(user);
 
       if (!updatedUser) {
-        throw new InternalServerErrorException('No se pudo guardar la nueva contraseña del usuario.');
+        throw new InternalServerErrorException(
+          'No se pudo guardar la nueva contraseña del usuario.',
+        );
       }
 
       const { password: _, ...result } = updatedUser;
       return result;
     } catch (error) {
-
-      throw new InternalServerErrorException('Error al actualizar la contraseña del usuario: ' + error.message);
+      throw new InternalServerErrorException(
+        'Error al actualizar la contraseña del usuario: ' + error.message,
+      );
     }
   }
 }
