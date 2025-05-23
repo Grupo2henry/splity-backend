@@ -14,7 +14,7 @@ import {
   HttpException,
   HttpStatus,
   Delete,
-  Post
+  Post,
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -32,7 +32,7 @@ import {
   ApiTags,
   ApiBadRequestResponse,
   ApiBody,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UserResponseDto } from './dto/response-user.dto';
 import { REQUEST_USER_KEY } from '../auth/constants/auth.constants';
@@ -50,7 +50,7 @@ export interface EmailUser {
 export class UsuariosController {
   constructor(
     private readonly userService: UserService,
-    private readonly mailsService: MailsService
+    private readonly mailsService: MailsService,
   ) {}
   @Roles(Role.Admin) // inyecta rol a la metadata
   @UseGuards(RolesGuard) // comprueba el rol requerido
@@ -80,9 +80,17 @@ export class UsuariosController {
     @Query('page') page = 1,
     @Query('limit') limit = 8,
     @Query('search') search = '',
+    @Query('active') active?: string,
   ): Promise<{ data: User[]; total: number; page: number; lastPage: number }> {
     try {
-      return await this.userService.getUsersAdmin(page, limit, search);
+      const activeFilter =
+        active === 'true' ? true : active === 'false' ? false : undefined;
+      return await this.userService.getUsersAdmin(
+        page,
+        limit,
+        search,
+        activeFilter,
+      );
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -124,7 +132,7 @@ export class UsuariosController {
     summary: 'Solicita un email de recuperación de contraseña',
   })
   //@ApiBody({ type: ForgotPasswordRequestDto }) // Define un DTO para el email
-  async forgotPassword(@Body('email') email: string) { 
+  async forgotPassword(@Body('email') email: string) {
     const user = await this.userService.findOneByEmail(email);
 
     if (user) {
@@ -135,14 +143,16 @@ export class UsuariosController {
     }
 
     return {
-      message: 'Si el email está registrado, se enviará un correo con instrucciones.',
+      message:
+        'Si el email está registrado, se enviará un correo con instrucciones.',
     };
   }
 
   @Put('reset-password')
   @ApiOperation({
     summary: 'Permite al usuario resetear su contraseña',
-    description: 'Restablece la contraseña de un usuario. Requiere el email, la nueva contraseña y su confirmación. **ADVERTENCIA: Sin un token de un solo uso, este endpoint es susceptible a abusos si un atacante conoce el email del usuario.**'
+    description:
+      'Restablece la contraseña de un usuario. Requiere el email, la nueva contraseña y su confirmación. **ADVERTENCIA: Sin un token de un solo uso, este endpoint es susceptible a abusos si un atacante conoce el email del usuario.**',
   })
   @ApiOkResponse({
     description: 'Contraseña restablecida exitosamente.',
@@ -167,10 +177,16 @@ export class UsuariosController {
     }
 
     if (resetPasswordDto.newPassword !== resetPasswordDto.confirmNewPassword) {
-      throw new HttpException('Las contraseñas no coinciden', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Las contraseñas no coinciden',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    await this.userService.updatePassword(user.id, resetPasswordDto.newPassword);
+    await this.userService.updatePassword(
+      user.id,
+      resetPasswordDto.newPassword,
+    );
 
     return { message: 'Contraseña restablecida exitosamente.' };
   }
